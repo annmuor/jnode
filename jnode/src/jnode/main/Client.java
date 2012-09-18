@@ -22,14 +22,10 @@ public class Client extends TimerTask {
 					thread.add(new Poll(l));
 				}
 			}
-			logger.info("Стартуем " + thread.size() + " потоков, всего:"
-					+ Thread.activeCount());
 			for (Thread t : thread) {
 				t.start();
 				t = null;
 			}
-			logger.info("Завершаем " + thread.size() + " потоков, всего:"
-					+ Thread.activeCount());
 		} catch (SQLException e) {
 			logger.error("Не могу получить список узлов:"
 					+ e.getLocalizedMessage());

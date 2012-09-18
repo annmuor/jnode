@@ -70,9 +70,9 @@ public class Main {
 				"poll.delay"), POLL_PERIOD("poll.period"), INFO_SYSOP(
 				"info.sysop"), INFO_LOCATION("info.location"), INFO_STATIONNAME(
 				"info.stationname"), INFO_NDL("info.ndl"), INFO_ADDRESS(
-				"info.address"), BINKD_BIND("binkd.listen"), BINKD_PORT(
-				"binkd.port"), BINKD_INBOUND("binkd.inbound"), BINKD_CLIENT(
-				"binkd.client"), BINKD_SERVER("binkd.server"), LOG_LEVEL(
+				"info.address"), BINKD_BIND("binkp.bind"), BINKD_PORT(
+				"binkp.port"), BINKD_INBOUND("binkp.inbound"), BINKD_CLIENT(
+				"binkp.client"), BINKD_SERVER("binkp.server"), LOG_LEVEL(
 				"log.level");
 		private String cfgline;
 

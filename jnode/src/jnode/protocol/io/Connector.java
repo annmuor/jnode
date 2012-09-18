@@ -122,7 +122,6 @@ public class Connector {
 		if (link == null) {
 			throw new ProtocolException("Для connect() надо указать линк");
 		}
-		this.link = link;
 		connector.reset();
 		connector.initOutgoing(this);
 		try {
