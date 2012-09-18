@@ -1,0 +1,31 @@
+# jNode 0.3.4 sample config file
+# Comments starts from '#'
+
+# Your node name
+info.stationname = Sample Node
+# Your node location
+info.location = The City Of Country
+# Your name
+info.sysop = Rodriguez bender
+# Nodelists flags
+info.ndl = 115200,TCP,BINKP
+# Your node's FTN address
+info.address = 2:256/128@fidonet
+# JDBC URL - see JDBC documentation
+jdbc.url = jdbc:postgresql://localhost/database
+jdbc.user = username
+jdbc.pass = password
+# Listen address for binkp protocol
+binkp.bind = 0.0.0.0
+# Listen port for binkp protocol
+binkp.port = 24554
+# The folder for incoming files
+binkp.inbound = inbound
+# Comment this if you want turn off server
+binkp.server = 1
+# Comment this if you want turn off client
+binkp.client = 1
+# First pool delay
+poll.delay = 600
+# Next pools delay
+poll.period = 600

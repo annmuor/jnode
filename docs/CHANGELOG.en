@@ -1,0 +1,20 @@
+16.09.2012, 0.3a1:
+~ Binkp duplex data exchange released.
+~ New indexes in database schema.
++ Dupe ckecking feature released.
++ Netmail tracking feature released.
+17.09.2012, 0.3.1:
++ Robots feature released.
+17.09.2012, 0.3.2:
++ Sample robot AreaFix (+/-/list/help).
+17.09.2012, 0.3.3:
++ Flavour for netmail is now crash.
+~ Multithreading support added.
+~ Incoming files that aren't a bundles now save in inbound directory.
+18.09.2012, 0.3.4:
+~ Fragmented ip packets error fixed
+~ Binkp/1.1 connection reset after reob/leob fixed
++ AreaFix echoes masks and %RESCAN added
+18.09.2012, 0.3.4.1:
++ New config variables: log.level, binkp.inbound, binkp.server, binkp.client
+~ Project moved to new repo : https://github.com/kreon/jnode.git
