@@ -18,3 +18,4 @@
 18.09.2012, 0.3.4.1:
 + Добавлены переменные в конфиг: log.level, binkp.inbound, binkp.server, binkp.client
 ~ Под проект создан отдельный репозиторий на github: https://github.com/kreon/jnode.git
+
