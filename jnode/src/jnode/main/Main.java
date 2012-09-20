@@ -23,13 +23,34 @@ public class Main {
 	private static final Hashtable<String, String> settings = new Hashtable<String, String>();
 	public static final SystemInfo info = new SystemInfo();
 
+	public static enum Settings {
+		JDBC_URL("jdbc.url"), JDBC_USER("jdbc.user"), JDBC_PASS("jdbc.pass"), POLL_DELAY(
+				"poll.delay"), POLL_PERIOD("poll.period"), INFO_SYSOP(
+				"info.sysop"), INFO_LOCATION("info.location"), INFO_STATIONNAME(
+				"info.stationname"), INFO_NDL("info.ndl"), INFO_ADDRESS(
+				"info.address"), BINKD_BIND("binkp.bind"), BINKD_PORT(
+				"binkp.port"), BINKD_INBOUND("binkp.inbound"), BINKD_CLIENT(
+				"binkp.client"), BINKD_SERVER("binkp.server"), LOG_LEVEL(
+				"log.level"), NODELIST_PATH("nodelist.path"), NODELIST_INDEX(
+				"nodelist.index");
+		private String cfgline;
+
+		private Settings(String cfgline) {
+			this.cfgline = cfgline;
+		}
+
+		public String getCfgline() {
+			return this.cfgline;
+		}
+	}
+
 	public static class SystemInfo {
 		private String sysop;
 		private String location;
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.3.4.1";
+		private final String version = "jNode/0.3.5";
 
 		public String getSysop() {
 			return sysop;
@@ -65,24 +86,20 @@ public class Main {
 		return inbound;
 	}
 
-	public static enum Settings {
-		JDBC_URL("jdbc.url"), JDBC_USER("jdbc.user"), JDBC_PASS("jdbc.pass"), POLL_DELAY(
-				"poll.delay"), POLL_PERIOD("poll.period"), INFO_SYSOP(
-				"info.sysop"), INFO_LOCATION("info.location"), INFO_STATIONNAME(
-				"info.stationname"), INFO_NDL("info.ndl"), INFO_ADDRESS(
-				"info.address"), BINKD_BIND("binkp.bind"), BINKD_PORT(
-				"binkp.port"), BINKD_INBOUND("binkp.inbound"), BINKD_CLIENT(
-				"binkp.client"), BINKD_SERVER("binkp.server"), LOG_LEVEL(
-				"log.level");
-		private String cfgline;
-
-		private Settings(String cfgline) {
-			this.cfgline = cfgline;
+	public static String getNodelistPath() {
+		String path = settings.get(Settings.NODELIST_PATH.cfgline);
+		if (path == null) {
+			path = "NODELIST";
 		}
+		return path;
+	}
 
-		public String getCfgline() {
-			return this.cfgline;
+	public static String getNodelistIdx() {
+		String idx = settings.get(Settings.NODELIST_INDEX.cfgline);
+		if (idx == null) {
+			idx = "nodelist.idx";
 		}
+		return idx;
 	}
 
 	private Main(String configFile) {

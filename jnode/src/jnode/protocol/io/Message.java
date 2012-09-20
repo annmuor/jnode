@@ -13,6 +13,7 @@ public class Message {
 	private long messageLength;
 	private String messageName;
 	private InputStream inputStream;
+	private boolean secure = true;
 
 	public Message(File file) throws Exception {
 		super();
@@ -49,6 +50,14 @@ public class Message {
 
 	public void setInputStream(InputStream arg) {
 		this.inputStream = arg;
+	}
+
+	public boolean isSecure() {
+		return secure;
+	}
+
+	public void setSecure(boolean secure) {
+		this.secure = secure;
 	}
 
 }

@@ -17,8 +17,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.dto.Link;
+import jnode.ftn.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.Main;
+import jnode.ndl.FtnNdlAddress;
+import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Connector;
 import jnode.protocol.io.Frame;
@@ -63,6 +66,7 @@ public class BinkpConnector implements ProtocolConnector {
 	private Link link;
 	private int totalin;
 	private int totalout;
+	private boolean secure;
 
 	public void reset() {
 		frames = new ArrayList<Frame>();
@@ -79,6 +83,7 @@ public class BinkpConnector implements ProtocolConnector {
 		binkp1 = false;
 		recv = false;
 		send = false;
+		secure = true;
 	}
 
 	private void greet() {
@@ -263,6 +268,7 @@ public class BinkpConnector implements ProtocolConnector {
 							if (!links.isEmpty()) {
 								this.link = links.get(0);
 								authorized = true;
+								secure = true;
 								break;
 							}
 						} catch (SQLException e) {
@@ -271,19 +277,40 @@ public class BinkpConnector implements ProtocolConnector {
 											+ m.group(2), e);
 						}
 					}
+					if (!authorized) {
+						m = ftn.matcher(frame.getArg());
+						while (m.find()) {
+							try {
+								FtnAddress address = new FtnAddress(m.group(2));
+								FtnNdlAddress node = NodelistScanner
+										.getInstance().isExists(address);
+								if (node != null) {
+									authorized = true;
+									secure = false;
+									this.link = new Link();
+									link.setLinkAddress(address.toString());
+									break;
+								}
+
+							} catch (NumberFormatException e) {
+							}
+						}
+					}
+
 					if (authorized) {
-						password = (link.getProtocolPassword() != null) ? link
-								.getProtocolPassword() : "-";
+						password = (secure) ? (link.getProtocolPassword() != null) ? link
+								.getProtocolPassword() : "-"
+								: "-";
 						if (!incoming) {
 							frames.add(new BinkpFrame(BinkpCommand.M_PWD,
 									getPassword()));
 						}
 						connectionState = (incoming) ? STATE_WAITPWD
 								: STATE_WAITOK;
-					} else {
-						error("Unknown ftn address");
-					}
 
+					} else {
+						error("unknown m_addr");
+					}
 				} else {
 					error("Bad M_ADDR command");
 				}
@@ -313,13 +340,17 @@ public class BinkpConnector implements ProtocolConnector {
 			if (frame.getCommand().equals(BinkpCommand.M_PWD)) {
 				boolean auth = false;
 				if (frame.getArg() != null) {
-					String pw = frame.getArg();
-					if (pw.matches("^CRAM-" + cramAlgo + "-.*")) {
-						useCram = true;
-						if (getPassword().equals(pw)) {
+					if (secure) {
+						String pw = frame.getArg();
+						if (pw.matches("^CRAM-" + cramAlgo + "-.*")) {
+							useCram = true;
+							if (getPassword().equals(pw)) {
+								auth = true;
+							}
+						} else if (pw.equals(password)) {
 							auth = true;
 						}
-					} else if (pw.equals(password)) {
+					} else {
 						auth = true;
 					}
 				}
@@ -332,7 +363,9 @@ public class BinkpConnector implements ProtocolConnector {
 					} else {
 						logger.info("(S) Сессия не защищена паролем");
 					}
-					connector.setLink(link);
+					if (secure) {
+						connector.setLink(link);
+					}
 					connectionState = STATE_TRANSFER;
 				} else {
 					error("Bad pwd");
@@ -417,6 +450,7 @@ public class BinkpConnector implements ProtocolConnector {
 							logger.info(String.format("Принят файл: %s (%d)",
 									currentMessage.getMessageName(),
 									currentMessage.getMessageLength()));
+							currentMessage.setSecure(secure);
 							connector.onReceived(currentMessage);
 							totalin += currentMessage.getMessageLength();
 							currentMessage = null;
@@ -451,8 +485,10 @@ public class BinkpConnector implements ProtocolConnector {
 				reob = false;
 				recv = false;
 				send = false;
-				logger.debug("Перезапускаем транфер");
-				connector.setLink(link);
+				if (secure) {
+					logger.debug("Перезапускаем транфер");
+					connector.setLink(link);
+				}
 			} else {
 				connectionState = STATE_END;
 			}

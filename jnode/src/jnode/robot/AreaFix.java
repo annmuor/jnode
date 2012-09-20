@@ -1,7 +1,6 @@
 package jnode.robot;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,11 +9,8 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
 import jnode.dto.*;
-import jnode.ftn.FtnAddress;
 import jnode.ftn.FtnMessage;
 import jnode.ftn.FtnTosser;
-import jnode.logger.Logger;
-import jnode.main.Main;
 import jnode.orm.ORMManager;
 
 /**
@@ -23,43 +19,6 @@ import jnode.orm.ORMManager;
  * 
  */
 public class AreaFix implements IRobot {
-	private final static Logger logger = Logger.getLogger(AreaFix.class);
-
-	private void writeReply(FtnMessage fmsg, String subject, String text)
-			throws SQLException {
-
-		Netmail netmail = new Netmail();
-		netmail.setFromFTN(Main.info.getAddress().toString());
-		netmail.setFromName("AreaFix");
-		netmail.setToFTN(fmsg.getFromAddr().toString());
-		netmail.setToName(fmsg.getFromName());
-		netmail.setSubject(subject);
-		netmail.setDate(new Date());
-		StringBuilder sb = new StringBuilder();
-		sb.append(String
-				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\001TID: %s\nHello, %s!\n\n",
-						fmsg.getMsgid(), Main.info.getAddress().toString(),
-						FtnTosser.generate8d(), Main.info.getVersion(),
-						Main.info.getVersion(), netmail.getToName()));
-		sb.append(text);
-		sb.append("\n\n========== Original message ==========\n");
-		sb.append(fmsg.getText().replaceAll("\001", "@"));
-		sb.append("========== Original message ==========\n\n--- AreaFix "
-				+ Main.info.getVersion() + "\n");
-		netmail.setText(sb.toString());
-		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(new FtnAddress(Main.info.getAddress().toString()));
-		ret.setToAddr(fmsg.getFromAddr());
-		Link routeVia = FtnTosser.getRouting(ret);
-		if (routeVia == null) {
-			logger.error("Не могу найти роутинг для ответа на сообщение"
-					+ fmsg.getMsgid());
-			return;
-		}
-		netmail.setRouteVia(routeVia);
-		ORMManager.netmail().create(netmail);
-		logger.info("AreaFix создал Netmail #" + netmail.getId());
-	}
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
@@ -68,14 +27,14 @@ public class AreaFix implements IRobot {
 			List<Link> links = ORMManager.link().queryForEq("ftn_address",
 					fmsg.getFromAddr().toString());
 			if (links.isEmpty()) {
-				writeReply(fmsg, "Access denied",
+				FtnTosser.writeReply(fmsg, "Access denied",
 						"You are not in links of origin");
 				return;
 			}
 			link = links.get(0);
 		}
 		if (!link.getPaketPassword().equals(fmsg.getSubject())) {
-			writeReply(fmsg, "Access denied", "Wrong password");
+			FtnTosser.writeReply(fmsg, "Access denied", "Wrong password");
 			return;
 		}
 		Pattern help = Pattern.compile("^%HELP$", Pattern.CASE_INSENSITIVE);
@@ -91,9 +50,9 @@ public class AreaFix implements IRobot {
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			if (help.matcher(line).matches()) {
-				writeReply(fmsg, "AreaFix help", help());
+				FtnTosser.writeReply(fmsg, "AreaFix help", help());
 			} else if (list.matcher(line).matches()) {
-				writeReply(fmsg, "AreaFix list", list(link));
+				FtnTosser.writeReply(fmsg, "AreaFix list", list(link));
 			} else {
 				Matcher m = rem.matcher(line);
 				if (m.matches()) {
@@ -125,7 +84,7 @@ public class AreaFix implements IRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			writeReply(fmsg, "AreaFix reply", reply.toString());
+			FtnTosser.writeReply(fmsg, "AreaFix reply", reply.toString());
 		}
 	}
 

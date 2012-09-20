@@ -43,6 +43,9 @@ import jnode.dto.Subscription;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.main.Poll;
+import jnode.ndl.FtnNdlAddress;
+import jnode.ndl.FtnNdlAddress.Status;
+import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
@@ -617,15 +620,58 @@ public class FtnTosser {
 		Map<String, Integer> bad = new HashMap<String, Integer>();
 		FtnPkt[] pkts = unpack(message);
 		for (FtnPkt pkt : pkts) {
-			if (!link.getPaketPassword().equalsIgnoreCase(pkt.getPassword())) {
-				logger.warn("Пароль для пакета не совпал - пакет уничтожен");
-				continue;
-			}
-			for (FtnMessage ftnm : pkt.getMessages()) {
-				if (checkRobot(ftnm)) {
+			if (message.isSecure()) {
+				if (!link.getPaketPassword()
+						.equalsIgnoreCase(pkt.getPassword())) {
+					logger.warn("Пароль для пакета не совпал - пакет уничтожен");
 					continue;
 				}
+			}
+			for (FtnMessage ftnm : pkt.getMessages()) {
+				if (message.isSecure()) {
+					if (checkRobot(ftnm)) {
+						continue;
+					}
+				}
 				if (ftnm.isNetmail()) {
+					// проверить from и to
+					FtnNdlAddress from = NodelistScanner.getInstance()
+							.isExists(ftnm.getFromAddr());
+					FtnNdlAddress to = NodelistScanner.getInstance().isExists(
+							ftnm.getToAddr());
+					if (from == null) {
+						logger.warn(String
+								.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
+										ftnm.getFromAddr().toString(), ftnm
+												.getToAddr().toString()));
+						continue;
+					} else if (to == null) {
+						try {
+							writeReply(
+									ftnm,
+									"Destination not found",
+									"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
+						} catch (SQLException e) {
+							logger.error("Не удалось написать сообщение в ответ");
+						}
+						logger.warn(String
+								.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
+										ftnm.getFromAddr().toString(), ftnm
+												.getToAddr().toString()));
+						continue;
+					} else if (to.getStatus().equals(Status.DOWN)) {
+						try {
+							writeReply(ftnm, "Destination is DOWN",
+									"Sorry, but destination of your netmail is DOWN\nMessage rejected");
+						} catch (SQLException e) {
+							logger.error("Не удалось написать сообщение в ответ");
+						}
+						logger.warn(String
+								.format("Netmail %s -> %s уничтожен ( получатель имеет статус Down )",
+										ftnm.getFromAddr().toString(), ftnm
+												.getToAddr().toString()));
+						continue;
+					}
 					try {
 						List<Rewrite> rewrites = ORMManager.rewrite()
 								.queryBuilder().orderBy("nice", true).where()
@@ -641,7 +687,6 @@ public class FtnTosser {
 							}
 						}
 					} catch (SQLException e1) {
-						e1.printStackTrace();
 						logger.warn("Не удалось получить rewrite", e1);
 					}
 					Link routeVia = getRouting(ftnm);
@@ -679,7 +724,7 @@ public class FtnTosser {
 							logger.error("Ошибка при сохранении нетмейла", e);
 						}
 					}
-				} else {
+				} else if (message.isSecure()) {
 					try {
 						Echoarea area;
 						Subscription sub;
@@ -790,6 +835,8 @@ public class FtnTosser {
 						Integer n = bad.get(ftnm.getArea());
 						bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
 					}
+				} else {
+					logger.info("Эхомейл по unsecure-соединению - уничтожен");
 				}
 			}
 		}
@@ -812,6 +859,42 @@ public class FtnTosser {
 				}
 			}
 		}
+	}
+
+	public static void writeReply(FtnMessage fmsg, String subject, String text)
+			throws SQLException {
+
+		Netmail netmail = new Netmail();
+		netmail.setFromFTN(Main.info.getAddress().toString());
+		netmail.setFromName(Main.info.getStationName());
+		netmail.setToFTN(fmsg.getFromAddr().toString());
+		netmail.setToName(fmsg.getFromName());
+		netmail.setSubject(subject);
+		netmail.setDate(new Date());
+		StringBuilder sb = new StringBuilder();
+		sb.append(String
+				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\001TID: %s\nHello, %s!\n\n",
+						fmsg.getMsgid(), Main.info.getAddress().toString(),
+						FtnTosser.generate8d(), Main.info.getVersion(),
+						Main.info.getVersion(), netmail.getToName()));
+		sb.append(text);
+		sb.append("\n\n========== Original message ==========\n");
+		sb.append(fmsg.getText().replaceAll("\001", "@"));
+		sb.append("========== Original message ==========\n\n--- "
+				+ Main.info.getVersion() + "\n");
+		netmail.setText(sb.toString());
+		FtnMessage ret = new FtnMessage();
+		ret.setFromAddr(new FtnAddress(Main.info.getAddress().toString()));
+		ret.setToAddr(fmsg.getFromAddr());
+		Link routeVia = FtnTosser.getRouting(ret);
+		if (routeVia == null) {
+			logger.error("Не могу найти роутинг для ответа на сообщение"
+					+ fmsg.getMsgid());
+			return;
+		}
+		netmail.setRouteVia(routeVia);
+		ORMManager.netmail().create(netmail);
+		logger.info("Создан Netmail #" + netmail.getId());
 	}
 
 	/**

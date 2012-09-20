@@ -31,3 +31,7 @@ poll.delay = 600
 poll.period = 600
 # Log level, 5->1
 log.level = 4
+# path to latest nodelist (r/o)
+nodelist.path = NODELIST
+# path to nodelist index (r/w)
+nodelist.index = NODELIST.idx

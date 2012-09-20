@@ -1,5 +1,6 @@
 package jnode.ftn;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,14 +9,17 @@ import java.util.regex.Pattern;
  * @author kreon
  * 
  */
-public class FtnAddress {
-	private int zone;
-	private int net;
-	private int node;
-	private int point;
+public class FtnAddress implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	protected int zone;
+	protected int net;
+	protected int node;
+	protected int point;
 
 	public FtnAddress(String addr) {
-		Pattern p = Pattern.compile("^(\\d):(\\d+)/(\\d+)\\.?(\\d+)?@?(\\S+)?$");
+		Pattern p = Pattern
+				.compile("^(\\d):(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
 		Matcher m = p.matcher(addr);
 		if (m.matches()) {
 			zone = new Integer(m.group(1));
@@ -40,8 +44,8 @@ public class FtnAddress {
 
 	@Override
 	public String toString() {
-		return (point > 0) ? String.format("%d:%d/%d.%d", zone, net, node, point) : String.format("%d:%d/%d", zone,
-				net, node);
+		return (point > 0) ? String.format("%d:%d/%d.%d", zone, net, node,
+				point) : String.format("%d:%d/%d", zone, net, node);
 	}
 
 	public String intl() {
@@ -113,7 +117,7 @@ public class FtnAddress {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof FtnAddress))
 			return false;
 		FtnAddress other = (FtnAddress) obj;
 		if (net != other.net)
@@ -138,6 +142,15 @@ public class FtnAddress {
 			}
 		}
 		return false;
+	}
+
+	public FtnAddress clone() {
+		FtnAddress n = new FtnAddress();
+		n.zone = zone;
+		n.net = net;
+		n.node = node;
+		n.point = point;
+		return n;
 	}
 
 }

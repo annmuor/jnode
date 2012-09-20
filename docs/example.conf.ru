@@ -30,3 +30,7 @@ poll.delay = 600
 poll.period = 600
 # Логлевел, от 5 до 1
 log.level = 4
+# Путь к нодлисту ( только читать )
+nodelist.path = NODELIST
+# Путь к индексу нодлиста ( читать и писать )
+nodelist.index = NODELIST.idx

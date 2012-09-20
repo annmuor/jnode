@@ -115,6 +115,7 @@ public class Connector {
 			}
 		}
 		messages = new ArrayList<Message>();
+		index = 0;
 
 	}
 

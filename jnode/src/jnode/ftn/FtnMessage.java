@@ -247,8 +247,7 @@ public class FtnMessage {
 				boolean afterOrigin = false;
 				Pattern netmail = Pattern
 						.compile("^\001(INTL|FMPT|TOPT) (.*)$");
-				Pattern origin = Pattern
-						.compile("^ \\* Origin: .*\\((\\d:\\d{1,5}/\\d{1,5}(\\.[0-9]{1,5})?)\\)$");
+				Pattern origin = Pattern.compile("^ \\* Origin: ([\\S\\t ]*)$");
 				Pattern msgid = Pattern.compile("^\001MSGID: (.*)$");
 				StringBuilder seenby = new StringBuilder();
 				StringBuilder path = new StringBuilder();
@@ -312,8 +311,16 @@ public class FtnMessage {
 						if (!isNetmail) {
 							Matcher m = origin.matcher(line);
 							if (m.matches()) {
+								Pattern f = Pattern
+										.compile("([1-5]:\\d{1,5}/\\d{1,5}(\\.\\d{1,5})?)");
 								preOrigin = true;
-								this.fromAddr = new FtnAddress(m.group(1));
+								String orig = m.group(1);
+								Matcher fm = f.matcher(orig);
+								String ftnAddr = "";
+								while (fm.find()) {
+									ftnAddr = fm.group(1);
+								}
+								this.fromAddr = new FtnAddress(ftnAddr);
 							}
 						}
 						builder.append(line);
