@@ -54,8 +54,9 @@ public class BinkpConnector implements ProtocolConnector {
 	private ByteArrayOutputStream currentOutputStream;
 	private long currentMessageTimestamp;
 	private int currentMessageBytesLeft;
-	private boolean useCramMD5 = false;
-	private String cramMD5Text;
+	private boolean useCram = false;
+	private String cramAlgo = "";
+	private String cramText;
 	private String password;
 	private boolean incoming = false;
 	private Connector connector;
@@ -65,7 +66,7 @@ public class BinkpConnector implements ProtocolConnector {
 
 	public void reset() {
 		frames = new ArrayList<Frame>();
-		useCramMD5 = false;
+		useCram = false;
 		connector = null;
 		link = null;
 		totalin = 0;
@@ -114,7 +115,7 @@ public class BinkpConnector implements ProtocolConnector {
 	}
 
 	/**
-	 * При входящем соединении - создаем диджест
+	 * При входящем соединении - создаем диджест ( мы только в MD5 )
 	 */
 	@Override
 	public void initIncoming(Connector connector) {
@@ -130,11 +131,12 @@ public class BinkpConnector implements ProtocolConnector {
 			for (int i = 0; i < 16; i++) {
 				builder.append(String.format("%02x", digest[i]));
 			}
-			cramMD5Text = builder.toString();
+			cramText = builder.toString();
+			cramAlgo = "MD5";
 			frames.add(new BinkpFrame(BinkpCommand.M_NUL, String.format(
-					"OPT CRAM-MD5-%s", cramMD5Text)));
+					"OPT CRAM-MD5-%s", cramText)));
 		} catch (NoSuchAlgorithmException e) {
-			cramMD5Text = null;
+			cramText = null;
 		}
 		greet();
 	}
@@ -193,7 +195,7 @@ public class BinkpConnector implements ProtocolConnector {
 
 	@Override
 	public void avalible(InputStream is) {
-		Pattern cram = Pattern.compile("^CRAM-MD5-([a-f0-9]+)$");
+		Pattern cram = Pattern.compile("^CRAM-([-A-Z0-9]+)-([a-f0-9]+)$");
 		BinkpFrame frame = recv(is);
 		if (frame == null) {
 			return;
@@ -221,9 +223,22 @@ public class BinkpConnector implements ProtocolConnector {
 					for (int i = 1; i < args.length; i++) {
 						Matcher md = cram.matcher(args[i]);
 						if (md.matches()) {
-							useCramMD5 = true;
-							cramMD5Text = md.group(1);
-							logger.info("Сервер запросил MD-режим");
+							String[] algos = md.group(1).split("/");
+							for (String algo : algos) {
+								try {
+									MessageDigest.getInstance(algo);
+									useCram = true;
+									cramText = md.group(2);
+									cramAlgo = md.group(1);
+									logger.info("Сервер запросил MD-режим ("
+											+ algo + ")");
+									break;
+								} catch (NoSuchAlgorithmException e) {
+								}
+							}
+							if (!useCram) {
+								logger.info("Сервер запросил MD-режим, но алгоритм не найден");
+							}
 						}
 					}
 				} else if (args[0].equals("VER")) {
@@ -280,7 +295,7 @@ public class BinkpConnector implements ProtocolConnector {
 			if (frame.getCommand().equals(BinkpCommand.M_OK)) {
 				if (!password.equals("-")) {
 					logger.info("(C) Сессия защищена паролем ("
-							+ ((useCramMD5) ? "md5" : "plain") + ")");
+							+ ((useCram) ? "cram" : "plain") + ")");
 				} else {
 					logger.info("(C) Сессия не защищена паролем");
 				}
@@ -299,8 +314,8 @@ public class BinkpConnector implements ProtocolConnector {
 				boolean auth = false;
 				if (frame.getArg() != null) {
 					String pw = frame.getArg();
-					if (pw.matches("^CRAM-MD5-.*")) {
-						useCramMD5 = true;
+					if (pw.matches("^CRAM-" + cramAlgo + "-.*")) {
+						useCram = true;
 						if (getPassword().equals(pw)) {
 							auth = true;
 						}
@@ -313,7 +328,7 @@ public class BinkpConnector implements ProtocolConnector {
 							.equals("-")) ? "insecure" : "secure"));
 					if (!password.equals("-")) {
 						logger.info("(S) Сессия защищена паролем ("
-								+ ((useCramMD5) ? "md5" : "plain") + ")");
+								+ ((useCram) ? "cram" : "plain") + ")");
 					} else {
 						logger.info("(S) Сессия не защищена паролем");
 					}
@@ -519,20 +534,20 @@ public class BinkpConnector implements ProtocolConnector {
 	 */
 	private String getPassword() {
 		MessageDigest md;
-		if (password.equals("-") || !useCramMD5) {
+		if (password.equals("-") || !useCram) {
 			return password;
 		}
 		try {
-			md = MessageDigest.getInstance("MD5");
+			md = MessageDigest.getInstance(cramAlgo);
 		} catch (NoSuchAlgorithmException e) {
 			return password;
 		}
-		byte[] text = new byte[cramMD5Text.length() / 2];
+		byte[] text = new byte[cramText.length() / 2];
 		byte[] key = password.getBytes();
 		byte[] k_ipad = new byte[64];
 		byte[] k_opad = new byte[64];
-		for (int i = 0; i < cramMD5Text.length(); i += 2) {
-			text[i / 2] = hex2decimal(cramMD5Text.substring(i, i + 2));
+		for (int i = 0; i < cramText.length(); i += 2) {
+			text[i / 2] = hex2decimal(cramText.substring(i, i + 2));
 		}
 
 		for (int i = 0; i < key.length; i++) {
@@ -551,7 +566,7 @@ public class BinkpConnector implements ProtocolConnector {
 		md.update(digest);
 		digest = md.digest();
 		StringBuilder builder = new StringBuilder();
-		builder.append("CRAM-MD5-");
+		builder.append("CRAM-" + cramAlgo + "-");
 		for (int i = 0; i < 16; i++) {
 			builder.append(String.format("%02x", digest[i]));
 		}
