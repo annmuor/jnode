@@ -1,6 +1,8 @@
 package jnode.protocol.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -68,33 +70,44 @@ public class Connector {
 	}
 
 	private void doSocket(Socket clientSocket) {
+		InputStream is = null;
+		OutputStream os = null;
+		long lastactive = System.currentTimeMillis();
+		try {
+			clientSocket.setSoTimeout(30000);
+			is = clientSocket.getInputStream();
+			os = clientSocket.getOutputStream();
+		} catch (IOException e) {
+			return;
+		}
+
 		while (!clientSocket.isClosed()) {
-			boolean flag = true;
 			try {
-				if (clientSocket.getInputStream().available() > 0) {
-					connector.avalible(clientSocket.getInputStream());
-					flag = true;
+				if (is.available() > 0) {
+					connector.avalible(is);
+					lastactive = System.currentTimeMillis();
 				}
-			} catch (IOException e1) {
-				logger.error("Ошибка получения данных из InputStream", e1);
+			} catch (IOException ignore) {
 			}
 
 			Frame[] frames = connector.getFrames();
 			if (frames != null && frames.length > 0) {
 				for (Frame frame : frames) {
 					try {
-						clientSocket.getOutputStream().write(frame.getBytes());
+						os.write(frame.getBytes());
+						lastactive = System.currentTimeMillis();
 					} catch (IOException e) {
-						logger.error("Ошибка отправи данных в OutputStream", e);
+						try {
+							clientSocket.close();
+						} catch (IOException ignore) {
+						}
 					}
 				}
-				flag = true;
 			}
 
 			if (connector.canSend()) {
 				if (messages.size() > index) {
 					connector.send(messages.get(index++));
-					flag = true;
 				} else {
 					connector.eob();
 				}
@@ -104,19 +117,20 @@ public class Connector {
 				try {
 					clientSocket.close();
 				} catch (IOException e) {
-					logger.error("Ошибка закрытия сокета", e);
 				}
+				break;
 			}
-			if (!flag) {
+			if (System.currentTimeMillis() - lastactive > 30000) {
+				logger.info("Соединение разорвано по таймауту");
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
+					clientSocket.close();
+				} catch (IOException ignore) {
 				}
+				break;
 			}
 		}
 		messages = new ArrayList<Message>();
 		index = 0;
-
 	}
 
 	public void connect(Link link) throws ProtocolException {

@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 
 import jnode.ftn.FtnAddress;
 import jnode.logger.Logger;
+import jnode.main.threads.Client;
+import jnode.main.threads.Server;
 import jnode.orm.ORMManager;
 
 import com.j256.ormlite.logger.LocalLog;
@@ -50,7 +52,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.3.5";
+		private final String version = "jNode/0.3.5.1";
 
 		public String getSysop() {
 			return sysop;

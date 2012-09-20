@@ -42,7 +42,7 @@ import jnode.dto.Route;
 import jnode.dto.Subscription;
 import jnode.logger.Logger;
 import jnode.main.Main;
-import jnode.main.Poll;
+import jnode.main.threads.Client.Poll;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.FtnNdlAddress.Status;
 import jnode.ndl.NodelistScanner;
