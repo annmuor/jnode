@@ -37,14 +37,16 @@ public class FtnMessage {
 	private boolean isNetmail;
 	private String msgid;
 
-	private static DateFormat format = new SimpleDateFormat("dd MMM yy  HH:mm:ss", Locale.US);
+	private static DateFormat format = new SimpleDateFormat(
+			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
 		seenby = new ArrayList<Ftn2D>();
 		path = new ArrayList<Ftn2D>();
 	}
 
-	public FtnMessage(String fromName, String toName, FtnAddress fromAddr, String area, String subject, String text) {
+	public FtnMessage(String fromName, String toName, FtnAddress fromAddr,
+			String area, String subject, String text) {
 		super();
 		this.fromName = fromName;
 		this.toName = toName;
@@ -58,8 +60,8 @@ public class FtnMessage {
 		path = new ArrayList<Ftn2D>();
 	}
 
-	public FtnMessage(String fromName, String toName, FtnAddress fromAddr, FtnAddress toAddr, String subject,
-			String text) {
+	public FtnMessage(String fromName, String toName, FtnAddress fromAddr,
+			FtnAddress toAddr, String subject, String text) {
 		super();
 		this.fromName = fromName;
 		this.toName = toName;
@@ -171,7 +173,8 @@ public class FtnMessage {
 		try {
 			os.write(new byte[] { 2, 0 });
 			os.writeShort(FtnTosser.revShort(fromAddr.getNode()));
-			os.writeShort((isNetmail) ? FtnTosser.revShort(toAddr.getNode()) : 0);
+			os.writeShort((isNetmail) ? FtnTosser.revShort(toAddr.getNode())
+					: 0);
 			os.writeShort(FtnTosser.revShort(fromAddr.getNet()));
 			os.writeShort((isNetmail) ? FtnTosser.revShort(toAddr.getNet()) : 0);
 			os.write(new byte[] { 1, 0, 0, 0 });
@@ -186,7 +189,8 @@ public class FtnMessage {
 			if (!isNetmail) {
 				os.writeBytes(String.format("AREA:%s\r", area));
 			} else {
-				os.writeBytes(String.format("\001INTL %s %s\r", toAddr.intl(), fromAddr.intl()));
+				os.writeBytes(String.format("\001INTL %s %s\r", toAddr.intl(),
+						fromAddr.intl()));
 				os.writeBytes(fromAddr.fmpt());
 				os.writeBytes(toAddr.topt());
 			}
@@ -199,7 +203,8 @@ public class FtnMessage {
 				sb.append(FtnTosser.writeSeenBy(seenby));
 				sb.append(FtnTosser.writePath(path));
 			}
-			os.write(sb.toString().replaceAll("\n", "\r").getBytes(FtnTosser.cp866));
+			os.write(sb.toString().replaceAll("\n", "\r")
+					.getBytes(FtnTosser.cp866));
 			os.write(0);
 			os.close();
 		} catch (IOException e) {
@@ -240,8 +245,10 @@ public class FtnMessage {
 				boolean eofKluges = false;
 				boolean preOrigin = false;
 				boolean afterOrigin = false;
-				Pattern netmail = Pattern.compile("^\001(INTL|FMPT|TOPT) (.*)$");
-				Pattern origin = Pattern.compile("^ \\* Origin: .*\\((\\d:\\d+/\\d+\\.?\\d+?)\\)$");
+				Pattern netmail = Pattern
+						.compile("^\001(INTL|FMPT|TOPT) (.*)$");
+				Pattern origin = Pattern
+						.compile("^ \\* Origin: .*\\((\\d:\\d{1,5}/\\d{1,5}(\\.[0-9]{1,5})?)\\)$");
 				Pattern msgid = Pattern.compile("^\001MSGID: (.*)$");
 				StringBuilder seenby = new StringBuilder();
 				StringBuilder path = new StringBuilder();
@@ -332,6 +339,7 @@ public class FtnMessage {
 	public String toString() {
 		return String
 				.format("Message %s -> %s\nFrom: %s\nTo: %s\nDate: %s\nSubject: %s\nArea: %s\n-------------\n%s\n-------------\n",
-						fromAddr, toAddr, fromName, toName, date, subject, area, text);
+						fromAddr, toAddr, fromName, toName, date, subject,
+						area, text);
 	}
 }
