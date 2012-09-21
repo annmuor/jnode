@@ -1,6 +1,6 @@
 package jnode.robot;
 
-import jnode.ftn.FtnMessage;
+import jnode.ftn.types.FtnMessage;
 
 /**
  * 

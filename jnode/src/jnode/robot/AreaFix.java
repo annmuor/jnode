@@ -9,8 +9,8 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
 import jnode.dto.*;
-import jnode.ftn.FtnMessage;
-import jnode.ftn.FtnTosser;
+import jnode.ftn.FtnTools;
+import jnode.ftn.types.FtnMessage;
 import jnode.orm.ORMManager;
 
 /**
@@ -27,14 +27,14 @@ public class AreaFix implements IRobot {
 			List<Link> links = ORMManager.link().queryForEq("ftn_address",
 					fmsg.getFromAddr().toString());
 			if (links.isEmpty()) {
-				FtnTosser.writeReply(fmsg, "Access denied",
+				FtnTools.writeReply(fmsg, "Access denied",
 						"You are not in links of origin");
 				return;
 			}
 			link = links.get(0);
 		}
 		if (!link.getPaketPassword().equals(fmsg.getSubject())) {
-			FtnTosser.writeReply(fmsg, "Access denied", "Wrong password");
+			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
 			return;
 		}
 		Pattern help = Pattern.compile("^%HELP$", Pattern.CASE_INSENSITIVE);
@@ -50,9 +50,9 @@ public class AreaFix implements IRobot {
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			if (help.matcher(line).matches()) {
-				FtnTosser.writeReply(fmsg, "AreaFix help", help());
+				FtnTools.writeReply(fmsg, "AreaFix help", help());
 			} else if (list.matcher(line).matches()) {
-				FtnTosser.writeReply(fmsg, "AreaFix list", list(link));
+				FtnTools.writeReply(fmsg, "AreaFix list", list(link));
 			} else {
 				Matcher m = rem.matcher(line);
 				if (m.matches()) {
@@ -84,7 +84,7 @@ public class AreaFix implements IRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			FtnTosser.writeReply(fmsg, "AreaFix reply", reply.toString());
+			FtnTools.writeReply(fmsg, "AreaFix reply", reply.toString());
 		}
 	}
 

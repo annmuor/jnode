@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jnode.dto.Link;
-import jnode.ftn.FtnTosser;
+import jnode.ftn.tosser.FtnTosser;
 import jnode.logger.Logger;
 import jnode.protocol.io.exception.ProtocolException;
 

@@ -31,6 +31,8 @@ public class Netmail {
 	private Date date;
 	@DatabaseField(columnName = "route_via", foreign = true, foreignAutoRefresh = true, index = true)
 	private Link routeVia;
+	@DatabaseField(columnName = "send", index = true, canBeNull = false, defaultValue = "false", dataType = DataType.BOOLEAN)
+	private boolean send;
 
 	public Long getId() {
 		return id;
@@ -102,6 +104,14 @@ public class Netmail {
 
 	public void setRouteVia(Link routeVia) {
 		this.routeVia = routeVia;
+	}
+
+	public boolean isSend() {
+		return send;
+	}
+
+	public void setSend(boolean send) {
+		this.send = send;
 	}
 
 	@Override

@@ -22,10 +22,10 @@ public class Message {
 		inputStream = new FileInputStream(file);
 	}
 
-	public Message(String arg1, long arg2) {
+	public Message(String name, long len) {
 		super();
-		this.messageName = arg1;
-		this.messageLength = arg2;
+		this.messageName = name;
+		this.messageLength = len;
 	}
 
 	public long getMessageLength() {

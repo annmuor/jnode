@@ -15,12 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -28,42 +24,37 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import com.j256.ormlite.stmt.UpdateBuilder;
-
-import jnode.dto.Dupe;
-import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
-import jnode.dto.Readsign;
 import jnode.dto.Rewrite;
 import jnode.dto.Robot;
 import jnode.dto.Route;
-import jnode.dto.Subscription;
+import jnode.ftn.types.Ftn2D;
+import jnode.ftn.types.FtnAddress;
+import jnode.ftn.types.FtnMessage;
+import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.Main;
-import jnode.main.threads.Client.Poll;
-import jnode.ndl.FtnNdlAddress;
-import jnode.ndl.FtnNdlAddress.Status;
-import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
 
 /**
+ * Сборник всякой хрени
  * 
  * @author kreon
  * 
  */
-public class FtnTosser {
-	static Charset cp866 = Charset.forName("CP866");
+public final class FtnTools {
 	private final static String SEEN_BY = "SEEN-BY:";
 	private final static String PATH = "\001PATH:";
+	public static Charset cp866 = Charset.forName("CP866");
 	private final static String ROUTE_VIA = "\001Via %s "
 			+ Main.info.getVersion() + " %s";
 	private final static DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
-	private static final Logger logger = Logger.getLogger(FtnTosser.class);
+	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
 	/**
 	 * Сортировщик 2D-адресов
@@ -83,6 +74,11 @@ public class FtnTosser {
 		}
 	}
 
+	/**
+	 * Генерация 8d-рандома
+	 * 
+	 * @return
+	 */
 	public static String generate8d() {
 		byte[] digest = new byte[4];
 		for (int i = 0; i < 4; i++) {
@@ -281,7 +277,7 @@ public class FtnTosser {
 	 * @param list2d
 	 * @return
 	 */
-	private static List<Ftn2D> read2D(String list2d) {
+	public static List<Ftn2D> read2D(String list2d) {
 		List<Ftn2D> ret = new ArrayList<Ftn2D>();
 		for (String l2d : list2d.split(" ")) {
 			String[] part = l2d.split("/");
@@ -289,7 +285,7 @@ public class FtnTosser {
 				ret.add(new Ftn2D(Integer.valueOf(part[0]), Integer
 						.valueOf(part[1])));
 			} catch (RuntimeException e) {
-				logger.warn("Неправильный 2D-адрес: " + list2d);
+
 			}
 		}
 		return ret;
@@ -302,7 +298,7 @@ public class FtnTosser {
 	 * @param sort
 	 * @return
 	 */
-	private static String write2D(List<Ftn2D> list, boolean sort) {
+	public static String write2D(List<Ftn2D> list, boolean sort) {
 		StringBuilder ret = new StringBuilder();
 		if (sort) {
 			Collections.sort(list, new Ftn2DComparator());
@@ -325,7 +321,7 @@ public class FtnTosser {
 	 * @param mail
 	 * @return
 	 */
-	private static FtnMessage echomailToFtnMessage(Echomail mail) {
+	public static FtnMessage echomailToFtnMessage(Echomail mail) {
 		FtnMessage message = new FtnMessage();
 		message.setFromName(mail.getFromName());
 		message.setToName(mail.getToName());
@@ -345,7 +341,7 @@ public class FtnTosser {
 	 * @param mail
 	 * @return
 	 */
-	private static FtnMessage netmailToFtnMessage(Netmail mail) {
+	public static FtnMessage netmailToFtnMessage(Netmail mail) {
 		// update fields
 		FtnMessage message = new FtnMessage();
 		message.setFromName(mail.getFromName());
@@ -371,7 +367,7 @@ public class FtnTosser {
 	 * @param message
 	 * @return
 	 */
-	private static FtnPkt[] unpack(Message message) {
+	public static FtnPkt[] unpack(Message message) {
 		ArrayList<FtnPkt> unzipped = new ArrayList<FtnPkt>();
 		String filename = message.getMessageName().toLowerCase();
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
@@ -418,7 +414,7 @@ public class FtnTosser {
 	 * @param message
 	 * @return
 	 */
-	private static boolean completeMask(Route route, FtnMessage message) {
+	public static boolean completeMask(Route route, FtnMessage message) {
 		boolean ok = true;
 		String[] regexp = new String[] { route.getFromAddr(),
 				route.getToAddr(), route.getFromName(), route.getToName(),
@@ -445,7 +441,7 @@ public class FtnTosser {
 	 * @param message
 	 * @return
 	 */
-	private static boolean completeMask(Rewrite rewrite, FtnMessage message) {
+	public static boolean completeMask(Rewrite rewrite, FtnMessage message) {
 		boolean ok = true;
 		String[] regexp = new String[] { rewrite.getOrig_from_addr(),
 				rewrite.getOrig_to_addr(), rewrite.getOrig_from_name(),
@@ -472,7 +468,7 @@ public class FtnTosser {
 	 * @param message
 	 * @return
 	 */
-	private static void rewrite(Rewrite rewrite, FtnMessage message) {
+	public static void rewrite(Rewrite rewrite, FtnMessage message) {
 		String[] fields = new String[] { rewrite.getNew_from_addr(),
 				rewrite.getNew_to_addr(), rewrite.getNew_from_name(),
 				rewrite.getNew_to_name(), rewrite.getNew_subject() };
@@ -528,7 +524,7 @@ public class FtnTosser {
 	 * @param message
 	 * @return
 	 */
-	private static boolean checkRobot(FtnMessage message) {
+	public static boolean checkRobot(FtnMessage message) {
 		boolean isRobot = false;
 		String robotname = "";
 		if (message.isNetmail()) {
@@ -606,261 +602,6 @@ public class FtnTosser {
 		return routeVia;
 	}
 
-	/**
-	 * Получаем сообщения из бандлов
-	 * 
-	 * @param connector
-	 */
-	public static void tossIncoming(Message message, Link link) {
-		if (message == null) {
-			return;
-		}
-		List<Link> pollAfterEnd = new ArrayList<Link>();
-		Map<String, Integer> tossed = new HashMap<String, Integer>();
-		Map<String, Integer> bad = new HashMap<String, Integer>();
-		FtnPkt[] pkts = unpack(message);
-		for (FtnPkt pkt : pkts) {
-			if (message.isSecure()) {
-				if (!link.getPaketPassword()
-						.equalsIgnoreCase(pkt.getPassword())) {
-					logger.warn("Пароль для пакета не совпал - пакет уничтожен");
-					continue;
-				}
-			}
-			for (FtnMessage ftnm : pkt.getMessages()) {
-				if (message.isSecure()) {
-					if (checkRobot(ftnm)) {
-						continue;
-					}
-				}
-				if (ftnm.isNetmail()) {
-					// проверить from и to
-					FtnNdlAddress from = NodelistScanner.getInstance()
-							.isExists(ftnm.getFromAddr());
-					FtnNdlAddress to = NodelistScanner.getInstance().isExists(
-							ftnm.getToAddr());
-					if (from == null) {
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-						continue;
-					} else if (to == null) {
-						try {
-							writeReply(
-									ftnm,
-									"Destination not found",
-									"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
-						} catch (SQLException e) {
-							logger.error("Не удалось написать сообщение в ответ");
-						}
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-						continue;
-					} else if (to.getStatus().equals(Status.DOWN)) {
-						try {
-							writeReply(ftnm, "Destination is DOWN",
-									"Sorry, but destination of your netmail is DOWN\nMessage rejected");
-						} catch (SQLException e) {
-							logger.error("Не удалось написать сообщение в ответ");
-						}
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( получатель имеет статус Down )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-						continue;
-					}
-					try {
-						List<Rewrite> rewrites = ORMManager.rewrite()
-								.queryBuilder().orderBy("nice", true).where()
-								.eq("type", (Rewrite.Type.NETMAIL)).query();
-						for (Rewrite rewrite : rewrites) {
-							if (completeMask(rewrite, ftnm)) {
-								logger.info("(N) Найдено соответствие, переписываем сообщение "
-										+ ftnm.getMsgid());
-								rewrite(rewrite, ftnm);
-								if (rewrite.isLast()) {
-									break;
-								}
-							}
-						}
-					} catch (SQLException e1) {
-						logger.warn("Не удалось получить rewrite", e1);
-					}
-					Link routeVia = getRouting(ftnm);
-					if (routeVia == null) {
-						Integer n = bad.get("netmail");
-						bad.put("netmail", (n == null) ? 1 : n + 1);
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( не найден роутинг )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-					} else {
-						try {
-							Netmail netmail = new Netmail();
-							netmail.setRouteVia(routeVia);
-							netmail.setDate(ftnm.getDate());
-							netmail.setFromFTN(ftnm.getFromAddr().toString());
-							netmail.setToFTN(ftnm.getToAddr().toString());
-							netmail.setFromName(ftnm.getFromName());
-							netmail.setToName(ftnm.getToName());
-							netmail.setSubject(ftnm.getSubject());
-							netmail.setText(ftnm.getText());
-							ORMManager.netmail().create(netmail);
-							Integer n = tossed.get("netmail");
-							tossed.put("netmail", (n == null) ? 1 : n + 1);
-							routeVia = ORMManager.link().queryForSameId(
-									routeVia);
-							logger.info(String
-									.format("Netmail %s -> %s будет отправлен через %s",
-											ftnm.getFromAddr().toString(), ftnm
-													.getToAddr().toString(),
-											routeVia.getLinkAddress()));
-							pollAfterEnd.add(routeVia);
-						} catch (SQLException e) {
-							e.printStackTrace();
-							logger.error("Ошибка при сохранении нетмейла", e);
-						}
-					}
-				} else if (message.isSecure()) {
-					try {
-						Echoarea area;
-						Subscription sub;
-						boolean flag = true;
-						{
-							List<Echoarea> areas = ORMManager.echoarea()
-									.queryForEq("name",
-											ftnm.getArea().toLowerCase());
-							if (areas.isEmpty()) {
-								// TODO: autoCreate
-								area = new Echoarea();
-								area.setName(ftnm.getArea().toLowerCase());
-								area.setDescription("Autocreated echoarea");
-								ORMManager.echoarea().create(area);
-								sub = new Subscription();
-								sub.setArea(area);
-								sub.setLink(link);
-								sub.setLast(0L);
-								ORMManager.subscription().create(sub);
-							} else {
-								area = areas.get(0);
-								List<Subscription> subs = ORMManager
-										.subscription().queryBuilder().where()
-										.eq("echoarea_id", area.getId()).and()
-										.eq("link_id", link.getId()).query();
-								if (!subs.isEmpty()) {
-									sub = subs.get(0);
-								} else {
-									flag = false;
-								}
-							}
-						}
-						if (flag) {
-							try {
-								if (!ORMManager.dupe().queryBuilder().where()
-										.eq("msgid", ftnm.getMsgid()).and()
-										.eq("echoarea_id", area).query()
-										.isEmpty()) {
-									logger.warn(ftnm.getMsgid()
-											+ " дюп - уничтожен");
-									Integer n = bad.get(ftnm.getArea());
-									bad.put(ftnm.getArea(), (n == null) ? 1
-											: n + 1);
-								}
-							} catch (SQLException e) {
-								logger.warn(
-										"Не удалось проверить "
-												+ ftnm.getMsgid() + " на дюпы",
-										e);
-							}
-							try {
-								List<Rewrite> rewrites = ORMManager.rewrite()
-										.queryBuilder().orderBy("nice", true)
-										.where()
-										.eq("type", Rewrite.Type.ECHOMAIL)
-										.query();
-								for (Rewrite rewrite : rewrites) {
-									if (completeMask(rewrite, ftnm)) {
-										logger.info("(E) Найдено соответствие, переписываем сообщение "
-												+ ftnm.getMsgid());
-										rewrite(rewrite, ftnm);
-										if (rewrite.isLast()) {
-											break;
-										}
-									}
-								}
-							} catch (SQLException e1) {
-								e1.printStackTrace();
-								logger.warn("Не удалось получить rewrite", e1);
-							}
-							Echomail mail = new Echomail();
-							mail.setArea(area);
-							mail.setDate(ftnm.getDate());
-							mail.setFromFTN(ftnm.getFromAddr().toString());
-							mail.setFromName(ftnm.getFromName());
-							mail.setToName(ftnm.getToName());
-							mail.setSubject(ftnm.getSubject());
-							mail.setText(ftnm.getText());
-							mail.setSeenBy(write2D(ftnm.getSeenby(), true));
-							mail.setPath(write2D(ftnm.getPath(), false));
-							ORMManager.echomail().create(mail);
-							try {
-								Dupe dupe = new Dupe();
-								dupe.setEchoarea(area);
-								dupe.setMsgid(ftnm.getMsgid());
-								ORMManager.dupe().create(dupe);
-							} catch (SQLException e1) {
-								logger.warn(
-										"Не удалось записать "
-												+ ftnm.getMsgid()
-												+ " на в базу дюпов", e1);
-							}
-							// метка что уже прочитано
-							Readsign sign = new Readsign();
-							sign.setLink(link);
-							sign.setMail(mail);
-							ORMManager.readsign().create(sign);
-							Integer n = tossed.get(ftnm.getArea());
-							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-						} else {
-							Integer n = bad.get(ftnm.getArea());
-							bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-						}
-					} catch (SQLException e) {
-						logger.error(
-								"Не удалось записать сообщение "
-										+ ftnm.getMsgid(), e);
-						Integer n = bad.get(ftnm.getArea());
-						bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-					}
-				} else {
-					logger.info("Эхомейл по unsecure-соединению - уничтожен");
-				}
-			}
-		}
-		if (!tossed.isEmpty()) {
-			logger.info("Записано сообщений:");
-			for (String area : tossed.keySet()) {
-				logger.info(String.format("\t%s - %d", area, tossed.get(area)));
-			}
-		}
-		if (!bad.isEmpty()) {
-			logger.warn("Уничтожено сообщений:");
-			for (String area : bad.keySet()) {
-				logger.warn(String.format("\t%s - %d", area, bad.get(area)));
-			}
-		}
-		if (!pollAfterEnd.isEmpty()) {
-			for (Link l : pollAfterEnd) {
-				if (!"".equals(l.getProtocolHost()) && l.getProtocolPort() > 0) {
-					new Poll(l).start();
-				}
-			}
-		}
-	}
-
 	public static void writeReply(FtnMessage fmsg, String subject, String text)
 			throws SQLException {
 
@@ -875,7 +616,7 @@ public class FtnTosser {
 		sb.append(String
 				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\001TID: %s\nHello, %s!\n\n",
 						fmsg.getMsgid(), Main.info.getAddress().toString(),
-						FtnTosser.generate8d(), Main.info.getVersion(),
+						generate8d(), Main.info.getVersion(),
 						Main.info.getVersion(), netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
@@ -886,7 +627,7 @@ public class FtnTosser {
 		FtnMessage ret = new FtnMessage();
 		ret.setFromAddr(new FtnAddress(Main.info.getAddress().toString()));
 		ret.setToAddr(fmsg.getFromAddr());
-		Link routeVia = FtnTosser.getRouting(ret);
+		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
 			logger.error("Не могу найти роутинг для ответа на сообщение"
 					+ fmsg.getMsgid());
@@ -897,163 +638,49 @@ public class FtnTosser {
 		logger.info("Создан Netmail #" + netmail.getId());
 	}
 
-	/**
-	 * Получить новые сообщения для линка
-	 * 
-	 * @param link
-	 * @return
-	 */
-	public static List<Message> getMessagesForLink(Link link) {
-		List<Message> packedMessages = new ArrayList<Message>();
-		try {
-			FtnAddress link_address = new FtnAddress(link.getLinkAddress());
-			FtnAddress our_address = Main.info.getAddress();
-			Ftn2D link2d = new Ftn2D(link_address.getNet(),
-					link_address.getNode());
-			Ftn2D our2d = new Ftn2D(our_address.getNet(), our_address.getNode());
-			try {
-				List<FtnMessage> messages = new ArrayList<FtnMessage>();
-				List<Subscription> subscr = ORMManager.subscription()
-						.queryForEq("link_id", link.getId());
-				for (Subscription sub : subscr) {
-					List<Echomail> newmail = ORMManager.echomail()
-							.queryBuilder().orderBy("id", true).where()
-							.eq("echoarea_id", sub.getArea().getId()).and()
-							.gt("id", sub.getLast()).query();
-					for (Echomail mail : newmail) {
-						if (mail.getId() > sub.getLast()) {
-							sub.setLast(mail.getId());
-						}
-						List<Readsign> signs = ORMManager.readsign()
-								.queryBuilder().where()
-								.eq("link_id", link.getId()).and()
-								.eq("echomail_id", mail.getId()).query();
-						if (signs.isEmpty()) {
-							Set<Ftn2D> seenby = new HashSet<Ftn2D>(
-									FtnTosser.read2D(mail.getSeenBy()));
-							/**
-							 * Если мы пакуем на линка - то чекаем синбаи
-							 */
-							if (seenby.contains(link2d)
-									&& link_address.getPoint() == 0) {
-								logger.info(our2d + " есть в синбаях для "
-										+ link_address);
-							} else {
-								seenby.add(our2d);
-								seenby.add(link2d);
-								for (Subscription s : ORMManager.subscription()
-										.queryForEq("echoarea_id",
-												mail.getArea().getId())) {
-									Link l = ORMManager.link().queryForSameId(
-											s.getLink());
-									FtnAddress addr = new FtnAddress(
-											l.getLinkAddress());
-									Ftn2D d2 = new Ftn2D(addr.getNet(),
-											addr.getNode());
-									seenby.add(d2);
-								}
-
-								List<Ftn2D> path = FtnTosser.read2D(mail
-										.getPath());
-								if (!path.contains(our2d)) {
-									path.add(our2d);
-								}
-								mail.setPath(FtnTosser.write2D(path, false));
-								mail.setSeenBy(FtnTosser.write2D(
-										new ArrayList<Ftn2D>(seenby), true));
-								// не надо писать новые синбаи!! транзитная
-								// почта
-								// будет дюпится
-								// ORMManager.echomail().update(mail);
-								logger.info("Пакуем сообщение #" + mail.getId()
-										+ " (" + mail.getArea().getName()
-										+ ") для " + link.getLinkAddress());
-								messages.add(FtnTosser
-										.echomailToFtnMessage(mail));
-							}
-							Readsign sign = new Readsign();
-							sign.setLink(link);
-							sign.setMail(mail);
-							ORMManager.readsign().create(sign);
-						}
-					}
-					{
-						UpdateBuilder<Subscription, ?> upd = ORMManager
-								.subscription().updateBuilder();
-						upd.updateColumnValue("lastmessageid", sub.getLast());
-						upd.where().eq("link_id", sub.getLink()).and()
-								.eq("echoarea_id", sub.getArea());
-						ORMManager.subscription().update(upd.prepare());
-					}
-				}
-				if (!messages.isEmpty()) {
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
-					ZipOutputStream zos = new ZipOutputStream(out);
-					zos.setMethod(ZipOutputStream.DEFLATED);
-					FtnPkt pkt = new FtnPkt(our_address, link_address,
-							link.getPaketPassword(), new Date());
-					for (FtnMessage msg : messages) {
-						pkt.getMessages().add(msg);
-					}
-					byte[] packet = pkt.pack();
-					ZipEntry ze = new ZipEntry(String.format("%s.pkt",
-							generate8d()));
-					ze.setMethod(ZipEntry.DEFLATED);
-					ze.setSize(packet.length);
-					CRC32 crc32 = new CRC32();
-					crc32.update(packet);
-					ze.setCrc(crc32.getValue());
-					zos.putNextEntry(ze);
-					zos.write(packet);
-					zos.close();
-					byte[] zip = out.toByteArray();
-					Message message = new Message(String.format("%s.fr0",
-							generate8d()), zip.length);
-					message.setInputStream(new ByteArrayInputStream(zip));
-					packedMessages.add(message);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error(
-						"Ошибка обработки echomail для "
-								+ link.getLinkAddress(), e);
+	public static List<Message> pack(List<FtnMessage> messages, FtnAddress to,
+			String password) {
+		List<Message> packed = new ArrayList<Message>();
+		FtnPkt netmail = new FtnPkt(Main.info.getAddress(), to, password,
+				new Date());
+		FtnPkt echomail = new FtnPkt(Main.info.getAddress(), to, password,
+				new Date());
+		for (FtnMessage message : messages) {
+			if (message.isNetmail()) {
+				netmail.getMessages().add(message);
+			} else {
+				echomail.getMessages().add(message);
 			}
-			// netmail
-			try {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				FtnPkt pkt = new FtnPkt(our_address, link_address,
-						link.getPaketPassword(), new Date());
-				List<Netmail> netmails = ORMManager.netmail().queryForEq(
-						"route_via", link.getId());
-				if (!netmails.isEmpty()) {
-					for (Netmail netmail : netmails) {
-						FtnMessage msg = netmailToFtnMessage(netmail);
-						pkt.getMessages().add(msg);
-						logger.debug(String.format(
-								"Пакуем netmail #%d %s -> %s для %s",
-								netmail.getId(), netmail.getFromFTN(),
-								netmail.getToFTN(), link.getLinkAddress()));
-						ORMManager.netmail().delete(netmail);
-					}
-					bos.write(pkt.pack());
-					byte[] netmail = bos.toByteArray();
-					bos.close();
-					Message message = new Message(String.format("%s.pkt",
-							generate8d()), netmail.length);
-					message.setInputStream(new ByteArrayInputStream(netmail));
-					packedMessages.add(message);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error(
-						"Ошибка обработки netmail для " + link.getLinkAddress(),
-						e);
-			}
-		} catch (Exception e) {
-			logger.error("Ошибка получения сообщений для "
-					+ link.getLinkAddress());
 		}
-		return packedMessages;
+		byte[] data = netmail.pack();
+		Message net = new Message(String.format("%s.pkt", generate8d()),
+				data.length);
+		net.setInputStream(new ByteArrayInputStream(data));
+		packed.add(net);
+		data = echomail.pack();
+		{
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ZipOutputStream zos = new ZipOutputStream(out);
+			zos.setMethod(ZipOutputStream.DEFLATED);
+			ZipEntry ze = new ZipEntry(String.format("%s.pkt", generate8d()));
+			ze.setMethod(ZipEntry.DEFLATED);
+			ze.setSize(data.length);
+			CRC32 crc32 = new CRC32();
+			crc32.update(data);
+			ze.setCrc(crc32.getValue());
+			try {
+				zos.putNextEntry(ze);
+				zos.write(data);
+				zos.close();
+			} catch (IOException e) {
+			}
+			byte[] zip = out.toByteArray();
+			Message message = new Message(
+					String.format("%s.fr0", generate8d()), zip.length);
+			message.setInputStream(new ByteArrayInputStream(zip));
+			packed.add(message);
+		}
+		return packed;
 	}
 
 }

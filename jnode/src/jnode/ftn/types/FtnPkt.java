@@ -1,4 +1,4 @@
-package jnode.ftn;
+package jnode.ftn.types;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
 
 /**
@@ -71,8 +72,8 @@ public class FtnPkt {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream os = new DataOutputStream(bos);
 		try {
-			os.writeShort(FtnTosser.revShort(fromAddr.getNode()));
-			os.writeShort(FtnTosser.revShort(toAddr.getNode()));
+			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
+			os.writeShort(FtnTools.revShort(toAddr.getNode()));
 			String date = format.format(this.date); // here
 			{
 				int n = 0;
@@ -81,25 +82,26 @@ public class FtnPkt {
 					if (n == 1) {
 						s--;
 					}
-					os.writeShort(FtnTosser.revShort(s));
+					os.writeShort(FtnTools.revShort(s));
 					n++;
 				}
 			}
 			os.write(new byte[] { 0, 0, 2, 0 });
-			os.writeShort(FtnTosser.revShort(fromAddr.getNet()));
-			os.writeShort(FtnTosser.revShort(toAddr.getNet()));
+			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
+			os.writeShort(FtnTools.revShort(toAddr.getNet()));
 			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.3
-			os.write(FtnTosser.substr(password, 8));
+			os.write(FtnTools.substr(password, 8));
 			for (int i = password.length(); i < 8; i++) {
 				os.write(0);
 			}
-			os.writeShort(FtnTosser.revShort(fromAddr.getZone()));
-			os.writeShort(FtnTosser.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 0, 19, 3, 0, 0 });// prodcode 19FF ver 0.3
-			os.writeShort(FtnTosser.revShort(fromAddr.getZone()));
-			os.writeShort(FtnTosser.revShort(toAddr.getZone()));
-			os.writeShort(FtnTosser.revShort(fromAddr.getPoint()));
-			os.writeShort(FtnTosser.revShort(toAddr.getPoint()));
+			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
+			os.writeShort(FtnTools.revShort(toAddr.getZone()));
+			os.write(new byte[] { 0, 0, 0, 0, 19, 3, 0, 0 });// prodcode 19FF
+																// ver 0.3
+			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
+			os.writeShort(FtnTools.revShort(toAddr.getZone()));
+			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));
+			os.writeShort(FtnTools.revShort(toAddr.getPoint()));
 			os.write(new byte[] { 0, 0, 0, 0 });
 			if (messages != null) {
 				for (FtnMessage message : messages) {
@@ -124,12 +126,12 @@ public class FtnPkt {
 		fromAddr = new FtnAddress();
 		toAddr = new FtnAddress();
 		try {
-			fromAddr.setNode(FtnTosser.revShort(is.readShort()));
-			toAddr.setNode(FtnTosser.revShort(is.readShort()));
+			fromAddr.setNode(FtnTools.revShort(is.readShort()));
+			toAddr.setNode(FtnTools.revShort(is.readShort()));
 			{
 				short date[] = new short[6];
 				for (int i = 0; i < 6; i++) {
-					date[i] = FtnTosser.revShort(is.readShort());
+					date[i] = FtnTools.revShort(is.readShort());
 				}
 				try {
 					Calendar calendar = Calendar.getInstance();
@@ -141,8 +143,8 @@ public class FtnPkt {
 				}
 			}
 			is.skip(4);
-			fromAddr.setNet(FtnTosser.revShort(is.readShort()));
-			toAddr.setNet(FtnTosser.revShort(is.readShort()));
+			fromAddr.setNet(FtnTools.revShort(is.readShort()));
+			toAddr.setNet(FtnTools.revShort(is.readShort()));
 			is.skip(2);
 			{
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -156,10 +158,10 @@ public class FtnPkt {
 				password = new String(bos.toByteArray());
 			}
 			is.skip(12);
-			fromAddr.setZone(FtnTosser.revShort(is.readShort()));
-			toAddr.setZone(FtnTosser.revShort(is.readShort()));
-			fromAddr.setPoint(FtnTosser.revShort(is.readShort()));
-			toAddr.setPoint(FtnTosser.revShort(is.readShort()));
+			fromAddr.setZone(FtnTools.revShort(is.readShort()));
+			toAddr.setZone(FtnTools.revShort(is.readShort()));
+			fromAddr.setPoint(FtnTools.revShort(is.readShort()));
+			toAddr.setPoint(FtnTools.revShort(is.readShort()));
 			is.skip(4);
 			try {
 				while (true) {

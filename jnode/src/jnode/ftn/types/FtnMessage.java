@@ -1,4 +1,4 @@
-package jnode.ftn;
+package jnode.ftn.types;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
 
 /**
@@ -172,19 +173,19 @@ public class FtnMessage {
 		DataOutputStream os = new DataOutputStream(bos);
 		try {
 			os.write(new byte[] { 2, 0 });
-			os.writeShort(FtnTosser.revShort(fromAddr.getNode()));
-			os.writeShort((isNetmail) ? FtnTosser.revShort(toAddr.getNode())
+			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
+			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNode())
 					: 0);
-			os.writeShort(FtnTosser.revShort(fromAddr.getNet()));
-			os.writeShort((isNetmail) ? FtnTosser.revShort(toAddr.getNet()) : 0);
+			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
+			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNet()) : 0);
 			os.write(new byte[] { 1, 0, 0, 0 });
-			os.write(FtnTosser.substr(format.format(date), 19));
+			os.write(FtnTools.substr(format.format(date), 19));
 			os.write(0);
-			os.write(FtnTosser.substr(toName, 35));
+			os.write(FtnTools.substr(toName, 35));
 			os.write(0);
-			os.write(FtnTosser.substr(fromName, 35));
+			os.write(FtnTools.substr(fromName, 35));
 			os.write(0);
-			os.write(FtnTosser.substr(subject, 71));
+			os.write(FtnTools.substr(subject, 71));
 			os.write(0);
 			if (!isNetmail) {
 				os.writeBytes(String.format("AREA:%s\r", area));
@@ -200,11 +201,11 @@ public class FtnMessage {
 				sb.append('\n');
 			}
 			if (!isNetmail) {
-				sb.append(FtnTosser.writeSeenBy(seenby));
-				sb.append(FtnTosser.writePath(path));
+				sb.append(FtnTools.writeSeenBy(seenby));
+				sb.append(FtnTools.writePath(path));
 			}
 			os.write(sb.toString().replaceAll("\n", "\r")
-					.getBytes(FtnTosser.cp866));
+					.getBytes(FtnTools.cp866));
 			os.write(0);
 			os.close();
 		} catch (IOException e) {
@@ -230,16 +231,16 @@ public class FtnMessage {
 		toAddr = new FtnAddress();
 		try {
 			if (is.read() == 2 && is.read() == 0) { // 2.0 msg
-				fromAddr.setNode(FtnTosser.revShort(is.readShort()));
-				toAddr.setNode(FtnTosser.revShort(is.readShort()));
-				fromAddr.setNet(FtnTosser.revShort(is.readShort()));
-				toAddr.setNet(FtnTosser.revShort(is.readShort()));
+				fromAddr.setNode(FtnTools.revShort(is.readShort()));
+				toAddr.setNode(FtnTools.revShort(is.readShort()));
+				fromAddr.setNet(FtnTools.revShort(is.readShort()));
+				toAddr.setNet(FtnTools.revShort(is.readShort()));
 				is.skip(4);
-				date = format.parse(FtnTosser.readUntillNull(is));
-				toName = FtnTosser.readUntillNull(is);
-				fromName = FtnTosser.readUntillNull(is);
-				subject = FtnTosser.readUntillNull(is);
-				String lines[] = FtnTosser.readUntillNull(is).split("\r");
+				date = format.parse(FtnTools.readUntillNull(is));
+				toName = FtnTools.readUntillNull(is);
+				fromName =FtnTools.readUntillNull(is);
+				subject = FtnTools.readUntillNull(is);
+				String lines[] = FtnTools.readUntillNull(is).split("\r");
 				StringBuilder builder = new StringBuilder();
 				int linenum = 0;
 				boolean eofKluges = false;
@@ -327,8 +328,8 @@ public class FtnMessage {
 						builder.append('\n');
 					}
 				}
-				this.seenby = FtnTosser.readSeenBy(seenby.toString());
-				this.path = FtnTosser.readPath(path.toString());
+				this.seenby = FtnTools.readSeenBy(seenby.toString());
+				this.path = FtnTools.readPath(path.toString());
 				text = builder.toString();
 			} else {
 				throw new LastMessageException("2.0 is not out version");

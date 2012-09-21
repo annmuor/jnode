@@ -1,4 +1,4 @@
-package jnode.ftn;
+package jnode.ftn.types;
 
 /**
  * 

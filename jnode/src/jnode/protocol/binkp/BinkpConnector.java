@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.dto.Link;
-import jnode.ftn.FtnAddress;
+import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.ndl.FtnNdlAddress;

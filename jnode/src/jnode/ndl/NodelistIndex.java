@@ -2,7 +2,7 @@ package jnode.ndl;
 
 import java.io.Serializable;
 
-import jnode.ftn.FtnAddress;
+import jnode.ftn.types.FtnAddress;
 
 class NodelistIndex implements Serializable {
 	private static final long serialVersionUID = 1L;

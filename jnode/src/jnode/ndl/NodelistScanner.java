@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jnode.ftn.FtnAddress;
+import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.ndl.FtnNdlAddress.Status;
@@ -60,7 +60,7 @@ public class NodelistScanner {
 				if (mZone.matches()) {
 					zone = mZone.group(1);
 					net = zone;
-					ftn = zone + ":0/0";
+					ftn = zone + ":" + net + "/0";
 				} else if (mReg.matches()) {
 					region = mReg.group(1);
 					ftn = zone + ":" + region + "/0";

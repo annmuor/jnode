@@ -7,7 +7,7 @@ import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jnode.ftn.FtnAddress;
+import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.threads.Client;
 import jnode.main.threads.Server;
@@ -52,7 +52,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.3.5.1";
+		private final String version = "jNode/0.3.5.2";
 
 		public String getSysop() {
 			return sysop;

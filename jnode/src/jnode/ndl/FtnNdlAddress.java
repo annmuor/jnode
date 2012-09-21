@@ -1,6 +1,6 @@
 package jnode.ndl;
 
-import jnode.ftn.FtnAddress;
+import jnode.ftn.types.FtnAddress;
 
 public class FtnNdlAddress extends FtnAddress {
 	public static enum Status {
