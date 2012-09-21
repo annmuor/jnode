@@ -21,8 +21,10 @@
 19.09.2012, 0.3.4.2:
 ~ Origin regexp fixed
 ~ Now checking CRAM-XXX/XXX instead of CRAM-MD5  (thx 2 Andre Gruenberg, 2:2411/525)
-19.09.2012, 0.3.5:
+20.09.2012, 0.3.5:
 + Nodelist checking and indexing feature added
 + New config variables: nodelist.path & nodelist.index
 + Support for unsecure ( non-listed in `links` table ) connections
 ~ Tracker now checks origin and destination for existing in nodelist
+21.09.2012, 0.3.5.1:
+~ Control of connection timeout added
