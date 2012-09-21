@@ -33,6 +33,8 @@ public class Netmail {
 	private Link routeVia;
 	@DatabaseField(columnName = "send", index = true, canBeNull = false, defaultValue = "false", dataType = DataType.BOOLEAN)
 	private boolean send;
+	@DatabaseField(columnName = "attr", canBeNull = false, defaultValue = "256", dataType = DataType.INTEGER)
+	private int attr;
 
 	public Long getId() {
 		return id;
@@ -112,6 +114,14 @@ public class Netmail {
 
 	public void setSend(boolean send) {
 		this.send = send;
+	}
+
+	public int getAttr() {
+		return attr;
+	}
+
+	public void setAttr(int attr) {
+		this.attr = attr;
 	}
 
 	@Override

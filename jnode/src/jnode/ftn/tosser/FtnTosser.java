@@ -138,6 +138,7 @@ public class FtnTosser {
 						netmail.setToName(ftnm.getToName());
 						netmail.setSubject(ftnm.getSubject());
 						netmail.setText(ftnm.getText());
+						netmail.setAttr(ftnm.getAttribute());
 						ORMManager.netmail().create(netmail);
 						Integer n = tossed.get("netmail");
 						tossed.put("netmail", (n == null) ? 1 : n + 1);
@@ -146,6 +147,10 @@ public class FtnTosser {
 									.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
 											ftnm.getFromAddr().toString(), ftnm
 													.getToAddr().toString()));
+							if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
+								FtnTools.writeReply(ftnm, "ARQ reply",
+										"Your message was successfully reached this system and holds on");
+							}
 						} else {
 							routeVia = ORMManager.link().queryForSameId(
 									routeVia);
@@ -155,6 +160,11 @@ public class FtnTosser {
 													.getToAddr().toString(),
 											routeVia.getLinkAddress()));
 							pollAfterEnd.add(routeVia);
+							if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
+								FtnTools.writeReply(ftnm, "ARQ reply",
+										"Your message was successfully transmitted via this system and routed to "
+												+ routeVia.getLinkAddress());
+							}
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();

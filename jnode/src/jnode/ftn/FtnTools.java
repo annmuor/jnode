@@ -24,7 +24,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import jnode.dto.Echomail;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
 import jnode.dto.Rewrite;
@@ -321,26 +320,6 @@ public final class FtnTools {
 	 * @param mail
 	 * @return
 	 */
-	public static FtnMessage echomailToFtnMessage(Echomail mail) {
-		FtnMessage message = new FtnMessage();
-		message.setFromName(mail.getFromName());
-		message.setToName(mail.getToName());
-		message.setFromAddr(new FtnAddress(mail.getFromFTN()));
-		message.setArea(mail.getArea().getName().toUpperCase());
-		message.setDate(mail.getDate());
-		message.setSubject(mail.getSubject());
-		message.setText(mail.getText());
-		message.setSeenby(read2D(mail.getSeenBy()));
-		message.setPath(read2D(mail.getPath()));
-		return message;
-	}
-
-	/**
-	 * Конвертер
-	 * 
-	 * @param mail
-	 * @return
-	 */
 	public static FtnMessage netmailToFtnMessage(Netmail mail) {
 		// update fields
 		FtnMessage message = new FtnMessage();
@@ -350,6 +329,7 @@ public final class FtnTools {
 		message.setToAddr(new FtnAddress(mail.getToFTN()));
 		message.setDate(mail.getDate());
 		message.setSubject(mail.getSubject());
+		message.setAttribute(mail.getAttr());
 		StringBuilder text = new StringBuilder();
 		text.append(mail.getText());
 		if (text.charAt(text.length() - 1) != '\n') {

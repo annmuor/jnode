@@ -25,6 +25,21 @@ import jnode.ftn.exception.LastMessageException;
  * 
  */
 public class FtnMessage {
+	public static final int ATTR_PVT = 1;
+	public static final int ATTR_CRASH = 2;
+	public static final int ATTR_RECD = 4;
+	public static final int ATTR_SEND = 8;
+	public static final int ATTR_FILEATT = 16;
+	public static final int ATTR_INTRANS = 32;
+	public static final int ATTR_ORPHAN = 64;
+	public static final int ATTR_KILLSENT = 128;
+	public static final int ATTR_LOCAL = 256;
+	public static final int ATTR_HOFOPICKUP = 512;
+	public static final int ATTR_FILEREQ = 2048;
+	public static final int ATTR_RRQ = 4096;
+	public static final int ATTR_ISRR = 8192;
+	public static final int ATTR_ARQ = 16384;
+	public static final int ATTR_FIUPRQ = 32768;
 	private Date date;
 	private String fromName;
 	private String toName;
@@ -33,6 +48,7 @@ public class FtnMessage {
 	private String area;
 	private String subject;
 	private String text;
+	private int attribute;
 	private List<Ftn2D> seenby;
 	private List<Ftn2D> path;
 	private boolean isNetmail;
@@ -168,17 +184,30 @@ public class FtnMessage {
 		return isNetmail;
 	}
 
+	public int getAttribute() {
+		return attribute;
+	}
+
+	public void setAttribute(int attribute) {
+		this.attribute = attribute;
+	}
+
 	public byte[] pack() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream os = new DataOutputStream(bos);
 		try {
 			os.write(new byte[] { 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
-			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNode())
-					: 0);
+			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNode()) : 0);
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
 			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNet()) : 0);
-			os.write(new byte[] { 1, 0, 0, 0 });
+			if (isNetmail) {
+				attribute &= ATTR_PVT;
+				os.writeShort(FtnTools.revShort((short) attribute)); // attributes
+			} else {
+				os.write(new byte[] { 1, 0 });
+			}
+			os.write(new byte[] { 0, 0 });
 			os.write(FtnTools.substr(format.format(date), 19));
 			os.write(0);
 			os.write(FtnTools.substr(toName, 35));
@@ -235,10 +264,11 @@ public class FtnMessage {
 				toAddr.setNode(FtnTools.revShort(is.readShort()));
 				fromAddr.setNet(FtnTools.revShort(is.readShort()));
 				toAddr.setNet(FtnTools.revShort(is.readShort()));
-				is.skip(4);
+				attribute = FtnTools.revShort(is.readShort());
+				is.skip(2);
 				date = format.parse(FtnTools.readUntillNull(is));
 				toName = FtnTools.readUntillNull(is);
-				fromName =FtnTools.readUntillNull(is);
+				fromName = FtnTools.readUntillNull(is);
 				subject = FtnTools.readUntillNull(is);
 				String lines[] = FtnTools.readUntillNull(is).split("\r");
 				StringBuilder builder = new StringBuilder();
