@@ -26,7 +26,8 @@ public class FtnPkt {
 	private String password;
 	private List<FtnMessage> messages;
 	private Date date;
-	private static DateFormat format = new SimpleDateFormat("YYYY MM dd HH mm ss", Locale.US);
+	private static DateFormat format = new SimpleDateFormat(
+			"YYYY MM dd HH mm ss", Locale.US);
 
 	public FtnAddress getFromAddr() {
 		return fromAddr;
@@ -52,7 +53,8 @@ public class FtnPkt {
 		messages = new ArrayList<FtnMessage>();
 	}
 
-	public FtnPkt(FtnAddress fromAddr, FtnAddress toAddr, String password, Date date) {
+	public FtnPkt(FtnAddress fromAddr, FtnAddress toAddr, String password,
+			Date date) {
 		super();
 		messages = new ArrayList<FtnMessage>();
 		this.fromAddr = fromAddr;
@@ -86,14 +88,14 @@ public class FtnPkt {
 			os.write(new byte[] { 0, 0, 2, 0 });
 			os.writeShort(FtnTosser.revShort(fromAddr.getNet()));
 			os.writeShort(FtnTosser.revShort(toAddr.getNet()));
-			os.write(new byte[] { (byte) 255, 0 });
+			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.3
 			os.write(FtnTosser.substr(password, 8));
 			for (int i = password.length(); i < 8; i++) {
 				os.write(0);
 			}
 			os.writeShort(FtnTosser.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTosser.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 0, (byte) 255, 3, 0, 0 });
+			os.write(new byte[] { 0, 0, 0, 0, 19, 3, 0, 0 });// prodcode 19FF ver 0.3
 			os.writeShort(FtnTosser.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTosser.revShort(toAddr.getZone()));
 			os.writeShort(FtnTosser.revShort(fromAddr.getPoint()));
@@ -131,7 +133,8 @@ public class FtnPkt {
 				}
 				try {
 					Calendar calendar = Calendar.getInstance();
-					calendar.set(date[0], date[1], date[2], date[3], date[4], date[5]);
+					calendar.set(date[0], date[1], date[2], date[3], date[4],
+							date[5]);
 					this.date = calendar.getTime();
 				} catch (Exception e) {
 					this.date = new Date(0);
@@ -177,7 +180,8 @@ public class FtnPkt {
 
 	@Override
 	public String toString() {
-		return String.format("PKT From: %s\nPKT To: %s\nPKT Date: %s\nPKT Password: %s\n", fromAddr, toAddr, date,
-				password);
+		return String.format(
+				"PKT From: %s\nPKT To: %s\nPKT Date: %s\nPKT Password: %s\n",
+				fromAddr, toAddr, date, password);
 	}
 }
