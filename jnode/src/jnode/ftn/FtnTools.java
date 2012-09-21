@@ -638,6 +638,14 @@ public final class FtnTools {
 		logger.info("Создан Netmail #" + netmail.getId());
 	}
 
+	/**
+	 * Паковка сообщений
+	 * 
+	 * @param messages
+	 * @param to
+	 * @param password
+	 * @return
+	 */
 	public static List<Message> pack(List<FtnMessage> messages, FtnAddress to,
 			String password) {
 		byte[] data;
@@ -660,8 +668,8 @@ public final class FtnTools {
 			net.setInputStream(new ByteArrayInputStream(data));
 			packed.add(net);
 		}
-		data = echomail.pack();
-		{
+		if (echomail.getMessages().size() > 0) {
+			data = echomail.pack();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ZipOutputStream zos = new ZipOutputStream(out);
 			zos.setMethod(ZipOutputStream.DEFLATED);
