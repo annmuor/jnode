@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jnode.main.Main;
+
 /**
  * 
  * @author kreon
@@ -19,10 +21,14 @@ public class FtnAddress implements Serializable {
 
 	public FtnAddress(String addr) {
 		Pattern p = Pattern
-				.compile("^(\\d):(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
+				.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
 		Matcher m = p.matcher(addr);
 		if (m.matches()) {
-			zone = new Integer(m.group(1));
+			if (m.group(1) != null && m.group(1).length() > 0) {
+				zone = new Integer(m.group(1));
+			} else {
+				zone = Main.info.getAddress().zone;
+			}
 			net = new Integer(m.group(2));
 			node = new Integer(m.group(3));
 			if (m.group(4) != null && m.group(4).length() > 0) {

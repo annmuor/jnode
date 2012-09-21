@@ -640,6 +640,7 @@ public final class FtnTools {
 
 	public static List<Message> pack(List<FtnMessage> messages, FtnAddress to,
 			String password) {
+		byte[] data;
 		List<Message> packed = new ArrayList<Message>();
 		FtnPkt netmail = new FtnPkt(Main.info.getAddress(), to, password,
 				new Date());
@@ -652,11 +653,13 @@ public final class FtnTools {
 				echomail.getMessages().add(message);
 			}
 		}
-		byte[] data = netmail.pack();
-		Message net = new Message(String.format("%s.pkt", generate8d()),
-				data.length);
-		net.setInputStream(new ByteArrayInputStream(data));
-		packed.add(net);
+		if (netmail.getMessages().size() > 0) {
+			data = netmail.pack();
+			Message net = new Message(String.format("%s.pkt", generate8d()),
+					data.length);
+			net.setInputStream(new ByteArrayInputStream(data));
+			packed.add(net);
+		}
 		data = echomail.pack();
 		{
 			ByteArrayOutputStream out = new ByteArrayOutputStream();

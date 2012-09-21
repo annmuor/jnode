@@ -31,4 +31,14 @@ public class Readsign {
 		this.mail = mail;
 	}
 
+	public Readsign() {
+		super();
+	}
+
+	public Readsign(Link link, Echomail mail) {
+		super();
+		this.link = link;
+		this.mail = mail;
+	}
+
 }

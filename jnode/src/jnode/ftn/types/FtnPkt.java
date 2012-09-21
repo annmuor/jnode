@@ -89,15 +89,15 @@ public class FtnPkt {
 			os.write(new byte[] { 0, 0, 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
 			os.writeShort(FtnTools.revShort(toAddr.getNet()));
-			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.3
+			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.4
 			os.write(FtnTools.substr(password, 8));
 			for (int i = password.length(); i < 8; i++) {
 				os.write(0);
 			}
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 0, 19, 3, 0, 0 });// prodcode 19FF
-																// ver 0.3
+			os.write(new byte[] { 0, 0, 0, 0, 19, 4, 0, 0 });// prodcode 19FF
+																// ver 0.4
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));
 			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));

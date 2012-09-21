@@ -52,7 +52,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.3.5.2";
+		private final String version = "jNode/0.4.0";
 
 		public String getSysop() {
 			return sysop;

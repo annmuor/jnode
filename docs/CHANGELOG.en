@@ -28,3 +28,6 @@
 ~ Tracker now checks origin and destination for existing in nodelist
 21.09.2012, 0.3.5.1:
 ~ Control of connection timeout added
+21.09.2012, 0.4.0:
+~ Refactoring of toss process, incrementation of tossing speed
+~ New major version according previous

@@ -313,7 +313,7 @@ public class FtnMessage {
 							Matcher m = origin.matcher(line);
 							if (m.matches()) {
 								Pattern f = Pattern
-										.compile("([1-5]:\\d{1,5}/\\d{1,5}(\\.\\d{1,5})?)");
+										.compile("([1-5]?:?\\d{1,5}/\\d{1,5}(\\.\\d{1,5})?)");
 								preOrigin = true;
 								String orig = m.group(1);
 								Matcher fm = f.matcher(orig);

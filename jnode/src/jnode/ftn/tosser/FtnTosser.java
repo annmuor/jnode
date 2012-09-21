@@ -2,12 +2,15 @@ package jnode.ftn.tosser;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.j256.ormlite.dao.GenericRawResults;
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
 import jnode.dto.Dupe;
@@ -329,70 +332,83 @@ public class FtnTosser {
 					"Ошибка обработки netmail для " + link.getLinkAddress(), e);
 		}
 		try {
-
-			List<Subscription> subscr = ORMManager.subscription().queryForEq(
-					"link_id", link.getId());
-			for (Subscription sub : subscr) {
-				List<Echomail> newmail = ORMManager.echomail().queryBuilder()
-						.orderBy("id", true).where()
-						.eq("echoarea_id", sub.getArea().getId()).and()
-						.gt("id", sub.getLast()).query();
-				for (Echomail mail : newmail) {
-					if (mail.getId() > sub.getLast()) {
-						sub.setLast(mail.getId());
-					}
-					List<Readsign> signs = ORMManager.readsign().queryBuilder()
-							.where().eq("link_id", link.getId()).and()
-							.eq("echomail_id", mail.getId()).query();
-					if (signs.isEmpty()) {
-						Set<Ftn2D> seenby = new HashSet<Ftn2D>(
-								FtnTools.read2D(mail.getSeenBy()));
-						/**
-						 * Если мы пакуем на линка - то чекаем синбаи
-						 */
-						if (seenby.contains(link2d)
-								&& link_address.getPoint() == 0) {
-							logger.info(our2d + " есть в синбаях для "
-									+ link_address);
-						} else {
-							seenby.add(our2d);
-							seenby.add(link2d);
-							for (Subscription s : ORMManager.subscription()
-									.queryForEq("echoarea_id",
-											mail.getArea().getId())) {
-								Link l = ORMManager.link().queryForSameId(
-										s.getLink());
-								FtnAddress addr = new FtnAddress(
-										l.getLinkAddress());
-								Ftn2D d2 = new Ftn2D(addr.getNet(),
-										addr.getNode());
-								seenby.add(d2);
-							}
-
-							List<Ftn2D> path = FtnTools.read2D(mail.getPath());
-							if (!path.contains(our2d)) {
-								path.add(our2d);
-							}
-							mail.setPath(FtnTools.write2D(path, false));
-							mail.setSeenBy(FtnTools.write2D(
-									new ArrayList<Ftn2D>(seenby), true));
-							logger.info("Пакуем сообщение #" + mail.getId()
-									+ " (" + mail.getArea().getName()
-									+ ") для " + link.getLinkAddress());
-							messages.add(FtnTools.echomailToFtnMessage(mail));
+			final String echomail_query = "SELECT a.name as AREA,e.* FROM subscription s LEFT JOIN echoarea"
+					+ " a ON (a.id=s.echoarea_id) LEFT JOIN echomail e ON"
+					+ " (e.echoarea_id=s.echoarea_id) WHERE e.id > s.lastmessageid AND"
+					+ " e.id NOT IN (SELECT r.echomail_id FROM readsing r WHERE"
+					+ " r.link_id=s.link_id AND r.echomail_id > s.lastmessageid) AND"
+					+ " s.link_id=%d ORDER BY e.id ASC LIMIT 100";
+			final String seenby_query = "SELECT l.ftn_address from subscription s left join links l on (l.id=s.link_id) where s.echoarea_id=%d";
+			DataType[] types = new DataType[] { DataType.STRING, // area [0]
+					DataType.LONG_OBJ, // id [1]
+					DataType.LONG_OBJ, // earea_id [2]
+					DataType.STRING, // from name [3]
+					DataType.STRING, // to name [4]
+					DataType.STRING, // from addr [5]
+					DataType.DATE_LONG, // date [6]
+					DataType.LONG_STRING, // subject [7]
+					DataType.LONG_STRING, // message [8]
+					DataType.LONG_STRING, // seenby [9]
+					DataType.LONG_STRING // path [10]
+			};
+			Map<Long, Long> subcription = new HashMap<Long, Long>();
+			List<Long> signs = new ArrayList<Long>();
+			GenericRawResults<Object[]> results = ORMManager.echomail()
+					.queryRaw(String.format(echomail_query, link.getId()),
+							types);
+			if (results.getNumberColumns() > 0) {
+				for (Object[] result : results.getResults()) {
+					Set<Ftn2D> seenby = new HashSet<Ftn2D>(
+							FtnTools.read2D((String) result[9]));
+					signs.add((Long) result[1]);
+					subcription.put((Long) result[2], (Long) result[1]);
+					if (seenby.contains(link2d) && link_address.getPoint() == 0) {
+						logger.info(our2d + " есть в синбаях для "
+								+ link_address);
+					} else {
+						seenby.add(our2d);
+						seenby.add(link2d);
+						List<Ftn2D> path = FtnTools.read2D((String) result[10]);
+						if (!path.contains(our2d)) {
+							path.add(our2d);
 						}
-						Readsign sign = new Readsign();
-						sign.setLink(link);
-						sign.setMail(mail);
-						ORMManager.readsign().create(sign);
+						GenericRawResults<String[]> seens = ORMManager.link()
+								.queryRaw(
+										String.format(seenby_query,
+												(Long) result[2]));
+						for (String[] seen : seens.getResults()) {
+							FtnAddress addr = new FtnAddress(seen[0]);
+							Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
+							seenby.add(d2);
+						}
+						FtnMessage message = new FtnMessage();
+						message.setArea(((String) result[0]).toUpperCase());
+						message.setFromName((String) result[3]);
+						message.setToName((String) result[4]);
+						message.setFromAddr(new FtnAddress((String) result[5]));
+						message.setDate((Date) result[6]);
+						message.setSubject((String) result[7]);
+						message.setText((String) result[8]);
+						message.setSeenby(new ArrayList<Ftn2D>(seenby));
+						message.setPath(path);
+						logger.info("Пакуем сообщение #" + result[1] + " ("
+								+ result[0] + ") для " + link.getLinkAddress());
+						messages.add(message);
 					}
 				}
-				{
+				for (Long id : signs) {
+					Echomail m = new Echomail();
+					m.setId(id);
+					ORMManager.readsign().create(new Readsign(link, m));
+
+				}
+				for (Long echoid : subcription.keySet()) {
 					UpdateBuilder<Subscription, ?> upd = ORMManager
 							.subscription().updateBuilder();
-					upd.updateColumnValue("lastmessageid", sub.getLast());
-					upd.where().eq("link_id", sub.getLink()).and()
-							.eq("echoarea_id", sub.getArea());
+					upd.updateColumnValue("lastmessageid",
+							subcription.get(echoid));
+					upd.where().eq("link_id", link).and()
+							.eq("echoarea_id", echoid);
 					ORMManager.subscription().update(upd.prepare());
 				}
 			}
@@ -408,5 +424,4 @@ public class FtnTosser {
 			return new ArrayList<Message>();
 		}
 	}
-
 }
