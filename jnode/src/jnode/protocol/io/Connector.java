@@ -26,21 +26,6 @@ public class Connector {
 	private int index = 0;
 	private static final Logger logger = Logger.getLogger(Connector.class);
 
-	private class TossThread extends Thread {
-		private Message message;
-		private Link _link;
-
-		private TossThread(Message message, Link link) {
-			this.message = message;
-			this._link = link;
-		}
-
-		@Override
-		public void run() {
-			FtnTosser.tossIncoming(message, _link);
-		}
-	}
-
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
 		messages = new ArrayList<Message>();
@@ -64,9 +49,7 @@ public class Connector {
 	}
 
 	public void onReceived(Message message) {
-		TossThread t = new TossThread(message, link);
-		t.start();
-		t = null;
+		FtnTosser.tossIncoming(message, link);
 	}
 
 	private void doSocket(Socket clientSocket) {
