@@ -19,8 +19,8 @@ import com.j256.ormlite.table.TableUtils;
  * 
  */
 
-public class ORMManager {
-	private static ORMManager self = new ORMManager();
+public enum ORMManager {
+	INSTANSE;
 	private boolean started = false;
 	private Dao<Link, Long> daoLink;
 	private Dao<Echoarea, Long> daoEchoarea;
@@ -32,10 +32,7 @@ public class ORMManager {
 	private Dao<Dupe, ?> daoDupe;
 	private Dao<Robot, String> daoRobot;
 	private Dao<Rewrite, ?> daoRewrite;
-
-	public static ORMManager getInstanse() {
-		return self;
-	}
+	private Dao<LinkOption, ?> daoLinkOption;
 
 	/**
 	 * Инициализация DAO и создание таблиц
@@ -45,9 +42,10 @@ public class ORMManager {
 	 */
 	public void start(Hashtable<String, String> settings) throws SQLException {
 		if (!started) {
-			ConnectionSource source = new JdbcConnectionSource(settings.get(Main.Settings.JDBC_URL.getCfgline()),
-					settings.get(Main.Settings.JDBC_USER.getCfgline()), settings.get(Main.Settings.JDBC_PASS
-							.getCfgline()));
+			ConnectionSource source = new JdbcConnectionSource(
+					settings.get(Main.Settings.JDBC_URL.getCfgline()),
+					settings.get(Main.Settings.JDBC_USER.getCfgline()),
+					settings.get(Main.Settings.JDBC_PASS.getCfgline()));
 			daoLink = DaoManager.createDao(source, Link.class);
 			daoEchoarea = DaoManager.createDao(source, Echoarea.class);
 			daoSubscription = DaoManager.createDao(source, Subscription.class);
@@ -58,7 +56,7 @@ public class ORMManager {
 			daoDupe = DaoManager.createDao(source, Dupe.class);
 			daoRobot = DaoManager.createDao(source, Robot.class);
 			daoRewrite = DaoManager.createDao(source, Rewrite.class);
-
+			daoLinkOption = DaoManager.createDao(source, LinkOption.class);
 			if (!daoLink.isTableExists()) {
 				TableUtils.createTable(source, Link.class);
 			}
@@ -89,48 +87,51 @@ public class ORMManager {
 			if (!daoRewrite.isTableExists()) {
 				TableUtils.createTable(source, Rewrite.class);
 			}
+			if (!daoLinkOption.isTableExists()) {
+				TableUtils.createTable(source, LinkOption.class);
+			}
 			started = true;
 		}
 
 	}
 
-	public static Dao<Link, Long> link() {
-		return getInstanse().daoLink;
+	public Dao<Link, Long> link() {
+		return daoLink;
 	}
 
-	public static Dao<Echoarea, Long> echoarea() {
-		return getInstanse().daoEchoarea;
+	public Dao<Echoarea, Long> echoarea() {
+		return daoEchoarea;
 	}
 
-	public static Dao<Subscription, ?> subscription() {
-		return getInstanse().daoSubscription;
+	public Dao<Subscription, ?> subscription() {
+		return daoSubscription;
 	}
 
-	public static Dao<Echomail, Long> echomail() {
-		return getInstanse().daoEchomail;
+	public Dao<Echomail, Long> echomail() {
+		return daoEchomail;
 	}
 
-	public static Dao<Readsign, ?> readsign() {
-		return getInstanse().daoReadsign;
+	public Dao<Readsign, ?> readsign() {
+		return daoReadsign;
 	}
 
-	public static Dao<Netmail, Long> netmail() {
-		return getInstanse().daoNetmail;
+	public Dao<Netmail, Long> netmail() {
+		return daoNetmail;
 	}
 
-	public static Dao<Route, ?> route() {
-		return getInstanse().daoRoute;
+	public Dao<Route, ?> route() {
+		return daoRoute;
 	}
 
-	public static Dao<Dupe, ?> dupe() {
-		return getInstanse().daoDupe;
+	public Dao<Dupe, ?> dupe() {
+		return daoDupe;
 	}
 
-	public static Dao<Robot, String> robot() {
-		return getInstanse().daoRobot;
+	public Dao<Robot, String> robot() {
+		return daoRobot;
 	}
 
-	public static Dao<Rewrite, ?> rewrite() {
-		return getInstanse().daoRewrite;
+	public Dao<Rewrite, ?> rewrite() {
+		return daoRewrite;
 	}
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -369,7 +370,7 @@ public final class FtnTools {
 				logger.error("Не удалось распаковать " + filename);
 			}
 		} else {
-			filename = filename.replaceAll("^[\\./\\\\]*", "_");
+			filename = filename.replaceAll("^[\\./\\\\]+", "_");
 			File file = new File(Main.getInbound() + File.separator + filename);
 			try {
 				FileOutputStream fos = new FileOutputStream(file);
@@ -512,7 +513,7 @@ public final class FtnTools {
 		if (message.isNetmail()) {
 			if (message.getToAddr().equals(Main.info.getAddress())) {
 				try {
-					Robot robot = ORMManager.robot().queryForId(
+					Robot robot = ORMManager.INSTANSE.robot().queryForId(
 							message.getToName().toLowerCase());
 					if (robot != null) {
 						robotname = robot.getRobot();
@@ -549,13 +550,13 @@ public final class FtnTools {
 		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
 		{
 			try {
-				List<Link> lnk = ORMManager.link().queryForEq("ftn_address",
-						routeTo.toString());
+				List<Link> lnk = ORMManager.INSTANSE.link().queryForEq(
+						"ftn_address", routeTo.toString());
 				if (lnk.isEmpty()) {
 					if (routeTo.getPoint() > 0) {
 						routeTo.setPoint(0);
-						lnk = ORMManager.link().queryForEq("ftn_address",
-								routeTo.toString());
+						lnk = ORMManager.INSTANSE.link().queryForEq(
+								"ftn_address", routeTo.toString());
 						if (!lnk.isEmpty()) {
 							routeVia = lnk.get(0);
 						}
@@ -569,7 +570,7 @@ public final class FtnTools {
 		}
 		if (routeVia == null) {
 			try {
-				List<Route> routes = ORMManager.route().queryBuilder()
+				List<Route> routes = ORMManager.INSTANSE.route().queryBuilder()
 						.orderBy("nice", true).query();
 				for (Route route : routes) {
 					if (completeMask(route, message)) {
@@ -616,7 +617,7 @@ public final class FtnTools {
 			return;
 		}
 		netmail.setRouteVia(routeVia);
-		ORMManager.netmail().create(netmail);
+		ORMManager.INSTANSE.netmail().create(netmail);
 		logger.debug("Создан Netmail #" + netmail.getId());
 	}
 
@@ -679,11 +680,12 @@ public final class FtnTools {
 	public static List<Link> getSubscribers(Echoarea area, Link link) {
 		List<Link> links = new ArrayList<Link>();
 		try {
-			List<Subscription> subs = ORMManager.subscription().queryForEq(
-					"echoarea_id", area);
+			List<Subscription> subs = ORMManager.INSTANSE.subscription()
+					.queryForEq("echoarea_id", area);
 			for (Subscription s : subs) {
 				if (!s.getLink().equals(link))
-					links.add(ORMManager.link().queryForSameId(s.getLink()));
+					links.add(ORMManager.INSTANSE.link().queryForSameId(
+							s.getLink()));
 			}
 		} catch (Exception e) {
 			logger.warn("Не могу получить список подписчиков эхи "
@@ -694,5 +696,9 @@ public final class FtnTools {
 
 	public static List<Link> getSubscribers(Echoarea area) {
 		return getSubscribers(area, null);
+	}
+
+	public static HashMap<String, String> getLinkOptions() {
+		return null;
 	}
 }

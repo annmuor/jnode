@@ -2,6 +2,7 @@ package jnode.dto;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
 /**
  * Опции для линков
@@ -9,7 +10,8 @@ import com.j256.ormlite.field.DatabaseField;
  * @author kreon
  * 
  */
-public class LinkOptions {
+@DatabaseTable(tableName = "linkoptions")
+public class LinkOption {
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
 	@DatabaseField(columnName = "option", canBeNull = false, uniqueIndexName = "lopt_idx")
@@ -39,6 +41,12 @@ public class LinkOptions {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	@Override
+	public String toString() {
+		return "LinkOptions [link=" + link + ", option=" + option + ", value="
+				+ value + "]";
 	}
 
 }

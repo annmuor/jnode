@@ -266,8 +266,8 @@ public class BinkpConnector implements ProtocolConnector {
 					while (m.find()) {
 						try {
 							String sFtn = m.group(2);
-							List<Link> links = ORMManager.link().queryForEq(
-									"ftn_address", sFtn);
+							List<Link> links = ORMManager.INSTANSE.link()
+									.queryForEq("ftn_address", sFtn);
 							if (!links.isEmpty()) {
 								this.link = links.get(0);
 								authorized = true;

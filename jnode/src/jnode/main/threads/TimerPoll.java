@@ -12,7 +12,7 @@ public class TimerPoll extends TimerTask {
 	@Override
 	public void run() {
 		try {
-			PollQueue.INSTANSE.addAll(ORMManager.link().queryForAll());
+			PollQueue.INSTANSE.addAll(ORMManager.INSTANSE.link().queryForAll());
 		} catch (SQLException e) {
 			logger.error("Не могу получить список узлов");
 		}

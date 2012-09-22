@@ -111,7 +111,7 @@ public class FtnTosser {
 												.getToAddr().toString()));
 						drop = true;
 					}
-					
+
 					if (drop) {
 						Integer n = bad.get("netmail");
 						bad.put("netmail", (n == null) ? 1 : n + 1);
@@ -124,10 +124,10 @@ public class FtnTosser {
 							}
 						}
 						try {
-							List<Rewrite> rewrites = ORMManager.rewrite()
-									.queryBuilder().orderBy("nice", true)
-									.where().eq("type", (Rewrite.Type.NETMAIL))
-									.query();
+							List<Rewrite> rewrites = ORMManager.INSTANSE
+									.rewrite().queryBuilder()
+									.orderBy("nice", true).where()
+									.eq("type", (Rewrite.Type.NETMAIL)).query();
 							for (Rewrite rewrite : rewrites) {
 								if (FtnTools.completeMask(rewrite, ftnm)) {
 									logger.debug("(N) Найдено соответствие, переписываем сообщение "
@@ -154,7 +154,7 @@ public class FtnTosser {
 							netmail.setSubject(ftnm.getSubject());
 							netmail.setText(ftnm.getText());
 							netmail.setAttr(ftnm.getAttribute());
-							ORMManager.netmail().create(netmail);
+							ORMManager.INSTANSE.netmail().create(netmail);
 							Integer n = tossed.get("netmail");
 							tossed.put("netmail", (n == null) ? 1 : n + 1);
 							if (routeVia == null) {
@@ -163,8 +163,8 @@ public class FtnTosser {
 												ftnm.getFromAddr().toString(),
 												ftnm.getToAddr().toString()));
 							} else {
-								routeVia = ORMManager.link().queryForSameId(
-										routeVia);
+								routeVia = ORMManager.INSTANSE.link()
+										.queryForSameId(routeVia);
 								logger.debug(String
 										.format("Netmail %s -> %s будет отправлен через %s",
 												ftnm.getFromAddr().toString(),
@@ -183,23 +183,23 @@ public class FtnTosser {
 						Subscription sub;
 						boolean flag = true;
 						{
-							List<Echoarea> areas = ORMManager.echoarea()
-									.queryForEq("name",
+							List<Echoarea> areas = ORMManager.INSTANSE
+									.echoarea().queryForEq("name",
 											ftnm.getArea().toLowerCase());
 							if (areas.isEmpty()) {
 								// TODO: autoCreate
 								area = new Echoarea();
 								area.setName(ftnm.getArea().toLowerCase());
 								area.setDescription("Autocreated echoarea");
-								ORMManager.echoarea().create(area);
+								ORMManager.INSTANSE.echoarea().create(area);
 								sub = new Subscription();
 								sub.setArea(area);
 								sub.setLink(link);
 								sub.setLast(0L);
-								ORMManager.subscription().create(sub);
+								ORMManager.INSTANSE.subscription().create(sub);
 							} else {
 								area = areas.get(0);
-								List<Subscription> subs = ORMManager
+								List<Subscription> subs = ORMManager.INSTANSE
 										.subscription().queryBuilder().where()
 										.eq("echoarea_id", area.getId()).and()
 										.eq("link_id", link.getId()).query();
@@ -212,9 +212,9 @@ public class FtnTosser {
 						}
 						if (flag) {
 							try {
-								if (!ORMManager.dupe().queryBuilder().where()
-										.eq("msgid", ftnm.getMsgid()).and()
-										.eq("echoarea_id", area).query()
+								if (!ORMManager.INSTANSE.dupe().queryBuilder()
+										.where().eq("msgid", ftnm.getMsgid())
+										.and().eq("echoarea_id", area).query()
 										.isEmpty()) {
 									logger.warn(ftnm.getMsgid()
 											+ " дюп - уничтожен");
@@ -229,9 +229,9 @@ public class FtnTosser {
 										e);
 							}
 							try {
-								List<Rewrite> rewrites = ORMManager.rewrite()
-										.queryBuilder().orderBy("nice", true)
-										.where()
+								List<Rewrite> rewrites = ORMManager.INSTANSE
+										.rewrite().queryBuilder()
+										.orderBy("nice", true).where()
 										.eq("type", Rewrite.Type.ECHOMAIL)
 										.query();
 								for (Rewrite rewrite : rewrites) {
@@ -259,12 +259,12 @@ public class FtnTosser {
 							mail.setSeenBy(FtnTools.write2D(ftnm.getSeenby(),
 									true));
 							mail.setPath(FtnTools.write2D(ftnm.getPath(), false));
-							ORMManager.echomail().create(mail);
+							ORMManager.INSTANSE.echomail().create(mail);
 							try {
 								Dupe dupe = new Dupe();
 								dupe.setEchoarea(area);
 								dupe.setMsgid(ftnm.getMsgid());
-								ORMManager.dupe().create(dupe);
+								ORMManager.INSTANSE.dupe().create(dupe);
 							} catch (SQLException e1) {
 								logger.warn(
 										"Не удалось записать "
@@ -275,11 +275,11 @@ public class FtnTosser {
 							Readsign sign = new Readsign();
 							sign.setLink(link);
 							sign.setMail(mail);
-							ORMManager.readsign().create(sign);
+							ORMManager.INSTANSE.readsign().create(sign);
 							Integer n = tossed.get(ftnm.getArea());
 							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-							PollQueue.INSTANSE.addAll(FtnTools
-									.getSubscribers(area, link));
+							PollQueue.INSTANSE.addAll(FtnTools.getSubscribers(
+									area, link));
 						} else {
 							Integer n = bad.get(ftnm.getArea());
 							bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
@@ -324,9 +324,9 @@ public class FtnTosser {
 		List<FtnMessage> messages = new ArrayList<FtnMessage>();
 
 		try {
-			List<Netmail> netmails = ORMManager.netmail().queryBuilder()
-					.where().eq("send", false).and().eq("route_via", link)
-					.query();
+			List<Netmail> netmails = ORMManager.INSTANSE.netmail()
+					.queryBuilder().where().eq("send", false).and()
+					.eq("route_via", link).query();
 			if (!netmails.isEmpty()) {
 				for (Netmail netmail : netmails) {
 					FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
@@ -336,7 +336,7 @@ public class FtnTosser {
 							netmail.getId(), netmail.getFromFTN(),
 							netmail.getToFTN(), link.getLinkAddress()));
 					netmail.setSend(true);
-					ORMManager.netmail().update(netmail);
+					ORMManager.INSTANSE.netmail().update(netmail);
 				}
 			}
 		} catch (Exception e) {
@@ -365,9 +365,9 @@ public class FtnTosser {
 			};
 			Map<Long, Long> subcription = new HashMap<Long, Long>();
 			List<Long> signs = new ArrayList<Long>();
-			GenericRawResults<Object[]> results = ORMManager.echomail()
-					.queryRaw(String.format(echomail_query, link.getId()),
-							types);
+			GenericRawResults<Object[]> results = ORMManager.INSTANSE
+					.echomail().queryRaw(
+							String.format(echomail_query, link.getId()), types);
 			if (results.getNumberColumns() > 0) {
 				for (Object[] result : results.getResults()) {
 					Set<Ftn2D> seenby = new HashSet<Ftn2D>(
@@ -384,8 +384,8 @@ public class FtnTosser {
 						if (!path.contains(our2d)) {
 							path.add(our2d);
 						}
-						GenericRawResults<String[]> seens = ORMManager.link()
-								.queryRaw(
+						GenericRawResults<String[]> seens = ORMManager.INSTANSE
+								.link().queryRaw(
 										String.format(seenby_query,
 												(Long) result[2]));
 						for (String[] seen : seens.getResults()) {
@@ -411,17 +411,18 @@ public class FtnTosser {
 				for (Long id : signs) {
 					Echomail m = new Echomail();
 					m.setId(id);
-					ORMManager.readsign().create(new Readsign(link, m));
+					ORMManager.INSTANSE.readsign()
+							.create(new Readsign(link, m));
 
 				}
 				for (Long echoid : subcription.keySet()) {
-					UpdateBuilder<Subscription, ?> upd = ORMManager
+					UpdateBuilder<Subscription, ?> upd = ORMManager.INSTANSE
 							.subscription().updateBuilder();
 					upd.updateColumnValue("lastmessageid",
 							subcription.get(echoid));
 					upd.where().eq("link_id", link).and()
 							.eq("echoarea_id", echoid);
-					ORMManager.subscription().update(upd.prepare());
+					ORMManager.INSTANSE.subscription().update(upd.prepare());
 				}
 			}
 		} catch (Exception e) {

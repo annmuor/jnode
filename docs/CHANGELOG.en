@@ -31,3 +31,8 @@
 21.09.2012, 0.4.0:
 ~ Refactoring of toss process, incrementation of tossing speed
 ~ New major version according previous
+22.09.2012, 0.4.1:
++ New joint poll queue instead of multi-thread polling
++ Echomail Crash flavour released
+~ Protocol incompatibility with Argus fixed ( tested on 2:203/0 )
+

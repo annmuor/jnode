@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
@@ -19,13 +20,27 @@ import jnode.orm.ORMManager;
  * 
  */
 public class AreaFix implements IRobot {
+	private static final Pattern help = Pattern.compile("^%HELP$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern list = Pattern.compile("^%LIST$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern query = Pattern.compile("^%QUERY$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern add = Pattern.compile("^%?\\+?(\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern rem = Pattern.compile("^%?\\-(\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern rescan = Pattern.compile(
+			"^%RESCAN (\\S+) (\\d+)$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern add_rescan = Pattern.compile(
+			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
 		Link link = null;
 		{
-			List<Link> links = ORMManager.link().queryForEq("ftn_address",
-					fmsg.getFromAddr().toString());
+			List<Link> links = ORMManager.INSTANSE.link().queryForEq(
+					"ftn_address", fmsg.getFromAddr().toString());
 			if (links.isEmpty()) {
 				FtnTools.writeReply(fmsg, "Access denied",
 						"You are not in links of origin");
@@ -37,22 +52,15 @@ public class AreaFix implements IRobot {
 			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
 			return;
 		}
-		Pattern help = Pattern.compile("^%HELP$", Pattern.CASE_INSENSITIVE);
-		Pattern list = Pattern.compile("^%LIST$", Pattern.CASE_INSENSITIVE);
-		Pattern add = Pattern.compile("^%?\\+?(\\S+)$",
-				Pattern.CASE_INSENSITIVE);
-		Pattern rem = Pattern
-				.compile("^%?\\-(\\S+)$", Pattern.CASE_INSENSITIVE);
-		Pattern rescan = Pattern.compile("^%RESCAN (\\S+) (\\d+)$",
-				Pattern.CASE_INSENSITIVE);
-		Pattern add_rescan = Pattern.compile("^%?\\+?(\\S+) /r=(\\d+)$",
-				Pattern.CASE_INSENSITIVE);
+
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			if (help.matcher(line).matches()) {
 				FtnTools.writeReply(fmsg, "AreaFix help", help());
 			} else if (list.matcher(line).matches()) {
 				FtnTools.writeReply(fmsg, "AreaFix list", list(link));
+			} else if (query.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, "AreaFix query", query(link));
 			} else {
 				Matcher m = rem.matcher(line);
 				if (m.matches()) {
@@ -113,9 +121,10 @@ public class AreaFix implements IRobot {
 	private String list(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Legend: * - subscribed\n\n========== List of echoareas ==========\n");
-		List<Echoarea> areas = ORMManager.echoarea().queryForAll();
+		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
+				.orderBy("name", true).query();
 		for (Echoarea area : areas) {
-			if (!ORMManager.subscription().queryBuilder().where()
+			if (!ORMManager.INSTANSE.subscription().queryBuilder().where()
 					.eq("echoarea_id", area.getId()).and()
 					.eq("link_id", link.getId()).query().isEmpty()) {
 				sb.append("* ");
@@ -134,23 +143,55 @@ public class AreaFix implements IRobot {
 
 	}
 
+	/**
+	 * Отправляем %LIST
+	 * 
+	 * @param link
+	 * @return
+	 * @throws SQLException
+	 */
+	private String query(Link link) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("========== List of subscribed areas ==========\n");
+		GenericRawResults<String[]> echoes = ORMManager.INSTANSE
+				.echoarea()
+				.queryRaw(
+						String.format(
+								"SELECT a.name,a.description FROM subscription s"
+										+ " RIGHT JOIN echoarea a on (a.id=s.echoarea_id)"
+										+ " WHERE s.link_id=%d ORDER BY a.name",
+								link.getId()));
+		for (String[] echo : echoes.getResults()) {
+			sb.append("* ");
+			sb.append(echo[0]);
+			if (echo[1].length() > 0) {
+				sb.append(" - ");
+				sb.append(echo[1]);
+			}
+			sb.append('\n');
+		}
+		sb.append("========== List of subscribed areas ==========\n");
+		return sb.toString();
+
+	}
+
 	private String add(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.echoarea().queryBuilder().where()
-				.like("name", like).query();
+		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
+				.where().like("name", like).query();
 		if (areas.isEmpty()) {
 			sb.append(area + " not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				if (!ORMManager.subscription().queryBuilder().where()
+				if (!ORMManager.INSTANSE.subscription().queryBuilder().where()
 						.eq("echoarea_id", earea).and().eq("link_id", link)
 						.query().isEmpty()) {
 					sb.append(" already subscribed");
 				} else {
 					Long lastid = 0L;
-					String[] result = ORMManager
+					String[] result = ORMManager.INSTANSE
 							.echoarea()
 							.queryRaw(
 									"SELECT max(id) FROM echomail WHERE echoarea_id="
@@ -162,7 +203,7 @@ public class AreaFix implements IRobot {
 					sub.setArea(earea);
 					sub.setLink(link);
 					sub.setLast(lastid);
-					ORMManager.subscription().create(sub);
+					ORMManager.INSTANSE.subscription().create(sub);
 					sb.append(" subscribed");
 				}
 				sb.append('\n');
@@ -175,24 +216,24 @@ public class AreaFix implements IRobot {
 	private String rem(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.echoarea().queryBuilder().where()
-				.like("name", like).query();
+		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
+				.where().like("name", like).query();
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				if (ORMManager.subscription().queryBuilder().where()
+				if (ORMManager.INSTANSE.subscription().queryBuilder().where()
 						.eq("echoarea_id", earea).and().eq("link_id", link)
 						.query().isEmpty()) {
 					sb.append(" is not subscribed");
 				} else {
-					DeleteBuilder<Subscription, ?> del = ORMManager
+					DeleteBuilder<Subscription, ?> del = ORMManager.INSTANSE
 							.subscription().deleteBuilder();
 					del.where().eq("link_id", link).and()
 							.eq("echoarea_id", earea);
-					ORMManager.subscription().delete(del.prepare());
+					ORMManager.INSTANSE.subscription().delete(del.prepare());
 					sb.append(" unsubscribed");
 				}
 				sb.append('\n');
@@ -205,22 +246,22 @@ public class AreaFix implements IRobot {
 	private String rescan(Link link, String area, int num) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.echoarea().queryBuilder().where()
-				.like("name", like).query();
+		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
+				.where().like("name", like).query();
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				List<Subscription> sub = ORMManager.subscription()
+				List<Subscription> sub = ORMManager.INSTANSE.subscription()
 						.queryBuilder().where().eq("echoarea_id", earea).and()
 						.eq("link_id", link).query();
 				if (sub.isEmpty()) {
 					sb.append(" is not subscribed");
 				} else {
 					long last = sub.get(0).getLast();
-					List<String[]> maxs = ORMManager
+					List<String[]> maxs = ORMManager.INSTANSE
 							.echomail()
 							.queryRaw(
 									"select id from echomail where echoarea_id="
@@ -238,11 +279,12 @@ public class AreaFix implements IRobot {
 								last = id;
 							}
 							{
-								DeleteBuilder<Readsign, ?> db = ORMManager
+								DeleteBuilder<Readsign, ?> db = ORMManager.INSTANSE
 										.readsign().deleteBuilder();
 								db.where().eq("echomail_id", id).and()
 										.eq("link_id", link);
-								ORMManager.readsign().delete(db.prepare());
+								ORMManager.INSTANSE.readsign().delete(
+										db.prepare());
 							}
 							nums++;
 						} catch (RuntimeException e) {
@@ -253,7 +295,7 @@ public class AreaFix implements IRobot {
 						last = 0L;
 					}
 					{
-						UpdateBuilder<Subscription, ?> upd = ORMManager
+						UpdateBuilder<Subscription, ?> upd = ORMManager.INSTANSE
 								.subscription().updateBuilder();
 						if (last > 0) {
 							last--;
@@ -261,7 +303,8 @@ public class AreaFix implements IRobot {
 						upd.updateColumnValue("lastmessageid", last);
 						upd.where().eq("link_id", link).and()
 								.eq("echoarea_id", earea);
-						ORMManager.subscription().update(upd.prepare());
+						ORMManager.INSTANSE.subscription()
+								.update(upd.prepare());
 					}
 					sb.append(" rescanned " + nums + " messages");
 				}

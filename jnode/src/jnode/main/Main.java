@@ -35,7 +35,8 @@ public class Main {
 				"binkp.port"), BINKD_INBOUND("binkp.inbound"), BINKD_CLIENT(
 				"binkp.client"), BINKD_SERVER("binkp.server"), LOG_LEVEL(
 				"log.level"), NODELIST_PATH("nodelist.path"), NODELIST_INDEX(
-				"nodelist.index");
+				"nodelist.index"), FILEECHO_ENABLE("fileecho.enable"), FILEECHO_PATH(
+				"fileecho.path");
 		private String cfgline;
 
 		private Settings(String cfgline) {
@@ -53,7 +54,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.1";
+		private final String version = "jNode/0.4.2ft";
 
 		public String getSysop() {
 			return sysop;
@@ -81,6 +82,11 @@ public class Main {
 
 	}
 
+	/**
+	 * Папочка для складывания входящих файликов
+	 * 
+	 * @return
+	 */
 	public static String getInbound() {
 		String inbound = settings.get(Settings.BINKD_INBOUND.cfgline);
 		if (inbound == null) {
@@ -89,6 +95,11 @@ public class Main {
 		return inbound;
 	}
 
+	/**
+	 * Папочка для поиска нодлиста
+	 * 
+	 * @return
+	 */
 	public static String getNodelistPath() {
 		String path = settings.get(Settings.NODELIST_PATH.cfgline);
 		if (path == null) {
@@ -101,6 +112,22 @@ public class Main {
 		String idx = settings.get(Settings.NODELIST_INDEX.cfgline);
 		if (idx == null) {
 			idx = "nodelist.idx";
+		}
+		return idx;
+	}
+
+	public static boolean isFileechoEnable() {
+		String idx = settings.get(Settings.FILEECHO_ENABLE.cfgline);
+		if (idx == null) {
+			return false;
+		}
+		return true;
+	}
+
+	public static String getFileechoPath() {
+		String idx = settings.get(Settings.FILEECHO_PATH.cfgline);
+		if (idx == null) {
+			return getInbound();
 		}
 		return idx;
 	}
@@ -149,7 +176,7 @@ public class Main {
 		} else {
 			new Main(args[0]);
 			try {
-				ORMManager.getInstanse().start(Main.settings);
+				ORMManager.INSTANSE.start(Main.settings);
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error(e.getMessage());
@@ -192,7 +219,7 @@ public class Main {
 				Timer timer = new Timer();
 				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
 			}
-			logger.info("Запускается PollQueue");
+			logger.debug("Запускается PollQueue");
 			while (true) {
 				try {
 					PollQueue.INSTANSE.poll();
