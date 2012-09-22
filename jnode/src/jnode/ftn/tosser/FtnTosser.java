@@ -28,7 +28,7 @@ import jnode.ftn.types.FtnMessage;
 import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.Main;
-import jnode.main.threads.Client.Poll;
+import jnode.main.threads.PollQueue;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.FtnNdlAddress.Status;
 import jnode.ndl.NodelistScanner;
@@ -52,7 +52,6 @@ public class FtnTosser {
 		if (message == null) {
 			return;
 		}
-		List<Link> pollAfterEnd = new ArrayList<Link>();
 		Map<String, Integer> tossed = new HashMap<String, Integer>();
 		Map<String, Integer> bad = new HashMap<String, Integer>();
 		FtnPkt[] pkts = FtnTools.unpack(message);
@@ -109,6 +108,13 @@ public class FtnTosser {
 												.getToAddr().toString()));
 						continue;
 					}
+					if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
+						try {
+							FtnTools.writeReply(ftnm, "ARQ reply",
+									"Your message was successfully reached this system");
+						} catch (SQLException e) {
+						}
+					}
 					try {
 						List<Rewrite> rewrites = ORMManager.rewrite()
 								.queryBuilder().orderBy("nice", true).where()
@@ -147,10 +153,6 @@ public class FtnTosser {
 									.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
 											ftnm.getFromAddr().toString(), ftnm
 													.getToAddr().toString()));
-							if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
-								FtnTools.writeReply(ftnm, "ARQ reply",
-										"Your message was successfully reached this system and holds on");
-							}
 						} else {
 							routeVia = ORMManager.link().queryForSameId(
 									routeVia);
@@ -159,12 +161,7 @@ public class FtnTosser {
 											ftnm.getFromAddr().toString(), ftnm
 													.getToAddr().toString(),
 											routeVia.getLinkAddress()));
-							pollAfterEnd.add(routeVia);
-							if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
-								FtnTools.writeReply(ftnm, "ARQ reply",
-										"Your message was successfully transmitted via this system and routed to "
-												+ routeVia.getLinkAddress());
-							}
+							PollQueue.INSTANSE.add(routeVia);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -297,13 +294,6 @@ public class FtnTosser {
 			logger.warn("Уничтожено сообщений:");
 			for (String area : bad.keySet()) {
 				logger.warn(String.format("\t%s - %d", area, bad.get(area)));
-			}
-		}
-		if (!pollAfterEnd.isEmpty()) {
-			for (Link l : pollAfterEnd) {
-				if (!"".equals(l.getProtocolHost()) && l.getProtocolPort() > 0) {
-					new Poll(l).start();
-				}
 			}
 		}
 	}

@@ -42,9 +42,9 @@ public class FtnAddress implements Serializable {
 	}
 
 	public FtnAddress() {
-		zone = 0;
-		node = 0;
+		zone = Main.info.getAddress().zone;
 		net = 0;
+		node = 0;
 		point = 0;
 	}
 

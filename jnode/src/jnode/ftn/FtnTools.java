@@ -594,7 +594,7 @@ public final class FtnTools {
 		netmail.setDate(new Date());
 		StringBuilder sb = new StringBuilder();
 		sb.append(String
-				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\001TID: %s\nHello, %s!\n\n",
+				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
 						fmsg.getMsgid(), Main.info.getAddress().toString(),
 						generate8d(), Main.info.getVersion(),
 						Main.info.getVersion(), netmail.getToName()));

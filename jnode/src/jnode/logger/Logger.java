@@ -14,7 +14,7 @@ public final class Logger {
 	private String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"HH:mm:ss");
-	private static final String LOG_FORMAT = "%s [%s] (tid:%04d,cnt:%04d) %s %s";
+	private static final String LOG_FORMAT = "%s [%s] (tid:%04d) %s %s";
 
 	public static Logger getLogger(Class<?> clazz) {
 		String className = clazz.getSimpleName();
@@ -35,8 +35,8 @@ public final class Logger {
 			String type = (_type == 2) ? "ERRR" : (_type == 3) ? "WARN"
 					: (_type == 4) ? "INFO" : (_type == 5) ? "DEBG" : "";
 			System.out.println(String.format(LOG_FORMAT, type, DATE_FORMAT
-					.format(new Date()), Thread.currentThread().getId(), Thread
-					.activeCount(), className, log));
+					.format(new Date()), Thread.currentThread().getId(),
+					className, log));
 		}
 	}
 

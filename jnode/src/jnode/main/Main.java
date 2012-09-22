@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
-import jnode.main.threads.Client;
+import jnode.main.threads.PollQueue;
+import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
 import jnode.orm.ORMManager;
 
@@ -189,10 +190,15 @@ public class Main {
 			}
 			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
 				Timer timer = new Timer();
-				timer.schedule(new Client(), delay * 1000, period * 1000);
+				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
 			}
-
-			logger.info("jNode завершен");
+			while (true) {
+				try {
+					PollQueue.INSTANSE.poll();
+					Thread.sleep(1000);
+				} catch (Exception ignore) {
+				}
+			}
 		}
 
 	}

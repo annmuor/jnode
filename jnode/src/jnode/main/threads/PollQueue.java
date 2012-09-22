@@ -1,21 +1,46 @@
 package jnode.main.threads;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.HashSet;
+import java.util.Set;
 
 import jnode.dto.Link;
 import jnode.logger.Logger;
-import jnode.orm.ORMManager;
 import jnode.protocol.binkp.BinkpConnector;
 import jnode.protocol.io.Connector;
 import jnode.protocol.io.exception.ProtocolException;
 
-public class Client extends TimerTask {
-	private static final Logger logger = Logger.getLogger(Client.class);
+/**
+ * 
+ * @author kreon
+ * 
+ */
+public enum PollQueue {
+	INSTANSE;
+	private Set<Link> queue;
 
-	public static class Poll extends Thread {
+	private PollQueue() {
+		queue = new HashSet<Link>();
+	}
+
+	public synchronized void poll() {
+		if (queue.size() > 0) {
+			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
+			queue = new HashSet<Link>();
+			for (Link link : currentQueue) {
+				if (!"".equals(link.getLinkAddress())
+						&& link.getProtocolPort() > 0) {
+					new Poll(link).start();
+				}
+			}
+		}
+	}
+
+	public void add(Link link) {
+		queue.add(link);
+	}
+
+	private static class Poll extends Thread {
 		private static final Logger logger = Logger.getLogger(Poll.class);
 		private Link link;
 
@@ -37,26 +62,6 @@ public class Client extends TimerTask {
 			} catch (ProtocolException e) {
 				logger.error("Ошибка протокола:" + e.getMessage());
 			}
-		}
-	}
-
-	@Override
-	public void run() {
-		try {
-			List<Link> links = ORMManager.link().queryForAll();
-			List<Thread> thread = new ArrayList<Thread>();
-			for (Link l : links) {
-				if (!"".equals(l.getProtocolHost()) && l.getProtocolPort() > 0) {
-					thread.add(new Poll(l));
-				}
-			}
-			for (Thread t : thread) {
-				t.start();
-				t = null;
-			}
-		} catch (SQLException e) {
-			logger.error("Не могу получить список узлов:"
-					+ e.getLocalizedMessage());
 		}
 	}
 }

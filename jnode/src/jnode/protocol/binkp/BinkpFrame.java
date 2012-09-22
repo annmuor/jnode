@@ -24,10 +24,10 @@ public class BinkpFrame implements Frame {
 		this.arg = arg;
 		isCommand = true;
 		this.command = command;
-		ByteBuffer buf = ByteBuffer.allocate(1 + ((arg != null) ? arg.length()
-				: 0));
+		int arglen = (arg == null) ? 0 : arg.getBytes().length;
+		ByteBuffer buf = ByteBuffer.allocate(1 + arglen);
 		buf.put((byte) command.getCmd());
-		if (arg != null) {
+		if (arglen > 0) {
 			buf.put(arg.getBytes());
 		}
 		this.data = buf.array();

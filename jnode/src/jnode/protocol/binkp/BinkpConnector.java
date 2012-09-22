@@ -250,6 +250,9 @@ public class BinkpConnector implements ProtocolConnector {
 					if (frame.getArg().matches("^.* binkp/1\\.1$")) {
 						binkp1 = true;
 						logger.info("Версия протокола 1.1");
+					} else {
+						binkp1 = false;
+						logger.info("Версия протокола 1.0");
 					}
 				}
 			} else if (frame.getCommand().equals(BinkpCommand.M_ADR)) {
@@ -380,17 +383,18 @@ public class BinkpConnector implements ProtocolConnector {
 			 */
 		} else if (connectionState == STATE_TRANSFER) {
 			if (frame.isCommand()) {
+				String arg = frame.getArg();
 				if (frame.getCommand().equals(BinkpCommand.M_FILE)) {
 					Pattern p[] = new Pattern[] {
-							Pattern.compile("^(\\S+) (\\d+) (\\d+) 0$"),
-							Pattern.compile("^(\\S+ \\d+ \\d+) -1$") };
-					Matcher m = p[1].matcher(frame.getArg());
+							Pattern.compile("^(\\S+) (\\d+) (\\d+) 0\0?$"),
+							Pattern.compile("^(\\S+ \\d+ \\d+) -1\0?$") };
+					Matcher m = p[1].matcher(arg);
 					if (m.matches()) {
 						frames.add(new BinkpFrame(BinkpCommand.M_GET, m
 								.group(1) + " 0"));
 						return;
 					}
-					m = p[0].matcher(frame.getArg());
+					m = p[0].matcher(arg);
 					if (m.matches()) {
 						currentMessage = new Message(m.group(1), new Integer(
 								m.group(2)));
@@ -408,7 +412,7 @@ public class BinkpConnector implements ProtocolConnector {
 					reob = true;
 				} else if (frame.getCommand().equals(BinkpCommand.M_GOT)
 						&& sendfile) {
-					Pattern p = Pattern.compile("^(\\S+) (\\d+) (\\d+)$");
+					Pattern p = Pattern.compile("^(\\S+) (\\d+) (\\d+)\0?$");
 					Matcher m = p.matcher(frame.getArg());
 					if (m.matches()) {
 						String messageName = m.group(1);
