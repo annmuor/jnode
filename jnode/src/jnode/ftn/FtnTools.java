@@ -24,11 +24,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
 import jnode.dto.Rewrite;
 import jnode.dto.Robot;
 import jnode.dto.Route;
+import jnode.dto.Subscription;
 import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
@@ -475,23 +477,23 @@ public final class FtnTools {
 								+ nfa + ")"));
 					}
 					message.setFromAddr(nfa);
-					logger.info("Перезаписываем fromAddr на " + fields[i]);
+					logger.debug("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 1:
 					message.setToAddr(new FtnAddress(fields[i]));
-					logger.info("Перезаписываем toAddr на " + fields[i]);
+					logger.debug("Перезаписываем toAddr на " + fields[i]);
 					break;
 				case 2:
 					message.setFromName(fields[i]);
-					logger.info("Перезаписываем fromAddr на " + fields[i]);
+					logger.debug("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 3:
 					message.setToName(fields[i]);
-					logger.info("Перезаписываем fromAddr на " + fields[i]);
+					logger.debug("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 4:
 					message.setSubject(fields[i]);
-					logger.info("Перезаписываем fromAddr на " + fields[i]);
+					logger.debug("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				}
 			}
@@ -517,7 +519,7 @@ public final class FtnTools {
 						isRobot = true;
 						Class<?> clazz = Class.forName(robot.getClassName());
 						IRobot irobot = (IRobot) clazz.newInstance();
-						logger.info("Сообщение " + message.getMsgid()
+						logger.debug("Сообщение " + message.getMsgid()
 								+ " передано роботу " + robotname);
 						irobot.execute(message);
 					}
@@ -615,7 +617,7 @@ public final class FtnTools {
 		}
 		netmail.setRouteVia(routeVia);
 		ORMManager.netmail().create(netmail);
-		logger.info("Создан Netmail #" + netmail.getId());
+		logger.debug("Создан Netmail #" + netmail.getId());
 	}
 
 	/**
@@ -674,4 +676,23 @@ public final class FtnTools {
 		return packed;
 	}
 
+	public static List<Link> getSubscribers(Echoarea area, Link link) {
+		List<Link> links = new ArrayList<Link>();
+		try {
+			List<Subscription> subs = ORMManager.subscription().queryForEq(
+					"echoarea_id", area);
+			for (Subscription s : subs) {
+				if (!s.getLink().equals(link))
+					links.add(ORMManager.link().queryForSameId(s.getLink()));
+			}
+		} catch (Exception e) {
+			logger.warn("Не могу получить список подписчиков эхи "
+					+ area.getName());
+		}
+		return links;
+	}
+
+	public static List<Link> getSubscribers(Echoarea area) {
+		return getSubscribers(area, null);
+	}
 }

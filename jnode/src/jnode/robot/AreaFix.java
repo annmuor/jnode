@@ -265,6 +265,7 @@ public class AreaFix implements IRobot {
 					}
 					sb.append(" rescanned " + nums + " messages");
 				}
+				sb.append('\n');
 			}
 		}
 		sb.append('\n');

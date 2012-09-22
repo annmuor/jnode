@@ -53,7 +53,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.0";
+		private final String version = "jNode/0.4.1";
 
 		public String getSysop() {
 			return sysop;
@@ -192,6 +192,7 @@ public class Main {
 				Timer timer = new Timer();
 				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
 			}
+			logger.info("Запускается PollQueue");
 			while (true) {
 				try {
 					PollQueue.INSTANSE.poll();

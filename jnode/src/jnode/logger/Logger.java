@@ -14,7 +14,7 @@ public final class Logger {
 	private String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"HH:mm:ss");
-	private static final String LOG_FORMAT = "%s [%s] (tid:%04d) %s %s";
+	private static final String LOG_FORMAT = "%s %s [%08d] %s %s";
 
 	public static Logger getLogger(Class<?> clazz) {
 		String className = clazz.getSimpleName();

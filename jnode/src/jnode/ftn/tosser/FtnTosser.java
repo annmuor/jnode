@@ -70,17 +70,19 @@ public class FtnTosser {
 					}
 				}
 				if (ftnm.isNetmail()) {
-					// проверить from и to
+					boolean drop = false;
 					FtnNdlAddress from = NodelistScanner.getInstance()
 							.isExists(ftnm.getFromAddr());
 					FtnNdlAddress to = NodelistScanner.getInstance().isExists(
 							ftnm.getToAddr());
+
 					if (from == null) {
 						logger.warn(String
 								.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
 										ftnm.getFromAddr().toString(), ftnm
 												.getToAddr().toString()));
-						continue;
+						drop = true;
+
 					} else if (to == null) {
 						try {
 							FtnTools.writeReply(
@@ -94,7 +96,8 @@ public class FtnTosser {
 								.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
 										ftnm.getFromAddr().toString(), ftnm
 												.getToAddr().toString()));
-						continue;
+
+						drop = true;
 					} else if (to.getStatus().equals(Status.DOWN)) {
 						try {
 							FtnTools.writeReply(ftnm, "Destination is DOWN",
@@ -106,66 +109,73 @@ public class FtnTosser {
 								.format("Netmail %s -> %s уничтожен ( получатель имеет статус Down )",
 										ftnm.getFromAddr().toString(), ftnm
 												.getToAddr().toString()));
-						continue;
+						drop = true;
 					}
-					if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
-						try {
-							FtnTools.writeReply(ftnm, "ARQ reply",
-									"Your message was successfully reached this system");
-						} catch (SQLException e) {
-						}
-					}
-					try {
-						List<Rewrite> rewrites = ORMManager.rewrite()
-								.queryBuilder().orderBy("nice", true).where()
-								.eq("type", (Rewrite.Type.NETMAIL)).query();
-						for (Rewrite rewrite : rewrites) {
-							if (FtnTools.completeMask(rewrite, ftnm)) {
-								logger.info("(N) Найдено соответствие, переписываем сообщение "
-										+ ftnm.getMsgid());
-								FtnTools.rewrite(rewrite, ftnm);
-								if (rewrite.isLast()) {
-									break;
-								}
+					
+					if (drop) {
+						Integer n = bad.get("netmail");
+						bad.put("netmail", (n == null) ? 1 : n + 1);
+					} else {
+						if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
+							try {
+								FtnTools.writeReply(ftnm, "ARQ reply",
+										"Your message was successfully reached this system");
+							} catch (SQLException e) {
 							}
 						}
-					} catch (SQLException e1) {
-						logger.warn("Не удалось получить rewrite", e1);
-					}
-					Link routeVia = FtnTools.getRouting(ftnm);
-
-					try {
-						Netmail netmail = new Netmail();
-						netmail.setRouteVia(routeVia);
-						netmail.setDate(ftnm.getDate());
-						netmail.setFromFTN(ftnm.getFromAddr().toString());
-						netmail.setToFTN(ftnm.getToAddr().toString());
-						netmail.setFromName(ftnm.getFromName());
-						netmail.setToName(ftnm.getToName());
-						netmail.setSubject(ftnm.getSubject());
-						netmail.setText(ftnm.getText());
-						netmail.setAttr(ftnm.getAttribute());
-						ORMManager.netmail().create(netmail);
-						Integer n = tossed.get("netmail");
-						tossed.put("netmail", (n == null) ? 1 : n + 1);
-						if (routeVia == null) {
-							logger.warn(String
-									.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
-											ftnm.getFromAddr().toString(), ftnm
-													.getToAddr().toString()));
-						} else {
-							routeVia = ORMManager.link().queryForSameId(
-									routeVia);
-							logger.info(String
-									.format("Netmail %s -> %s будет отправлен через %s",
-											ftnm.getFromAddr().toString(), ftnm
-													.getToAddr().toString(),
-											routeVia.getLinkAddress()));
-							PollQueue.INSTANSE.add(routeVia);
+						try {
+							List<Rewrite> rewrites = ORMManager.rewrite()
+									.queryBuilder().orderBy("nice", true)
+									.where().eq("type", (Rewrite.Type.NETMAIL))
+									.query();
+							for (Rewrite rewrite : rewrites) {
+								if (FtnTools.completeMask(rewrite, ftnm)) {
+									logger.debug("(N) Найдено соответствие, переписываем сообщение "
+											+ ftnm.getMsgid());
+									FtnTools.rewrite(rewrite, ftnm);
+									if (rewrite.isLast()) {
+										break;
+									}
+								}
+							}
+						} catch (SQLException e1) {
+							logger.warn("Не удалось получить rewrite", e1);
 						}
-					} catch (SQLException e) {
-						e.printStackTrace();
-						logger.error("Ошибка при сохранении нетмейла", e);
+						Link routeVia = FtnTools.getRouting(ftnm);
+
+						try {
+							Netmail netmail = new Netmail();
+							netmail.setRouteVia(routeVia);
+							netmail.setDate(ftnm.getDate());
+							netmail.setFromFTN(ftnm.getFromAddr().toString());
+							netmail.setToFTN(ftnm.getToAddr().toString());
+							netmail.setFromName(ftnm.getFromName());
+							netmail.setToName(ftnm.getToName());
+							netmail.setSubject(ftnm.getSubject());
+							netmail.setText(ftnm.getText());
+							netmail.setAttr(ftnm.getAttribute());
+							ORMManager.netmail().create(netmail);
+							Integer n = tossed.get("netmail");
+							tossed.put("netmail", (n == null) ? 1 : n + 1);
+							if (routeVia == null) {
+								logger.warn(String
+										.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
+												ftnm.getFromAddr().toString(),
+												ftnm.getToAddr().toString()));
+							} else {
+								routeVia = ORMManager.link().queryForSameId(
+										routeVia);
+								logger.debug(String
+										.format("Netmail %s -> %s будет отправлен через %s",
+												ftnm.getFromAddr().toString(),
+												ftnm.getToAddr().toString(),
+												routeVia.getLinkAddress()));
+								PollQueue.INSTANSE.add(routeVia);
+							}
+						} catch (SQLException e) {
+							e.printStackTrace();
+							logger.error("Ошибка при сохранении нетмейла", e);
+						}
 					}
 				} else if (message.isSecure()) {
 					try {
@@ -226,7 +236,7 @@ public class FtnTosser {
 										.query();
 								for (Rewrite rewrite : rewrites) {
 									if (FtnTools.completeMask(rewrite, ftnm)) {
-										logger.info("(E) Найдено соответствие, переписываем сообщение "
+										logger.debug("(E) Найдено соответствие, переписываем сообщение "
 												+ ftnm.getMsgid());
 										FtnTools.rewrite(rewrite, ftnm);
 										if (rewrite.isLast()) {
@@ -268,6 +278,8 @@ public class FtnTosser {
 							ORMManager.readsign().create(sign);
 							Integer n = tossed.get(ftnm.getArea());
 							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
+							PollQueue.INSTANSE.addAll(FtnTools
+									.getSubscribers(area, link));
 						} else {
 							Integer n = bad.get(ftnm.getArea());
 							bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
@@ -280,7 +292,7 @@ public class FtnTosser {
 						bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
 					}
 				} else {
-					logger.info("Эхомейл по unsecure-соединению - уничтожен");
+					logger.warn("Эхомейл по unsecure-соединению - уничтожен");
 				}
 			}
 		}
@@ -363,7 +375,7 @@ public class FtnTosser {
 					signs.add((Long) result[1]);
 					subcription.put((Long) result[2], (Long) result[1]);
 					if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-						logger.info(our2d + " есть в синбаях для "
+						logger.debug(our2d + " есть в синбаях для "
 								+ link_address);
 					} else {
 						seenby.add(our2d);
@@ -391,7 +403,7 @@ public class FtnTosser {
 						message.setText((String) result[8]);
 						message.setSeenby(new ArrayList<Ftn2D>(seenby));
 						message.setPath(path);
-						logger.info("Пакуем сообщение #" + result[1] + " ("
+						logger.debug("Пакуем сообщение #" + result[1] + " ("
 								+ result[0] + ") для " + link.getLinkAddress());
 						messages.add(message);
 					}
