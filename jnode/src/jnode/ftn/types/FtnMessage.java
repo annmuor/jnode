@@ -62,36 +62,6 @@ public class FtnMessage {
 		path = new ArrayList<Ftn2D>();
 	}
 
-	public FtnMessage(String fromName, String toName, FtnAddress fromAddr,
-			String area, String subject, String text) {
-		super();
-		this.fromName = fromName;
-		this.toName = toName;
-		this.fromAddr = fromAddr;
-		this.area = area;
-		this.subject = subject;
-		this.text = text;
-		date = new Date();
-		isNetmail = false;
-		seenby = new ArrayList<Ftn2D>();
-		path = new ArrayList<Ftn2D>();
-	}
-
-	public FtnMessage(String fromName, String toName, FtnAddress fromAddr,
-			FtnAddress toAddr, String subject, String text) {
-		super();
-		this.fromName = fromName;
-		this.toName = toName;
-		this.fromAddr = fromAddr;
-		this.toAddr = toAddr;
-		this.subject = subject;
-		this.text = text;
-		date = new Date();
-		isNetmail = true;
-		seenby = new ArrayList<Ftn2D>();
-		path = new ArrayList<Ftn2D>();
-	}
-
 	public String getFromName() {
 		return fromName;
 	}
@@ -122,8 +92,6 @@ public class FtnMessage {
 
 	public void setToAddr(FtnAddress toAddr) {
 		this.toAddr = toAddr;
-		area = "";
-		isNetmail = true;
 	}
 
 	public String getArea() {
@@ -132,8 +100,6 @@ public class FtnMessage {
 
 	public void setArea(String area) {
 		this.area = area;
-		isNetmail = false;
-		toAddr = new FtnAddress();
 	}
 
 	public String getSubject() {
@@ -184,6 +150,10 @@ public class FtnMessage {
 		return isNetmail;
 	}
 
+	public void setNetmail(boolean isNetmail) {
+		this.isNetmail = isNetmail;
+	}
+
 	public int getAttribute() {
 		return attribute;
 	}
@@ -198,14 +168,14 @@ public class FtnMessage {
 		try {
 			os.write(new byte[] { 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
-			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNode()) : 0);
+			os.writeShort(FtnTools.revShort(toAddr.getNode()));
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
-			os.writeShort((isNetmail) ? FtnTools.revShort(toAddr.getNet()) : 0);
+			os.writeShort(FtnTools.revShort(toAddr.getNet()));
 			if (isNetmail) {
 				attribute &= ATTR_PVT;
 				os.writeShort(FtnTools.revShort((short) attribute)); // attributes
 			} else {
-				os.write(new byte[] { 1, 0 });
+				os.write(new byte[] { 0, 0 });
 			}
 			os.write(new byte[] { 0, 0 });
 			os.write(FtnTools.substr(format.format(date), 19));

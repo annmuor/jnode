@@ -134,4 +134,8 @@ public enum ORMManager {
 	public Dao<Rewrite, ?> rewrite() {
 		return daoRewrite;
 	}
+
+	public Dao<LinkOption, ?> linkoption() {
+		return daoLinkOption;
+	}
 }

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -25,8 +24,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.j256.ormlite.dao.GenericRawResults;
+
 import jnode.dto.Echoarea;
 import jnode.dto.Link;
+import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
 import jnode.dto.Rewrite;
 import jnode.dto.Robot;
@@ -318,14 +320,59 @@ public final class FtnTools {
 	}
 
 	/**
+	 * Опции для линков
+	 * 
+	 * @param link
+	 * @param option
+	 * @return
+	 */
+	private static String getOption(Link link, String option) {
+		String value = "";
+		try {
+			GenericRawResults<String[]> res = ORMManager.INSTANSE
+					.linkoption()
+					.queryRaw(
+							String.format(
+									"SELECT value FROM linkoptions WHERE link_id=%d AND option='%s'",
+									link.getId(), option.toLowerCase()));
+			String[] q = res.getFirstResult();
+			if (q != null) {
+				value = q[0];
+			}
+		} catch (SQLException e) {
+		}
+		return value;
+	}
+
+	public static String getOptionString(Link link, String option) {
+		return getOption(link, option);
+	}
+
+	public static boolean getOptionBooleanDefFalse(Link link, String option) {
+		String s = getOption(link, option);
+		if (s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON")) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean getOptionBooleanDefTrue(Link link, String option) {
+		String s = getOption(link, option);
+		if (s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF")) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Конвертер
 	 * 
 	 * @param mail
 	 * @return
 	 */
 	public static FtnMessage netmailToFtnMessage(Netmail mail) {
-		// update fields
 		FtnMessage message = new FtnMessage();
+		message.setNetmail(true);
 		message.setFromName(mail.getFromName());
 		message.setToName(mail.getToName());
 		message.setFromAddr(new FtnAddress(mail.getFromFTN()));
@@ -629,30 +676,44 @@ public final class FtnTools {
 	 * @param password
 	 * @return
 	 */
-	public static List<Message> pack(List<FtnMessage> messages, FtnAddress to,
-			String password) {
+	public static List<Message> pack(List<FtnMessage> messages, Link link) {
 		byte[] data;
 		List<Message> packed = new ArrayList<Message>();
-		FtnPkt netmail = new FtnPkt(Main.info.getAddress(), to, password,
+		FtnAddress to = new FtnAddress(link.getLinkAddress());
+		String password = link.getPaketPassword();
+		FtnPkt nopack = new FtnPkt(Main.info.getAddress(), to, password,
 				new Date());
-		FtnPkt echomail = new FtnPkt(Main.info.getAddress(), to, password,
+		FtnPkt pack = new FtnPkt(Main.info.getAddress(), to, password,
 				new Date());
+		boolean packNetmail = getOptionBooleanDefFalse(link,
+				LinkOption.BOOLEAN_PACK_NETMAIL);
+		boolean packEchomail = getOptionBooleanDefTrue(link,
+				LinkOption.BOOLEAN_PACK_ECHOMAIL);
 		for (FtnMessage message : messages) {
 			if (message.isNetmail()) {
-				netmail.getMessages().add(message);
+				if (packNetmail) {
+					pack.getMessages().add(message);
+				} else {
+					nopack.getMessages().add(message);
+				}
 			} else {
-				echomail.getMessages().add(message);
+				if (packEchomail) {
+					pack.getMessages().add(message);
+				} else {
+					nopack.getMessages().add(message);
+				}
 			}
 		}
-		if (netmail.getMessages().size() > 0) {
-			data = netmail.pack();
+		if (nopack.getMessages().size() > 0) {
+			data = nopack.pack();
 			Message net = new Message(String.format("%s.pkt", generate8d()),
 					data.length);
 			net.setInputStream(new ByteArrayInputStream(data));
 			packed.add(net);
 		}
-		if (echomail.getMessages().size() > 0) {
-			data = echomail.pack();
+		if (pack.getMessages().size() > 0) {
+			data = pack.pack();
+
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ZipOutputStream zos = new ZipOutputStream(out);
 			zos.setMethod(ZipOutputStream.DEFLATED);
@@ -698,7 +759,11 @@ public final class FtnTools {
 		return getSubscribers(area, null);
 	}
 
-	public static HashMap<String, String> getLinkOptions() {
-		return null;
+	public static void moveToBad(FtnPkt pkt) {
+		ByteArrayInputStream bis = new ByteArrayInputStream(pkt.pack());
+		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
+				new Date().getTime() / 1000), bis.available());
+		unpack(message);
 	}
+
 }

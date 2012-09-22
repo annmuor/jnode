@@ -96,7 +96,7 @@ public class FtnPkt {
 			}
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 0, 19, 4, 0, 0 });// prodcode 19FF
+			os.write(new byte[] { 0, 0, 0, 1, 19, 4, 1, 0 });// prodcode 19FF
 																// ver 0.4
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));

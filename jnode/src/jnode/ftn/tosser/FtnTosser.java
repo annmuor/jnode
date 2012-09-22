@@ -17,6 +17,7 @@ import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.Link;
+import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
 import jnode.dto.Readsign;
 import jnode.dto.Rewrite;
@@ -57,10 +58,14 @@ public class FtnTosser {
 		FtnPkt[] pkts = FtnTools.unpack(message);
 		for (FtnPkt pkt : pkts) {
 			if (message.isSecure()) {
-				if (!link.getPaketPassword()
-						.equalsIgnoreCase(pkt.getPassword())) {
-					logger.warn("Пароль для пакета не совпал - пакет уничтожен");
-					continue;
+				if (!FtnTools.getOptionBooleanDefFalse(link,
+						LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
+					if (!link.getPaketPassword().equalsIgnoreCase(
+							pkt.getPassword())) {
+						logger.warn("Пароль для пакета не совпал - пакет перемещен в inbound");
+						FtnTools.moveToBad(pkt);
+						continue;
+					}
 				}
 			}
 			for (FtnMessage ftnm : pkt.getMessages()) {
@@ -170,7 +175,10 @@ public class FtnTosser {
 												ftnm.getFromAddr().toString(),
 												ftnm.getToAddr().toString(),
 												routeVia.getLinkAddress()));
-								PollQueue.INSTANSE.add(routeVia);
+								if (FtnTools.getOptionBooleanDefTrue(link,
+										LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+									PollQueue.INSTANSE.add(routeVia);
+								}
 							}
 						} catch (SQLException e) {
 							e.printStackTrace();
@@ -179,24 +187,27 @@ public class FtnTosser {
 					}
 				} else if (message.isSecure()) {
 					try {
-						Echoarea area;
-						Subscription sub;
-						boolean flag = true;
+						Echoarea area = null;
+						boolean flag = false;
 						{
 							List<Echoarea> areas = ORMManager.INSTANSE
 									.echoarea().queryForEq("name",
 											ftnm.getArea().toLowerCase());
 							if (areas.isEmpty()) {
-								// TODO: autoCreate
-								area = new Echoarea();
-								area.setName(ftnm.getArea().toLowerCase());
-								area.setDescription("Autocreated echoarea");
-								ORMManager.INSTANSE.echoarea().create(area);
-								sub = new Subscription();
-								sub.setArea(area);
-								sub.setLink(link);
-								sub.setLast(0L);
-								ORMManager.INSTANSE.subscription().create(sub);
+								if (FtnTools.getOptionBooleanDefFalse(link,
+										LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+									area = new Echoarea();
+									area.setName(ftnm.getArea().toLowerCase());
+									area.setDescription("Autocreated echoarea");
+									ORMManager.INSTANSE.echoarea().create(area);
+									Subscription sub = new Subscription();
+									sub.setArea(area);
+									sub.setLink(link);
+									sub.setLast(0L);
+									ORMManager.INSTANSE.subscription().create(
+											sub);
+									flag = true;
+								}
 							} else {
 								area = areas.get(0);
 								List<Subscription> subs = ORMManager.INSTANSE
@@ -204,9 +215,7 @@ public class FtnTosser {
 										.eq("echoarea_id", area.getId()).and()
 										.eq("link_id", link.getId()).query();
 								if (!subs.isEmpty()) {
-									sub = subs.get(0);
-								} else {
-									flag = false;
+									flag = true;
 								}
 							}
 						}
@@ -245,7 +254,6 @@ public class FtnTosser {
 									}
 								}
 							} catch (SQLException e1) {
-								e1.printStackTrace();
 								logger.warn("Не удалось получить rewrite", e1);
 							}
 							Echomail mail = new Echomail();
@@ -260,26 +268,32 @@ public class FtnTosser {
 									true));
 							mail.setPath(FtnTools.write2D(ftnm.getPath(), false));
 							ORMManager.INSTANSE.echomail().create(mail);
-							try {
-								Dupe dupe = new Dupe();
-								dupe.setEchoarea(area);
-								dupe.setMsgid(ftnm.getMsgid());
-								ORMManager.INSTANSE.dupe().create(dupe);
-							} catch (SQLException e1) {
-								logger.warn(
-										"Не удалось записать "
-												+ ftnm.getMsgid()
-												+ " на в базу дюпов", e1);
+
+							{
+								try {
+									Dupe dupe = new Dupe();
+									dupe.setEchoarea(area);
+									dupe.setMsgid(ftnm.getMsgid());
+									ORMManager.INSTANSE.dupe().create(dupe);
+								} catch (SQLException e1) {
+								}
+
+								Readsign sign = new Readsign();
+								sign.setLink(link);
+								sign.setMail(mail);
+								ORMManager.INSTANSE.readsign().create(sign);
 							}
-							// метка что уже прочитано
-							Readsign sign = new Readsign();
-							sign.setLink(link);
-							sign.setMail(mail);
-							ORMManager.INSTANSE.readsign().create(sign);
+
 							Integer n = tossed.get(ftnm.getArea());
 							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-							PollQueue.INSTANSE.addAll(FtnTools.getSubscribers(
-									area, link));
+
+							for (Link l : FtnTools.getSubscribers(area, link)) {
+								if (FtnTools.getOptionBooleanDefFalse(l,
+										LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
+									PollQueue.INSTANSE.add(l);
+								}
+							}
+
 						} else {
 							Integer n = bad.get(ftnm.getArea());
 							bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
@@ -394,10 +408,12 @@ public class FtnTosser {
 							seenby.add(d2);
 						}
 						FtnMessage message = new FtnMessage();
+						message.setNetmail(false);
 						message.setArea(((String) result[0]).toUpperCase());
 						message.setFromName((String) result[3]);
 						message.setToName((String) result[4]);
 						message.setFromAddr(new FtnAddress((String) result[5]));
+						message.setToAddr(link_address);
 						message.setDate((Date) result[6]);
 						message.setSubject((String) result[7]);
 						message.setText((String) result[8]);
@@ -431,8 +447,7 @@ public class FtnTosser {
 					"Ошибка обработки echomail для " + link.getLinkAddress(), e);
 		}
 		if (!messages.isEmpty()) {
-			return FtnTools.pack(messages, link_address,
-					link.getPaketPassword());
+			return FtnTools.pack(messages, link);
 		} else {
 			return new ArrayList<Message>();
 		}
