@@ -48,6 +48,11 @@ public class AreaFix implements IRobot {
 			}
 			link = links.get(0);
 		}
+		if (!FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_AREAFIX)) {
+			FtnTools.writeReply(fmsg, "You are not welcome",
+					"Sorry, AreaFix is off for you");
+			return;
+		}
 		if (!link.getPaketPassword().equals(fmsg.getSubject())) {
 			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
 			return;
@@ -55,6 +60,7 @@ public class AreaFix implements IRobot {
 
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
+			line = line.toLowerCase();
 			if (help.matcher(line).matches()) {
 				FtnTools.writeReply(fmsg, "AreaFix help", help());
 			} else if (list.matcher(line).matches()) {
@@ -104,6 +110,7 @@ public class AreaFix implements IRobot {
 	private String help() {
 		return "Avalible commands:\n" + "%HELP - this message\n"
 				+ "%LIST - list of avalible areas\n"
+				+ "%QUERY - list of subscribed areas\n"
 				+ "+echo.area - subscribe echo.area\n"
 				+ "-echo.area - unsibscribe echo.area"
 				+ "+echo.area /r=N - subscribe and rescan N messages\n"

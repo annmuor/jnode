@@ -215,7 +215,7 @@ public class Main {
 				server.start();
 				server = null;
 			}
-			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
+			if (settings.get(Settings.BINKD_CLIENT.cfgline) != null) {
 				Timer timer = new Timer();
 				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
 			}

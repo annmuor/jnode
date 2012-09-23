@@ -18,6 +18,8 @@ public class LinkOption {
 	public static final String BOOLEAN_CRASH_NETMAIL = "CrashNetmail";
 	public static final String BOOLEAN_CRASH_ECHOMAIL = "CrashEchomail";
 	public static final String BOOLEAN_AUTOCREATE_AREA = "AreaAutoCreate";
+	public static final String BOOLEAN_POLL_BY_TIMEOT = "PollByTimeout";
+	public static final String BOOLEAN_AREAFIX = "AreaFix";
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
 	@DatabaseField(columnName = "option", canBeNull = false, uniqueIndexName = "lopt_idx")

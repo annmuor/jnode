@@ -412,7 +412,7 @@ public class FtnTosser {
 						message.setArea(((String) result[0]).toUpperCase());
 						message.setFromName((String) result[3]);
 						message.setToName((String) result[4]);
-						message.setFromAddr(new FtnAddress((String) result[5]));
+						message.setFromAddr(Main.info.getAddress());
 						message.setToAddr(link_address);
 						message.setDate((Date) result[6]);
 						message.setSubject((String) result[7]);

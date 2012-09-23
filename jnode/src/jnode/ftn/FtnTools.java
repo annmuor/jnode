@@ -632,6 +632,14 @@ public final class FtnTools {
 		return routeVia;
 	}
 
+	/**
+	 * Пишем ответ на нетмейл
+	 * 
+	 * @param fmsg
+	 * @param subject
+	 * @param text
+	 * @throws SQLException
+	 */
 	public static void writeReply(FtnMessage fmsg, String subject, String text)
 			throws SQLException {
 
@@ -738,6 +746,13 @@ public final class FtnTools {
 		return packed;
 	}
 
+	/**
+	 * Получаем подписчиков
+	 * 
+	 * @param area
+	 * @param link
+	 * @return
+	 */
 	public static List<Link> getSubscribers(Echoarea area, Link link) {
 		List<Link> links = new ArrayList<Link>();
 		try {
@@ -759,6 +774,11 @@ public final class FtnTools {
 		return getSubscribers(area, null);
 	}
 
+	/**
+	 * Кривые пакеты - в инбаунд
+	 * 
+	 * @param pkt
+	 */
 	public static void moveToBad(FtnPkt pkt) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(pkt.pack());
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),

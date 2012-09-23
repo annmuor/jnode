@@ -3,6 +3,9 @@ package jnode.main.threads;
 import java.sql.SQLException;
 import java.util.TimerTask;
 
+import jnode.dto.Link;
+import jnode.dto.LinkOption;
+import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 
@@ -12,7 +15,12 @@ public class TimerPoll extends TimerTask {
 	@Override
 	public void run() {
 		try {
-			PollQueue.INSTANSE.addAll(ORMManager.INSTANSE.link().queryForAll());
+			for (Link l : ORMManager.INSTANSE.link().queryForAll()) {
+				if (FtnTools.getOptionBooleanDefTrue(l,
+						LinkOption.BOOLEAN_POLL_BY_TIMEOT)) {
+					PollQueue.INSTANSE.add(l);
+				}
+			}
 		} catch (SQLException e) {
 			logger.error("Не могу получить список узлов");
 		}
