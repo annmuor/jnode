@@ -35,4 +35,17 @@
 + New joint poll queue instead of multi-thread polling
 + Echomail Crash flavour released
 ~ Protocol incompatibility with Argus fixed ( tested on 2:203/0 )
+22.09.2012, 0.4.2:
++ Miscelations options for links added
++ AreaFix's %query command added
+23.09.2012, 0.4.3:
+~ Bad packet is saving to inbound instead of rejecting it
+! FTC-0048 violation fixed. ( thanks to Bjorn Felten, 2:203/2 )
++ Logic of five link's options added: 
+- AreaAutoCreate - create area if not exists ( default false )
+- CrashEchomail  - make poll when new echomail avalible for this link ( default false )
+- CrashNetmail   - make poll when new netmail avalible for this link ( default true )
+- PackNetmail    - zip netmail ( default false )
+- PackEchomail   - zip echomail ( default true )
+- IgnorePktPwd   - dont't check password in pkt header ( tnaks to Pavel Gulcnhouck, 2:463/68 )
 
