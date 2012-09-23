@@ -22,7 +22,7 @@ public class LinkOption {
 	public static final String BOOLEAN_AREAFIX = "AreaFix";
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
-	@DatabaseField(columnName = "option", canBeNull = false, uniqueIndexName = "lopt_idx")
+	@DatabaseField(columnName = "name", canBeNull = false, uniqueIndexName = "lopt_idx")
 	private String option;
 	@DatabaseField(columnName = "value", canBeNull = false, dataType = DataType.LONG_STRING)
 	private String value;

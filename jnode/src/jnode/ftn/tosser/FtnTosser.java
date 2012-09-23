@@ -56,6 +56,7 @@ public class FtnTosser {
 		Map<String, Integer> tossed = new HashMap<String, Integer>();
 		Map<String, Integer> bad = new HashMap<String, Integer>();
 		FtnPkt[] pkts = FtnTools.unpack(message);
+		Set<Echoarea> affectedAreas = new HashSet<Echoarea>();
 		for (FtnPkt pkt : pkts) {
 			if (message.isSecure()) {
 				if (!FtnTools.getOptionBooleanDefFalse(link,
@@ -268,7 +269,7 @@ public class FtnTosser {
 									true));
 							mail.setPath(FtnTools.write2D(ftnm.getPath(), false));
 							ORMManager.INSTANSE.echomail().create(mail);
-
+							affectedAreas.add(area);
 							{
 								try {
 									Dupe dupe = new Dupe();
@@ -286,13 +287,6 @@ public class FtnTosser {
 
 							Integer n = tossed.get(ftnm.getArea());
 							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-
-							for (Link l : FtnTools.getSubscribers(area, link)) {
-								if (FtnTools.getOptionBooleanDefFalse(l,
-										LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
-									PollQueue.INSTANSE.add(l);
-								}
-							}
 
 						} else {
 							Integer n = bad.get(ftnm.getArea());
@@ -320,6 +314,14 @@ public class FtnTosser {
 			logger.warn("Уничтожено сообщений:");
 			for (String area : bad.keySet()) {
 				logger.warn(String.format("\t%s - %d", area, bad.get(area)));
+			}
+		}
+		for (Echoarea areas : affectedAreas) {
+			for (Link l : FtnTools.getSubscribers(areas, link)) {
+				if (FtnTools.getOptionBooleanDefFalse(l,
+						LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
+					PollQueue.INSTANSE.add(l);
+				}
 			}
 		}
 	}

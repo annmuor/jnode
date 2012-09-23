@@ -333,7 +333,7 @@ public final class FtnTools {
 					.linkoption()
 					.queryRaw(
 							String.format(
-									"SELECT value FROM linkoptions WHERE link_id=%d AND option='%s'",
+									"SELECT value FROM linkoptions WHERE link_id=%d AND name='%s'",
 									link.getId(), option.toLowerCase()));
 			String[] q = res.getFirstResult();
 			if (q != null) {

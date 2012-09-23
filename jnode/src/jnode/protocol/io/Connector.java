@@ -48,8 +48,15 @@ public class Connector {
 		index = 0;
 	}
 
-	public void onReceived(Message message) {
-		FtnTosser.tossIncoming(message, link);
+	public void onReceived(final Message message) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				FtnTosser.tossIncoming(message, link);
+			}
+		}).start();
+
 	}
 
 	private void doSocket(Socket clientSocket) {
