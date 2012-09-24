@@ -20,7 +20,6 @@ import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
 import jnode.dto.Readsign;
-import jnode.dto.Rewrite;
 import jnode.dto.Subscription;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.Ftn2D;
@@ -43,20 +42,192 @@ import jnode.protocol.io.Message;
  */
 public class FtnTosser {
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
+	private Map<String, Integer> tossed = new HashMap<String, Integer>();
+	private Map<String, Integer> bad = new HashMap<String, Integer>();
+	private Set<Echoarea> affectedAreas = new HashSet<Echoarea>();
+
+	/**
+	 * Разбор нетмейла
+	 * 
+	 * @param netmail
+	 * @param secure
+	 */
+	private void tossNetmail(FtnMessage netmail, boolean secure) {
+		boolean drop = false;
+		FtnNdlAddress from = NodelistScanner.getInstance().isExists(
+				netmail.getFromAddr());
+		FtnNdlAddress to = NodelistScanner.getInstance().isExists(
+				netmail.getToAddr());
+
+		if (from == null) {
+			if (!secure) {
+				logger.warn(String
+						.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+				drop = true;
+			} else {
+				logger.warn(String
+						.format("Netmail %s -> %s warn ( отправитель не найден в нодлисте )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+			}
+
+		} else if (to == null) {
+			FtnTools.writeReply(
+					netmail,
+					"Destination not found",
+					"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
+			logger.warn(String
+					.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
+							netmail.getFromAddr().toString(), netmail
+									.getToAddr().toString()));
+
+			drop = true;
+		} else if (to.getStatus().equals(Status.DOWN)) {
+			FtnTools.writeReply(netmail, "Destination is DOWN",
+					"Warning! Destination of your netmail is DOWN");
+			logger.warn(String.format(
+					"Netmail %s -> %s warn ( получатель имеет статус Down )",
+					netmail.getFromAddr().toString(), netmail.getToAddr()
+							.toString()));
+			drop = true;
+		} else if (to.getStatus().equals(Status.HOLD)) {
+			FtnTools.writeReply(netmail, "Destination is HOLD",
+					"Warning! Destination of your netmail is HOLD");
+			logger.warn(String.format(
+					"Netmail %s -> %s warn ( получатель имеет статус Hold )",
+					netmail.getFromAddr().toString(), netmail.getToAddr()
+							.toString()));
+		}
+
+		if (drop) {
+			Integer n = bad.get("netmail");
+			bad.put("netmail", (n == null) ? 1 : n + 1);
+		} else {
+			if ((netmail.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
+				FtnTools.writeReply(netmail, "ARQ reply",
+						"Your message was successfully reached this system");
+			}
+			FtnTools.processRewrite(netmail);
+			Link routeVia = FtnTools.getRouting(netmail);
+
+			Netmail dbnm = new Netmail();
+			dbnm.setRouteVia(routeVia);
+			dbnm.setDate(netmail.getDate());
+			dbnm.setFromFTN(netmail.getFromAddr().toString());
+			dbnm.setToFTN(netmail.getToAddr().toString());
+			dbnm.setFromName(netmail.getFromName());
+			dbnm.setToName(netmail.getToName());
+			dbnm.setSubject(netmail.getSubject());
+			dbnm.setText(netmail.getText());
+			dbnm.setAttr(netmail.getAttribute());
+			try {
+				ORMManager.INSTANSE.netmail().create(dbnm);
+				Integer n = tossed.get("netmail");
+				tossed.put("netmail", (n == null) ? 1 : n + 1);
+				if (routeVia == null) {
+					logger.warn(String
+							.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
+									netmail.getFromAddr().toString(), netmail
+											.getToAddr().toString()));
+				} else {
+					routeVia = ORMManager.INSTANSE.link().queryForSameId(
+							routeVia);
+					logger.debug(String.format(
+							"Netmail %s -> %s будет отправлен через %s",
+							netmail.getFromAddr().toString(), netmail
+									.getToAddr().toString(), routeVia
+									.getLinkAddress()));
+					if (FtnTools.getOptionBooleanDefTrue(routeVia,
+							LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+						PollQueue.INSTANSE.add(routeVia);
+					}
+				}
+			} catch (SQLException e) {
+				logger.error("Ошибка при сохранении нетмейла", e);
+			}
+		}
+	}
+
+	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
+
+		if (!secure) {
+			logger.warn("Эхомейл по unsecure-соединению - уничтожен");
+			return;
+		}
+		Echoarea area = FtnTools.getAreaByName(echomail.getArea(), link);
+		if (area == null) {
+			logger.warn("Эхоконференция " + echomail.getArea()
+					+ " недоступна для узла " + link.getLinkAddress());
+			Integer n = bad.get(echomail.getArea());
+			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+			return;
+		}
+		if (FtnTools.isADupe(area, echomail.getMsgid())) {
+			logger.warn("Сообщение " + echomail.getArea() + " "
+					+ echomail.getMsgid() + " является дюпом");
+			Integer n = bad.get(echomail.getArea());
+			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+			return;
+		}
+
+		FtnTools.processRewrite(echomail);
+
+		Echomail mail = new Echomail();
+		mail.setArea(area);
+		mail.setDate(echomail.getDate());
+		mail.setFromFTN(echomail.getFromAddr().toString());
+		mail.setFromName(echomail.getFromName());
+		mail.setToName(echomail.getToName());
+		mail.setSubject(echomail.getSubject());
+		mail.setText(echomail.getText());
+		mail.setSeenBy(FtnTools.write2D(echomail.getSeenby(), true));
+		mail.setPath(FtnTools.write2D(echomail.getPath(), false));
+		try {
+			ORMManager.INSTANSE.echomail().create(mail);
+		} catch (SQLException e) {
+			logger.warn("Не удалось сохранить сообщение", e);
+			Integer n = bad.get(echomail.getArea());
+			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+			return;
+		}
+		affectedAreas.add(area);
+		{
+			Readsign sign = new Readsign();
+			sign.setLink(link);
+			sign.setMail(mail);
+			Dupe dupe = new Dupe();
+			dupe.setEchoarea(area);
+			dupe.setMsgid(echomail.getMsgid());
+			try {
+				ORMManager.INSTANSE.dupe().create(dupe);
+			} catch (SQLException e1) {
+			}
+			try {
+
+				ORMManager.INSTANSE.readsign().create(sign);
+			} catch (SQLException e) {
+
+			}
+		}
+
+		Integer n = tossed.get(echomail.getArea());
+		tossed.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+
+	}
 
 	/**
 	 * Получаем сообщения из бандлов
 	 * 
 	 * @param connector
 	 */
-	public static void tossIncoming(Message message, Link link) {
+	public void tossIncoming(Message message, Link link) {
 		if (message == null) {
 			return;
 		}
-		Map<String, Integer> tossed = new HashMap<String, Integer>();
-		Map<String, Integer> bad = new HashMap<String, Integer>();
 		FtnPkt[] pkts = FtnTools.unpack(message);
-		Set<Echoarea> affectedAreas = new HashSet<Echoarea>();
+
 		for (FtnPkt pkt : pkts) {
 			if (message.isSecure()) {
 				if (!FtnTools.getOptionBooleanDefFalse(link,
@@ -76,233 +247,12 @@ public class FtnTosser {
 					}
 				}
 				if (ftnm.isNetmail()) {
-					boolean drop = false;
-					FtnNdlAddress from = NodelistScanner.getInstance()
-							.isExists(ftnm.getFromAddr());
-					FtnNdlAddress to = NodelistScanner.getInstance().isExists(
-							ftnm.getToAddr());
-
-					if (from == null) {
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-						drop = true;
-
-					} else if (to == null) {
-						try {
-							FtnTools.writeReply(
-									ftnm,
-									"Destination not found",
-									"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
-						} catch (SQLException e) {
-							logger.error("Не удалось написать сообщение в ответ");
-						}
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-
-						drop = true;
-					} else if (to.getStatus().equals(Status.DOWN)) {
-						try {
-							FtnTools.writeReply(ftnm, "Destination is DOWN",
-									"Sorry, but destination of your netmail is DOWN\nMessage rejected");
-						} catch (SQLException e) {
-							logger.error("Не удалось написать сообщение в ответ");
-						}
-						logger.warn(String
-								.format("Netmail %s -> %s уничтожен ( получатель имеет статус Down )",
-										ftnm.getFromAddr().toString(), ftnm
-												.getToAddr().toString()));
-						drop = true;
-					}
-
-					if (drop) {
-						Integer n = bad.get("netmail");
-						bad.put("netmail", (n == null) ? 1 : n + 1);
-					} else {
-						if ((ftnm.getAttribute() & FtnMessage.ATTR_ARQ) > 0) {
-							try {
-								FtnTools.writeReply(ftnm, "ARQ reply",
-										"Your message was successfully reached this system");
-							} catch (SQLException e) {
-							}
-						}
-						try {
-							List<Rewrite> rewrites = ORMManager.INSTANSE
-									.rewrite().queryBuilder()
-									.orderBy("nice", true).where()
-									.eq("type", (Rewrite.Type.NETMAIL)).query();
-							for (Rewrite rewrite : rewrites) {
-								if (FtnTools.completeMask(rewrite, ftnm)) {
-									logger.debug("(N) Найдено соответствие, переписываем сообщение "
-											+ ftnm.getMsgid());
-									FtnTools.rewrite(rewrite, ftnm);
-									if (rewrite.isLast()) {
-										break;
-									}
-								}
-							}
-						} catch (SQLException e1) {
-							logger.warn("Не удалось получить rewrite", e1);
-						}
-						Link routeVia = FtnTools.getRouting(ftnm);
-
-						try {
-							Netmail netmail = new Netmail();
-							netmail.setRouteVia(routeVia);
-							netmail.setDate(ftnm.getDate());
-							netmail.setFromFTN(ftnm.getFromAddr().toString());
-							netmail.setToFTN(ftnm.getToAddr().toString());
-							netmail.setFromName(ftnm.getFromName());
-							netmail.setToName(ftnm.getToName());
-							netmail.setSubject(ftnm.getSubject());
-							netmail.setText(ftnm.getText());
-							netmail.setAttr(ftnm.getAttribute());
-							ORMManager.INSTANSE.netmail().create(netmail);
-							Integer n = tossed.get("netmail");
-							tossed.put("netmail", (n == null) ? 1 : n + 1);
-							if (routeVia == null) {
-								logger.warn(String
-										.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
-												ftnm.getFromAddr().toString(),
-												ftnm.getToAddr().toString()));
-							} else {
-								routeVia = ORMManager.INSTANSE.link()
-										.queryForSameId(routeVia);
-								logger.debug(String
-										.format("Netmail %s -> %s будет отправлен через %s",
-												ftnm.getFromAddr().toString(),
-												ftnm.getToAddr().toString(),
-												routeVia.getLinkAddress()));
-								if (FtnTools.getOptionBooleanDefTrue(link,
-										LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-									PollQueue.INSTANSE.add(routeVia);
-								}
-							}
-						} catch (SQLException e) {
-							e.printStackTrace();
-							logger.error("Ошибка при сохранении нетмейла", e);
-						}
-					}
-				} else if (message.isSecure()) {
-					try {
-						Echoarea area = null;
-						boolean flag = false;
-						{
-							List<Echoarea> areas = ORMManager.INSTANSE
-									.echoarea().queryForEq("name",
-											ftnm.getArea().toLowerCase());
-							if (areas.isEmpty()) {
-								if (FtnTools.getOptionBooleanDefFalse(link,
-										LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
-									area = new Echoarea();
-									area.setName(ftnm.getArea().toLowerCase());
-									area.setDescription("Autocreated echoarea");
-									ORMManager.INSTANSE.echoarea().create(area);
-									Subscription sub = new Subscription();
-									sub.setArea(area);
-									sub.setLink(link);
-									sub.setLast(0L);
-									ORMManager.INSTANSE.subscription().create(
-											sub);
-									flag = true;
-								}
-							} else {
-								area = areas.get(0);
-								List<Subscription> subs = ORMManager.INSTANSE
-										.subscription().queryBuilder().where()
-										.eq("echoarea_id", area.getId()).and()
-										.eq("link_id", link.getId()).query();
-								if (!subs.isEmpty()) {
-									flag = true;
-								}
-							}
-						}
-						if (flag) {
-							try {
-								if (!ORMManager.INSTANSE.dupe().queryBuilder()
-										.where().eq("msgid", ftnm.getMsgid())
-										.and().eq("echoarea_id", area).query()
-										.isEmpty()) {
-									logger.warn(ftnm.getMsgid()
-											+ " дюп - уничтожен");
-									Integer n = bad.get(ftnm.getArea());
-									bad.put(ftnm.getArea(), (n == null) ? 1
-											: n + 1);
-								}
-							} catch (SQLException e) {
-								logger.warn(
-										"Не удалось проверить "
-												+ ftnm.getMsgid() + " на дюпы",
-										e);
-							}
-							try {
-								List<Rewrite> rewrites = ORMManager.INSTANSE
-										.rewrite().queryBuilder()
-										.orderBy("nice", true).where()
-										.eq("type", Rewrite.Type.ECHOMAIL)
-										.query();
-								for (Rewrite rewrite : rewrites) {
-									if (FtnTools.completeMask(rewrite, ftnm)) {
-										logger.debug("(E) Найдено соответствие, переписываем сообщение "
-												+ ftnm.getMsgid());
-										FtnTools.rewrite(rewrite, ftnm);
-										if (rewrite.isLast()) {
-											break;
-										}
-									}
-								}
-							} catch (SQLException e1) {
-								logger.warn("Не удалось получить rewrite", e1);
-							}
-							Echomail mail = new Echomail();
-							mail.setArea(area);
-							mail.setDate(ftnm.getDate());
-							mail.setFromFTN(ftnm.getFromAddr().toString());
-							mail.setFromName(ftnm.getFromName());
-							mail.setToName(ftnm.getToName());
-							mail.setSubject(ftnm.getSubject());
-							mail.setText(ftnm.getText());
-							mail.setSeenBy(FtnTools.write2D(ftnm.getSeenby(),
-									true));
-							mail.setPath(FtnTools.write2D(ftnm.getPath(), false));
-							ORMManager.INSTANSE.echomail().create(mail);
-							affectedAreas.add(area);
-							{
-								try {
-									Dupe dupe = new Dupe();
-									dupe.setEchoarea(area);
-									dupe.setMsgid(ftnm.getMsgid());
-									ORMManager.INSTANSE.dupe().create(dupe);
-								} catch (SQLException e1) {
-								}
-
-								Readsign sign = new Readsign();
-								sign.setLink(link);
-								sign.setMail(mail);
-								ORMManager.INSTANSE.readsign().create(sign);
-							}
-
-							Integer n = tossed.get(ftnm.getArea());
-							tossed.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-
-						} else {
-							Integer n = bad.get(ftnm.getArea());
-							bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-						}
-					} catch (SQLException e) {
-						logger.error(
-								"Не удалось записать сообщение "
-										+ ftnm.getMsgid(), e);
-						Integer n = bad.get(ftnm.getArea());
-						bad.put(ftnm.getArea(), (n == null) ? 1 : n + 1);
-					}
+					tossNetmail(ftnm, message.isSecure());
 				} else {
-					logger.warn("Эхомейл по unsecure-соединению - уничтожен");
+					tossEchomail(ftnm, link, message.isSecure());
 				}
 			}
+
 		}
 		if (!tossed.isEmpty()) {
 			logger.info("Записано сообщений:");

@@ -640,8 +640,7 @@ public final class FtnTools {
 	 * @param text
 	 * @throws SQLException
 	 */
-	public static void writeReply(FtnMessage fmsg, String subject, String text)
-			throws SQLException {
+	public static void writeReply(FtnMessage fmsg, String subject, String text) {
 
 		Netmail netmail = new Netmail();
 		netmail.setFromFTN(Main.info.getAddress().toString());
@@ -672,8 +671,13 @@ public final class FtnTools {
 			return;
 		}
 		netmail.setRouteVia(routeVia);
-		ORMManager.INSTANSE.netmail().create(netmail);
-		logger.debug("Создан Netmail #" + netmail.getId());
+		try {
+			ORMManager.INSTANSE.netmail().create(netmail);
+			logger.debug("Создан Netmail #" + netmail.getId());
+		} catch (SQLException e) {
+			logger.warn("Не удалось создать netmail" + e.getMessage());
+		}
+
 	}
 
 	/**
@@ -759,7 +763,7 @@ public final class FtnTools {
 			List<Subscription> subs = ORMManager.INSTANSE.subscription()
 					.queryForEq("echoarea_id", area);
 			for (Subscription s : subs) {
-				if (!s.getLink().equals(link))
+				if (!s.getLink().getId().equals(link.getId()))
 					links.add(ORMManager.INSTANSE.link().queryForSameId(
 							s.getLink()));
 			}
@@ -784,6 +788,85 @@ public final class FtnTools {
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
 				new Date().getTime() / 1000), bis.available());
 		unpack(message);
+	}
+
+	/**
+	 * Делаем реврайт
+	 * 
+	 * @param message
+	 */
+	public static void processRewrite(FtnMessage message) {
+		try {
+			List<Rewrite> rewrites = ORMManager.INSTANSE
+					.rewrite()
+					.queryBuilder()
+					.orderBy("nice", true)
+					.where()
+					.eq("type",
+							(message.isNetmail()) ? (Rewrite.Type.NETMAIL)
+									: (Rewrite.Type.ECHOMAIL)).query();
+			for (Rewrite rewrite : rewrites) {
+				if (FtnTools.completeMask(rewrite, message)) {
+					logger.debug(((message.isNetmail()) ? "NET" : "ECH")
+							+ " - найдено соответствие, переписываем сообщение "
+							+ message.getMsgid());
+					rewrite(rewrite, message);
+					if (rewrite.isLast()) {
+						break;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			logger.warn("Не удалось получить rewrite", e);
+		}
+	}
+
+	/**
+	 * получение и аутокриейт
+	 * 
+	 * @param name
+	 * @param link
+	 * @return
+	 */
+	public static Echoarea getAreaByName(String name, Link link) {
+		Echoarea ret = null;
+		name = name.toLowerCase();
+		try {
+			List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryForEq(
+					"name", name);
+			if (areas.isEmpty()) {
+				if (getOptionBooleanDefFalse(link,
+						LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+					ret = new Echoarea();
+					ret.setName(name);
+					ret.setDescription("Autocreated echoarea");
+					ORMManager.INSTANSE.echoarea().create(ret);
+					Subscription sub = new Subscription();
+					sub.setArea(ret);
+					sub.setLink(link);
+					sub.setLast(0L);
+					ORMManager.INSTANSE.subscription().create(sub);
+				}
+			} else {
+				ret = areas.get(0);
+			}
+		} catch (SQLException e) {
+
+		}
+		return ret;
+	}
+
+	public static boolean isADupe(Echoarea area, String msgid) {
+		try {
+			if (!ORMManager.INSTANSE.dupe().queryBuilder().where()
+					.eq("msgid", msgid).and().eq("echoarea_id", area).query()
+					.isEmpty()) {
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.warn("Не удалось проверить " + msgid + " на дюпы", e);
+		}
+		return false;
 	}
 
 }

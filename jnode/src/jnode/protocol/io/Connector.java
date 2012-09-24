@@ -49,11 +49,11 @@ public class Connector {
 	}
 
 	public void onReceived(final Message message) {
+		// TODO: toss queue !!
 		new Thread(new Runnable() {
-
 			@Override
 			public void run() {
-				FtnTosser.tossIncoming(message, link);
+				new FtnTosser().tossIncoming(message, link);
 			}
 		}).start();
 
