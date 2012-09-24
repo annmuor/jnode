@@ -54,6 +54,11 @@ public class FtnTosser {
 	 */
 	private void tossNetmail(FtnMessage netmail, boolean secure) {
 		boolean drop = false;
+		if (secure) {
+			if (FtnTools.checkRobot(netmail)) {
+				return;
+			}
+		}
 		FtnNdlAddress from = NodelistScanner.getInstance().isExists(
 				netmail.getFromAddr());
 		FtnNdlAddress to = NodelistScanner.getInstance().isExists(
