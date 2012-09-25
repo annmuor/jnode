@@ -17,6 +17,12 @@ public class Echoarea {
 	private String name;
 	@DatabaseField(columnName = "description", dataType = DataType.LONG_STRING)
 	private String description;
+	@DatabaseField(columnName = "wlevel", canBeNull = false, defaultValue = "0")
+	private Long writelevel;
+	@DatabaseField(columnName = "rlevel", canBeNull = false, defaultValue = "0")
+	private Long readlevel;
+	@DatabaseField(columnName = "grp", canBeNull = false, defaultValue = "")
+	private String group;
 
 	public Long getId() {
 		return id;
@@ -40,6 +46,30 @@ public class Echoarea {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Long getWritelevel() {
+		return writelevel;
+	}
+
+	public void setWritelevel(Long writelevel) {
+		this.writelevel = writelevel;
+	}
+
+	public Long getReadlevel() {
+		return readlevel;
+	}
+
+	public void setReadlevel(Long readlevel) {
+		this.readlevel = readlevel;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
 	}
 
 	@Override

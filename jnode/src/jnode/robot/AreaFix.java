@@ -185,6 +185,8 @@ public class AreaFix implements IRobot {
 	private String add(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
+		String[] grps = FtnTools.getOptionStringArray(link,
+				LinkOption.SARRAY_LINK_GROUPS);
 		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
 				.where().like("name", like).query();
 		if (areas.isEmpty()) {
@@ -197,21 +199,37 @@ public class AreaFix implements IRobot {
 						.query().isEmpty()) {
 					sb.append(" already subscribed");
 				} else {
-					Long lastid = 0L;
-					String[] result = ORMManager.INSTANSE
-							.echoarea()
-							.queryRaw(
-									"SELECT max(id) FROM echomail WHERE echoarea_id="
-											+ earea.getId()).getFirstResult();
-					if (result[0] != null) {
-						lastid = Long.valueOf(result[0]);
+					boolean denied = true;
+					if (!"".equals(earea.getGroup())) {
+						for (String group : grps) {
+							if (earea.getGroup().equals(group)) {
+								denied = false;
+								break;
+							}
+						}
+					} else {
+						denied = false;
 					}
-					Subscription sub = new Subscription();
-					sub.setArea(earea);
-					sub.setLink(link);
-					sub.setLast(lastid);
-					ORMManager.INSTANSE.subscription().create(sub);
-					sb.append(" subscribed");
+					if (denied) {
+						sb.append(" access denied");
+					} else {
+						Long lastid = 0L;
+						String[] result = ORMManager.INSTANSE
+								.echoarea()
+								.queryRaw(
+										"SELECT max(id) FROM echomail WHERE echoarea_id="
+												+ earea.getId())
+								.getFirstResult();
+						if (result[0] != null) {
+							lastid = Long.valueOf(result[0]);
+						}
+						Subscription sub = new Subscription();
+						sub.setArea(earea);
+						sub.setLink(link);
+						sub.setLast(lastid);
+						ORMManager.INSTANSE.subscription().create(sub);
+						sb.append(" subscribed");
+					}
 				}
 				sb.append('\n');
 			}

@@ -364,6 +364,21 @@ public final class FtnTools {
 		return true;
 	}
 
+	public static long getOptionLong(Link link, String option) {
+		String s = getOption(link, option);
+		long ret = 0;
+		try {
+			ret = Long.valueOf(s);
+		} catch (NumberFormatException ignore) {
+		}
+		return ret;
+	}
+
+	public static String[] getOptionStringArray(Link link, String option) {
+		String s = getOption(link, option);
+		return s.split(" ");
+	}
+
 	/**
 	 * Конвертер
 	 * 

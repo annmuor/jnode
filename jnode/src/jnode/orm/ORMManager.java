@@ -57,6 +57,7 @@ public enum ORMManager {
 			daoRobot = DaoManager.createDao(source, Robot.class);
 			daoRewrite = DaoManager.createDao(source, Rewrite.class);
 			daoLinkOption = DaoManager.createDao(source, LinkOption.class);
+
 			if (!daoLink.isTableExists()) {
 				TableUtils.createTable(source, Link.class);
 			}

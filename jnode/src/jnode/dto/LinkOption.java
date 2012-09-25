@@ -20,6 +20,9 @@ public class LinkOption {
 	public static final String BOOLEAN_AUTOCREATE_AREA = "AreaAutoCreate";
 	public static final String BOOLEAN_POLL_BY_TIMEOT = "PollByTimeout";
 	public static final String BOOLEAN_AREAFIX = "AreaFix";
+	public static final String LONG_LINK_LEVEL = "Level";
+	public static final String SARRAY_LINK_GROUPS = "Groups";
+	
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
 	@DatabaseField(columnName = "name", canBeNull = false, uniqueIndexName = "lopt_idx")
