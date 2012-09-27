@@ -11,6 +11,7 @@ import java.util.List;
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
 import jnode.logger.Logger;
+import jnode.main.threads.TosserQueue;
 import jnode.protocol.io.exception.ProtocolException;
 
 /**
@@ -49,14 +50,7 @@ public class Connector {
 	}
 
 	public void onReceived(final Message message) {
-		// TODO: toss queue !!
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				new FtnTosser().tossIncoming(message, link);
-			}
-		}).start();
-
+		TosserQueue.INSTANSE.add(message, link);
 	}
 
 	private void doSocket(Socket clientSocket) {

@@ -783,7 +783,7 @@ public final class FtnTools {
 			List<Subscription> subs = ORMManager.INSTANSE.subscription()
 					.queryForEq("echoarea_id", area);
 			for (Subscription s : subs) {
-				if (!s.getLink().getId().equals(link.getId()))
+				if (link == null || !s.getLink().getId().equals(link.getId()))
 					links.add(ORMManager.INSTANSE.link().queryForSameId(
 							s.getLink()));
 			}

@@ -259,6 +259,9 @@ public class FtnTosser {
 			}
 
 		}
+	}
+
+	public void end() {
 		if (!tossed.isEmpty()) {
 			logger.info("Записано сообщений:");
 			for (String area : tossed.keySet()) {
@@ -272,7 +275,7 @@ public class FtnTosser {
 			}
 		}
 		for (Echoarea areas : affectedAreas) {
-			for (Link l : FtnTools.getSubscribers(areas, link)) {
+			for (Link l : FtnTools.getSubscribers(areas)) {
 				if (FtnTools.getOptionBooleanDefFalse(l,
 						LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
 					PollQueue.INSTANSE.add(l);
@@ -343,12 +346,12 @@ public class FtnTosser {
 				for (Object[] result : results.getResults()) {
 					Set<Ftn2D> seenby = new HashSet<Ftn2D>(
 							FtnTools.read2D((String) result[9]));
-					signs.add((Long) result[1]);
 					subcription.put((Long) result[2], (Long) result[1]);
 					if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-						logger.debug(our2d + " есть в синбаях для "
+						logger.debug(link2d + " есть в синбаях для "
 								+ link_address);
 					} else {
+						signs.add((Long) result[1]);
 						seenby.add(our2d);
 						seenby.add(link2d);
 						List<Ftn2D> path = FtnTools.read2D((String) result[10]);

@@ -12,6 +12,7 @@ import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
+import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
 
 import com.j256.ormlite.logger.LocalLog;
@@ -54,7 +55,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.5c";
+		private final String version = "jNode/0.4.5d";
 
 		public String getSysop() {
 			return sysop;
@@ -219,9 +220,10 @@ public class Main {
 				Timer timer = new Timer();
 				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
 			}
-			logger.debug("Запускается PollQueue");
+			logger.debug("Запускается PollQueue и TossQueue");
 			while (true) {
 				try {
+					TosserQueue.INSTANSE.toss();
 					PollQueue.INSTANSE.poll();
 					Thread.sleep(1000);
 				} catch (Exception ignore) {
