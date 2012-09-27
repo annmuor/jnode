@@ -48,4 +48,7 @@
 - PackNetmail    - zip netmail ( default false )
 - PackEchomail   - zip echomail ( default true )
 - IgnorePktPwd   - dont't check password in pkt header ( tnaks to Pavel Gulcnhouck, 2:463/68 )
+28.09.2012, 0.4.5(c):
+! Fixed AreaAutoCreate issue, areas are creating now
+~ Added echo groups for access control reason.
 
