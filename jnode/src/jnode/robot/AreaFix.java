@@ -128,9 +128,25 @@ public class AreaFix implements IRobot {
 	private String list(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Legend: * - subscribed\n\n========== List of echoareas ==========\n");
+		String[] groups = FtnTools.getOptionStringArray(link,
+				LinkOption.SARRAY_LINK_GROUPS);
 		List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryBuilder()
 				.orderBy("name", true).query();
 		for (Echoarea area : areas) {
+			boolean denied = true;
+			if (!"".equals(area.getGroup())) {
+				for (String group : groups) {
+					if (area.getGroup().equals(group)) {
+						denied = false;
+						break;
+					}
+				}
+			} else {
+				denied = false;
+			}
+			if (denied) {
+				continue;
+			}
 			if (!ORMManager.INSTANSE.subscription().queryBuilder().where()
 					.eq("echoarea_id", area.getId()).and()
 					.eq("link_id", link.getId()).query().isEmpty()) {

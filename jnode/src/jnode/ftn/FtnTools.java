@@ -855,6 +855,9 @@ public final class FtnTools {
 					ret = new Echoarea();
 					ret.setName(name);
 					ret.setDescription("Autocreated echoarea");
+					ret.setReadlevel(0L);
+					ret.setWritelevel(0L);
+					ret.setGroup("");
 					ORMManager.INSTANSE.echoarea().create(ret);
 					Subscription sub = new Subscription();
 					sub.setArea(ret);
@@ -866,7 +869,9 @@ public final class FtnTools {
 				ret = areas.get(0);
 			}
 		} catch (SQLException e) {
-
+			logger.error("Не могу создать арию " + name, e);
+			e.printStackTrace();
+			ret = null;
 		}
 		return ret;
 	}
