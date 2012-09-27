@@ -40,6 +40,7 @@ import jnode.ftn.types.FtnMessage;
 import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.Main;
+import jnode.main.threads.PollQueue;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
@@ -689,6 +690,10 @@ public final class FtnTools {
 		try {
 			ORMManager.INSTANSE.netmail().create(netmail);
 			logger.debug("Создан Netmail #" + netmail.getId());
+			if (FtnTools.getOptionBooleanDefTrue(routeVia,
+					LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+				PollQueue.INSTANSE.add(routeVia);
+			}
 		} catch (SQLException e) {
 			logger.warn("Не удалось создать netmail" + e.getMessage());
 		}
