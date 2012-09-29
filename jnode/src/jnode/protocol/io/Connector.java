@@ -84,6 +84,7 @@ public class Connector {
 						try {
 							clientSocket.close();
 						} catch (IOException ignore) {
+						} catch (RuntimeException ignore) {
 						}
 					}
 				}
@@ -101,6 +102,7 @@ public class Connector {
 				try {
 					clientSocket.close();
 				} catch (IOException e) {
+				} catch (RuntimeException e) {
 				}
 				break;
 			}
@@ -109,6 +111,7 @@ public class Connector {
 				try {
 					clientSocket.close();
 				} catch (IOException ignore) {
+				} catch (RuntimeException e) {
 				}
 				break;
 			}
@@ -131,13 +134,12 @@ public class Connector {
 			throw new ProtocolException("Неизвестный хост:"
 					+ link.getProtocolHost());
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new ProtocolException(e.getLocalizedMessage());
 		} finally {
 			try {
 				clientSocket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (RuntimeException e) {
 			}
 		}
 	}
@@ -145,16 +147,6 @@ public class Connector {
 	public void accept(Socket clientSocket) throws ProtocolException {
 		connector.reset();
 		connector.initIncoming(this);
-		try {
-			doSocket(clientSocket);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				clientSocket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		doSocket(clientSocket);
 	}
 }

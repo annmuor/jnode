@@ -172,7 +172,7 @@ public class FtnMessage {
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
 			os.writeShort(FtnTools.revShort(toAddr.getNet()));
 			if (isNetmail) {
-				attribute &= ATTR_PVT;
+				//attribute &= ATTR_PVT;
 				os.writeShort(FtnTools.revShort((short) attribute)); // attributes
 			} else {
 				os.write(new byte[] { 0, 0 });

@@ -14,7 +14,6 @@ public class Message {
 	private String messageName;
 	private InputStream inputStream;
 	private boolean secure = true;
-
 	public Message(File file) throws Exception {
 		super();
 		messageName = file.getName();

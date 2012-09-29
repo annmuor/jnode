@@ -35,10 +35,12 @@ public enum TosserQueue {
 			for (TossRequest request : requests) {
 				tosser.tossIncoming(request.message, request.link);
 			}
+			tosser.tossInbound();
 			tosser.end();
 			requests = new ArrayList<TossRequest>();
 		}
 	}
+	
 
 	public void add(Message message, Link link) {
 		logger.debug("Добавлено сообщение " + message.getMessageName()

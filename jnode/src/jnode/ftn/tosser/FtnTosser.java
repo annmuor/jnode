@@ -1,5 +1,6 @@
 package jnode.ftn.tosser;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -199,9 +200,16 @@ public class FtnTosser {
 		}
 		affectedAreas.add(area);
 		{
-			Readsign sign = new Readsign();
-			sign.setLink(link);
-			sign.setMail(mail);
+			if (link != null) {
+				Readsign sign = new Readsign();
+				sign.setLink(link);
+				sign.setMail(mail);
+				try {
+
+					ORMManager.INSTANSE.readsign().create(sign);
+				} catch (SQLException e) {
+				}
+			}
 			Dupe dupe = new Dupe();
 			dupe.setEchoarea(area);
 			dupe.setMsgid(echomail.getMsgid());
@@ -209,12 +217,7 @@ public class FtnTosser {
 				ORMManager.INSTANSE.dupe().create(dupe);
 			} catch (SQLException e1) {
 			}
-			try {
 
-				ORMManager.INSTANSE.readsign().create(sign);
-			} catch (SQLException e) {
-
-			}
 		}
 
 		Integer n = tossed.get(echomail.getArea());
@@ -261,6 +264,32 @@ public class FtnTosser {
 		}
 	}
 
+	public void tossInbound() {
+		File inbound = new File(Main.getInbound());
+		for (File file : inbound.listFiles()) {
+			if (file.getName().matches("^[a-f0-9]{8}\\.pkt$")) {
+				try {
+					Message m = new Message(file);
+					logger.debug("Обрабатываем файл " + file.getAbsolutePath());
+					FtnPkt[] pkts = FtnTools.unpack(m);
+					for (FtnPkt pkt : pkts) {
+						for (FtnMessage ftnm : pkt.getMessages()) {
+							if (ftnm.isNetmail()) {
+								tossNetmail(ftnm, true);
+							} else {
+								tossEchomail(ftnm, null, true);
+							}
+						}
+					}
+					file.delete();
+				} catch (Exception e) {
+					logger.warn("Не могу обработать пакет "
+							+ file.getAbsolutePath());
+				}
+			}
+		}
+	}
+
 	public void end() {
 		if (!tossed.isEmpty()) {
 			logger.info("Записано сообщений:");
@@ -296,7 +325,7 @@ public class FtnTosser {
 		Ftn2D link2d = new Ftn2D(link_address.getNet(), link_address.getNode());
 		Ftn2D our2d = new Ftn2D(our_address.getNet(), our_address.getNode());
 		List<FtnMessage> messages = new ArrayList<FtnMessage>();
-
+		List<File> attachedFiles = new ArrayList<File>();
 		try {
 			List<Netmail> netmails = ORMManager.INSTANSE.netmail()
 					.queryBuilder().where().eq("send", false).and()
@@ -306,9 +335,21 @@ public class FtnTosser {
 					FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
 					messages.add(msg);
 					logger.debug(String.format(
-							"Пакуем netmail #%d %s -> %s для %s",
+							"Пакуем netmail #%d %s -> %s для %s (%d)",
 							netmail.getId(), netmail.getFromFTN(),
-							netmail.getToFTN(), link.getLinkAddress()));
+							netmail.getToFTN(), link.getLinkAddress(),
+							msg.getAttribute()));
+					if ((netmail.getAttr() & FtnMessage.ATTR_FILEATT) > 0) {
+						String filename = netmail.getSubject();
+						filename = filename.replaceAll("^[\\./\\\\]+", "_");
+						File file = new File(Main.getInbound() + File.separator
+								+ filename);
+						if (file.canRead()) {
+							attachedFiles.add(file);
+							logger.debug("К сообщению прикреплен файл "
+									+ filename + ", пересылаем");
+						}
+					}
 					netmail.setSend(true);
 					ORMManager.INSTANSE.netmail().update(netmail);
 				}
@@ -407,7 +448,17 @@ public class FtnTosser {
 					"Ошибка обработки echomail для " + link.getLinkAddress(), e);
 		}
 		if (!messages.isEmpty()) {
-			return FtnTools.pack(messages, link);
+			List<Message> ret = FtnTools.pack(messages, link);
+			for (File f : attachedFiles) {
+				try {
+					ret.add(new Message(f));
+					f.delete();
+				} catch (Exception e) {
+					logger.warn("Не могу прикрепить файл "
+							+ f.getAbsolutePath());
+				}
+			}
+			return ret;
 		} else {
 			return new ArrayList<Message>();
 		}

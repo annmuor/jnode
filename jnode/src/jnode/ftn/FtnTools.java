@@ -673,7 +673,14 @@ public final class FtnTools {
 						Main.info.getVersion(), netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
-		sb.append(fmsg.getText().replaceAll("\001", "@"));
+		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
+				+ ")");
+		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")");
+		sb.append("Date: " + fmsg.getDate());
+		sb.append("Subject: " + fmsg.getSubject());
+		sb.append(fmsg.getText().replaceAll("\001", "@")
+				.replaceAll("---", "+++")
+				.replaceAll(" * Origin:", " + Origin:"));
 		sb.append("========== Original message ==========\n\n--- "
 				+ Main.info.getVersion() + "\n");
 		netmail.setText(sb.toString());
@@ -807,6 +814,7 @@ public final class FtnTools {
 		ByteArrayInputStream bis = new ByteArrayInputStream(pkt.pack());
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
 				new Date().getTime() / 1000), bis.available());
+		message.setInputStream(bis);
 		unpack(message);
 	}
 
@@ -855,27 +863,36 @@ public final class FtnTools {
 			List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryForEq(
 					"name", name);
 			if (areas.isEmpty()) {
-				if (getOptionBooleanDefFalse(link,
-						LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+				if (link == null
+						|| getOptionBooleanDefFalse(link,
+								LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
 					ret = new Echoarea();
 					ret.setName(name);
 					ret.setDescription("Autocreated echoarea");
 					ret.setReadlevel(0L);
 					ret.setWritelevel(0L);
 					ret.setGroup("");
+					logger.info("Создана эхоария " + name);
 					ORMManager.INSTANSE.echoarea().create(ret);
-					Subscription sub = new Subscription();
-					sub.setArea(ret);
-					sub.setLink(link);
-					sub.setLast(0L);
-					ORMManager.INSTANSE.subscription().create(sub);
+					if (link != null) {
+						Subscription sub = new Subscription();
+						sub.setArea(ret);
+						sub.setLink(link);
+						sub.setLast(0L);
+						ORMManager.INSTANSE.subscription().create(sub);
+					}
 				}
 			} else {
 				ret = areas.get(0);
+				if (link != null
+						&& ORMManager.INSTANSE.subscription().queryBuilder()
+								.where().eq("echoarea_id", ret.getId()).and()
+								.eq("link_id", link.getId()).query().isEmpty()) {
+					ret = null;
+				}
 			}
 		} catch (SQLException e) {
-			logger.error("Не могу создать арию " + name, e);
-			e.printStackTrace();
+			logger.error("Не могу создать/получить арию " + name, e);
 			ret = null;
 		}
 		return ret;
