@@ -51,4 +51,7 @@
 28.09.2012, 0.4.5(c):
 ! Fixed AreaAutoCreate issue, areas are creating now
 ~ Added echo groups for access control reason.
+30.09.2012, 0.4.6:
++ +FileAtt netmail support added
++ Local inbound support added
 
