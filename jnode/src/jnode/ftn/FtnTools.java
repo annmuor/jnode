@@ -674,10 +674,10 @@ public final class FtnTools {
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
-				+ ")");
-		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")");
-		sb.append("Date: " + fmsg.getDate());
-		sb.append("Subject: " + fmsg.getSubject());
+				+ ")\n");
+		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")\n");
+		sb.append("Date: " + fmsg.getDate()+"\n");
+		sb.append("Subject: " + fmsg.getSubject()+"\n");
 		sb.append(fmsg.getText().replaceAll("\001", "@")
 				.replaceAll("---", "+++")
 				.replaceAll(" * Origin:", " + Origin:"));
