@@ -680,7 +680,7 @@ public final class FtnTools {
 		sb.append("Subject: " + fmsg.getSubject()+"\n");
 		sb.append(fmsg.getText().replaceAll("\001", "@")
 				.replaceAll("---", "+++")
-				.replaceAll(" * Origin:", " + Origin:"));
+				.replaceAll(" \\* Origin:", " + Origin:"));
 		sb.append("========== Original message ==========\n\n--- "
 				+ Main.info.getVersion() + "\n");
 		netmail.setText(sb.toString());
