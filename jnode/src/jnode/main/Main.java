@@ -83,17 +83,22 @@ public class Main {
 
 	}
 
+	public static String getProperty(String propertyName, String defaultValue) {
+		String idx = settings.get(propertyName);
+		if (idx == null) {
+			idx = defaultValue;
+		}
+		return idx;
+	}
+
 	/**
 	 * Папочка для складывания входящих файликов
 	 * 
 	 * @return
 	 */
 	public static String getInbound() {
-		String inbound = settings.get(Settings.BINKD_INBOUND.cfgline);
-		if (inbound == null) {
-			inbound = System.getProperty("java.io.tmpdir");
-		}
-		return inbound;
+		return getProperty(Settings.BINKD_INBOUND.cfgline,
+				System.getProperty("java.io.tmpdir"));
 	}
 
 	/**
@@ -102,19 +107,11 @@ public class Main {
 	 * @return
 	 */
 	public static String getNodelistPath() {
-		String path = settings.get(Settings.NODELIST_PATH.cfgline);
-		if (path == null) {
-			path = "NODELIST";
-		}
-		return path;
+		return getProperty(Settings.NODELIST_PATH.cfgline, "NODELIST");
 	}
 
 	public static String getNodelistIdx() {
-		String idx = settings.get(Settings.NODELIST_INDEX.cfgline);
-		if (idx == null) {
-			idx = "nodelist.idx";
-		}
-		return idx;
+		return getProperty(Settings.NODELIST_INDEX.cfgline, "nodelist.idx");
 	}
 
 	public static boolean isFileechoEnable() {
@@ -126,11 +123,7 @@ public class Main {
 	}
 
 	public static String getFileechoPath() {
-		String idx = settings.get(Settings.FILEECHO_PATH.cfgline);
-		if (idx == null) {
-			return getInbound();
-		}
-		return idx;
+		return getProperty(Settings.FILEECHO_PATH.cfgline, getInbound());
 	}
 
 	private Main(String configFile) {
