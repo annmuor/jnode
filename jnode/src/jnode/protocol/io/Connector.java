@@ -50,7 +50,14 @@ public class Connector {
 	}
 
 	public void onReceived(final Message message) {
-		TosserQueue.INSTANSE.add(message, link);
+		// TODO max_ondemand_lengh to config
+		if (message.getMessageLength() < 512000) {
+			FtnTosser tosser = new FtnTosser();
+			tosser.tossIncoming(message, link);
+			tosser.end();
+		} else {
+			TosserQueue.INSTANSE.add(message, link);
+		}
 	}
 
 	private void doSocket(Socket clientSocket) {

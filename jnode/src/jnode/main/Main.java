@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Hashtable;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,7 +56,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.6";
+		private final String version = "jNode/0.4.6a";
 
 		public String getSysop() {
 			return sysop;
@@ -202,7 +203,7 @@ public class Main {
 			}
 			Logger.Loglevel = loglevel;
 
-			logger.info(Main.info.version + " запущен");
+			logger.info(Main.info.version + " запускается");
 			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
 				Thread server = new Server(
 						settings.get(Settings.BINKD_BIND.cfgline), port);
@@ -210,18 +211,32 @@ public class Main {
 				server = null;
 			}
 			if (settings.get(Settings.BINKD_CLIENT.cfgline) != null) {
-				Timer timer = new Timer();
-				timer.schedule(new TimerPoll(), delay * 1000, period * 1000);
+				logger.debug("Запускается client ( раз в " + period + " секунд )");
+				new Timer().schedule(new TimerPoll(), delay * 1000,
+						period * 1000);
 			}
-			logger.debug("Запускается PollQueue и TossQueue");
-			while (true) {
-				try {
-					TosserQueue.INSTANSE.toss();
-					PollQueue.INSTANSE.poll();
-					Thread.sleep(1000);
-				} catch (Exception ignore) {
-				}
-			}
+			logger.debug("Запускается PollQueue");
+			new Timer().schedule(new PollerTask(), 10000, 10000);
+			logger.debug("Запускается TossQueue");
+			new Timer().schedule(new TosserTask(), 10000, 10000);
+			logger.info("jNode запущен и работает");
+		}
+	}
+
+	private static final class TosserTask extends TimerTask {
+
+		@Override
+		public void run() {
+			TosserQueue.INSTANSE.toss();
+		}
+
+	}
+
+	private static final class PollerTask extends TimerTask {
+
+		@Override
+		public void run() {
+			PollQueue.INSTANSE.poll();
 		}
 
 	}

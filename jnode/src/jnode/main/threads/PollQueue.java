@@ -25,7 +25,7 @@ public enum PollQueue {
 		queue = new HashSet<Link>();
 	}
 
-	public synchronized void poll() {
+	public void poll() {
 		if (queue.size() > 0) {
 			logger.debug("В PollQueue " + queue.size() + " узлов, делаем poll");
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
@@ -37,6 +37,7 @@ public enum PollQueue {
 				}
 			}
 		}
+
 	}
 
 	public void add(Link link) {

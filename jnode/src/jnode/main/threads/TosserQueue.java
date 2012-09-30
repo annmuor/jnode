@@ -30,16 +30,18 @@ public enum TosserQueue {
 
 	public void toss() {
 		if (requests.size() > 0) {
+			logger.debug("В TosserQueue " + requests.size() + " файлов, запускаем тоссер");
+			ArrayList<TossRequest> currentQueue = new ArrayList<TossRequest>(
+					requests);
+			requests = new ArrayList<TossRequest>();
 			logger.debug("Запускаем тоссер");
 			FtnTosser tosser = new FtnTosser();
-			for (TossRequest request : requests) {
+			for (TossRequest request : currentQueue) {
 				tosser.tossIncoming(request.message, request.link);
 			}
 			tosser.tossInbound();
 			tosser.end();
 		}
-		requests = new ArrayList<TossRequest>();
-		requests.clear();
 	}
 
 	public synchronized void add(Message message, Link link) {
