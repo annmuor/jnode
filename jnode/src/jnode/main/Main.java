@@ -13,7 +13,7 @@ import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
-import jnode.main.threads.TosserQueue;
+//import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
 
 import com.j256.ormlite.logger.LocalLog;
@@ -56,7 +56,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.6b";
+		private final String version = "jNode/0.4.6c";
 
 		public String getSysop() {
 			return sysop;
@@ -158,7 +158,7 @@ public class Main {
 				throw new Exception(addressline + " не является FTN-адресом");
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.l1("Не удалось настроить систему - выходим", e);
 			System.exit(-1);
 		}
 	}
@@ -174,36 +174,36 @@ public class Main {
 				ORMManager.INSTANSE.start(Main.settings);
 			} catch (Exception e) {
 				e.printStackTrace();
-				logger.error(e.getMessage());
+				logger.l1("Не удалось инициализировать СУБД, выходим", e);
 				System.exit(-1);
 			}
 			int delay = 0;
 			int period = 600;
 			int port = 24554;
-			int loglevel = Logger.LOG_INFO;
+			int loglevel = Logger.LOG_L4;
 			try {
 				delay = Integer.valueOf(settings
 						.get(Settings.POLL_DELAY.cfgline));
 				period = Integer.valueOf(settings
 						.get(Settings.POLL_PERIOD.cfgline));
 			} catch (RuntimeException e) {
-				logger.warn("Не указаны poll.delay/poll.period, используем 0/600");
+				logger.l3("Не указаны poll.delay/poll.period, используем 0/600");
 			}
 			try {
 				port = Integer.valueOf(settings
 						.get(Settings.BINKD_PORT.cfgline));
 			} catch (RuntimeException e) {
-				logger.warn("Не указан binkd.port, используем 24554");
+				logger.l3("Не указан binkd.port, используем 24554");
 			}
 			try {
 				loglevel = Integer.valueOf(settings
 						.get(Settings.LOG_LEVEL.cfgline));
 			} catch (RuntimeException e) {
-				logger.warn("Не указан log.level, используем " + loglevel);
+				logger.l3("Не указан log.level, используем " + loglevel);
 			}
 			Logger.Loglevel = loglevel;
 
-			logger.info(Main.info.version + " запускается");
+			logger.l1(Main.info.version + " запускается");
 			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
 				Thread server = new Server(
 						settings.get(Settings.BINKD_BIND.cfgline), port);
@@ -211,31 +211,32 @@ public class Main {
 				server = null;
 			}
 			if (settings.get(Settings.BINKD_CLIENT.cfgline) != null) {
-				logger.debug("Запускается client ( раз в " + period + " секунд )");
+				logger.l4("Запускается client ( раз в " + period + " секунд )");
 				new Timer().schedule(new TimerPoll(), delay * 1000,
 						period * 1000);
 			}
-			logger.debug("Запускается PollQueue");
+			logger.l4("Запускается PollQueue");
 			new Timer().schedule(new PollerTask(), 10000, 10000);
-			logger.debug("Запускается TossQueue");
-			new Timer().schedule(new TosserTask(), 10000, 10000);
-			logger.info("jNode запущен и работает");
+			// logger.debug("Запускается TossQueue");
+			// new Timer().schedule(new TosserTask(), 10000, 10000);
+			logger.l1("jNode запущен и работает");
 		}
 	}
 
-	private static final class TosserTask extends TimerTask {
-
-		@Override
-		public void run() {
-			TosserQueue.INSTANSE.toss();
-		}
-
-	}
+	// private static final class TosserTask extends TimerTask {
+	//
+	// @Override
+	// public void run() {
+	// TosserQueue.INSTANSE.toss();
+	// }
+	//
+	// }
 
 	private static final class PollerTask extends TimerTask {
 
 		@Override
 		public void run() {
+			logger.l4("Всего потоков: " + Thread.activeCount());
 			PollQueue.INSTANSE.poll();
 		}
 

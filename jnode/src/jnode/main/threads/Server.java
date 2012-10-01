@@ -30,13 +30,13 @@ public class Server extends Thread {
 		@Override
 		public void run() {
 			try {
-				logger.info(String.format("Входящее соединение от %s:%d",
+				logger.l3(String.format("Входящее соединение от %s:%d",
 						socket.getInetAddress().getHostAddress(),
 						socket.getPort()));
 				Connector connector = new Connector(new BinkpConnector());
 				connector.accept(socket);
 			} catch (ProtocolException e) {
-				logger.error("Не могу инициализировать connector");
+				logger.l2("Не могу инициализировать connector");
 			} finally {
 				try {
 					socket.close();
@@ -60,7 +60,7 @@ public class Server extends Thread {
 
 	@Override
 	public void run() {
-		logger.info("Сервер слушает на " + host + ":" + port);
+		logger.l4("Сервер слушает на " + host + ":" + port);
 		try {
 
 			ServerSocket socket = new ServerSocket(port, 0,
@@ -72,14 +72,14 @@ public class Server extends Thread {
 			}
 			socket.close();
 		} catch (IOException e) {
-			logger.error("Ошибка сервера: " + e.getMessage());
+			logger.l2("Ошибка сервера: " + e.getMessage());
 		}
 		errors++;
 		if (errors < 10) {
-			logger.warn("Сервер упал, перезапускаем");
+			logger.l3("Сервер упал, перезапускаем");
 			this.run();
 		} else {
-			logger.error("Сервер упал 10 раз, выходим");
+			logger.l2("Сервер упал 10 раз, выходим");
 			System.exit(-1);
 		}
 	}

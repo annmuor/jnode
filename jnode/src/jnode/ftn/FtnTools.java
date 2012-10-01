@@ -430,7 +430,7 @@ public final class FtnTools {
 					unzipped.add(pkt);
 				}
 			} catch (IOException e) {
-				logger.error("Не удалось распаковать " + filename);
+				logger.l2("Не удалось распаковать " + filename);
 			}
 		} else {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
@@ -443,10 +443,10 @@ public final class FtnTools {
 					fos.write(block, 0, len);
 				}
 				fos.close();
-				logger.info("Получен файл " + file.getAbsolutePath() + " ("
+				logger.l3("Получен файл " + file.getAbsolutePath() + " ("
 						+ file.length() + ")");
 			} catch (IOException e) {
-				logger.error("Не удалось записать файл " + filename + ": "
+				logger.l2("Не удалось записать файл " + filename + ": "
 						+ e.getMessage());
 			}
 		}
@@ -470,7 +470,7 @@ public final class FtnTools {
 				message.getToName(), message.getSubject() };
 		for (int i = 0; i < 5; i++) {
 			if (regexp[i] != null && !regexp[i].equals("*")) {
-				logger.debug("Проверяем " + check[i] + " на соответствие "
+				logger.l5("Проверяем " + check[i] + " на соответствие "
 						+ regexp[i]);
 				if (check[i] == null || !check[i].matches(regexp[i])) {
 					ok = false;
@@ -497,7 +497,7 @@ public final class FtnTools {
 				message.getToName(), message.getSubject() };
 		for (int i = 0; i < 5; i++) {
 			if (regexp[i] != null && !regexp[i].equals("*")) {
-				logger.debug("Проверяем " + check[i] + " на соответствие "
+				logger.l5("Проверяем " + check[i] + " на соответствие "
 						+ regexp[i]);
 				if (check[i] == null || !check[i].matches(regexp[i])) {
 					ok = false;
@@ -541,23 +541,23 @@ public final class FtnTools {
 								+ nfa + ")"));
 					}
 					message.setFromAddr(nfa);
-					logger.debug("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 1:
 					message.setToAddr(new FtnAddress(fields[i]));
-					logger.debug("Перезаписываем toAddr на " + fields[i]);
+					logger.l5("Перезаписываем toAddr на " + fields[i]);
 					break;
 				case 2:
 					message.setFromName(fields[i]);
-					logger.debug("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 3:
 					message.setToName(fields[i]);
-					logger.debug("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				case 4:
 					message.setSubject(fields[i]);
-					logger.debug("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Перезаписываем fromAddr на " + fields[i]);
 					break;
 				}
 			}
@@ -583,19 +583,17 @@ public final class FtnTools {
 						isRobot = true;
 						Class<?> clazz = Class.forName(robot.getClassName());
 						IRobot irobot = (IRobot) clazz.newInstance();
-						logger.debug("Сообщение " + message.getMsgid()
+						logger.l4("Сообщение " + message.getMsgid()
 								+ " передано роботу " + robotname);
 						irobot.execute(message);
 					}
 				} catch (SQLException e) {
-					logger.error("Ошибка при получении робота");
+					logger.l2("Ошибка при получении робота",e);
 				} catch (ClassNotFoundException e) {
-					logger.error("Ошибка при инициализации робота " + robotname);
-					e.printStackTrace();
+					logger.l2("Ошибка при инициализации робота " + robotname,e);
 				} catch (Exception e) {
-					logger.error("Ошибка при обработке сообщения робота "
-							+ robotname);
-					e.printStackTrace();
+					logger.l2("Ошибка при обработке сообщения робота "
+							+ robotname,e);
 				}
 			}
 		}
@@ -628,7 +626,7 @@ public final class FtnTools {
 					routeVia = lnk.get(0);
 				}
 			} catch (SQLException e) {
-				logger.error("Ошибка при поиска routeVia", e);
+				logger.l2("Ошибка при поиска routeVia", e);
 			}
 		}
 		if (routeVia == null) {
@@ -642,7 +640,7 @@ public final class FtnTools {
 					}
 				}
 			} catch (SQLException e) {
-				logger.error("Ошибка при получении роутинга", e);
+				logger.l2("Ошибка при получении роутинга", e);
 			}
 		}
 		return routeVia;
@@ -689,20 +687,20 @@ public final class FtnTools {
 		ret.setToAddr(fmsg.getFromAddr());
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
-			logger.error("Не могу найти роутинг для ответа на сообщение"
+			logger.l2("Не могу найти роутинг для ответа на сообщение"
 					+ fmsg.getMsgid());
 			return;
 		}
 		netmail.setRouteVia(routeVia);
 		try {
 			ORMManager.INSTANSE.netmail().create(netmail);
-			logger.debug("Создан Netmail #" + netmail.getId());
+			logger.l4("Создан Netmail #" + netmail.getId());
 			if (FtnTools.getOptionBooleanDefTrue(routeVia,
 					LinkOption.BOOLEAN_CRASH_NETMAIL)) {
 				PollQueue.INSTANSE.add(routeVia);
 			}
 		} catch (SQLException e) {
-			logger.warn("Не удалось создать netmail" + e.getMessage());
+			logger.l3("Не удалось создать netmail" + e.getMessage());
 		}
 
 	}
@@ -795,7 +793,7 @@ public final class FtnTools {
 							s.getLink()));
 			}
 		} catch (Exception e) {
-			logger.warn("Не могу получить список подписчиков эхи "
+			logger.l3("Не могу получить список подписчиков эхи "
 					+ area.getName());
 		}
 		return links;
@@ -835,7 +833,7 @@ public final class FtnTools {
 									: (Rewrite.Type.ECHOMAIL)).query();
 			for (Rewrite rewrite : rewrites) {
 				if (FtnTools.completeMask(rewrite, message)) {
-					logger.debug(((message.isNetmail()) ? "NET" : "ECH")
+					logger.l5(((message.isNetmail()) ? "NET" : "ECH")
 							+ " - найдено соответствие, переписываем сообщение "
 							+ message.getMsgid());
 					rewrite(rewrite, message);
@@ -845,7 +843,7 @@ public final class FtnTools {
 				}
 			}
 		} catch (SQLException e) {
-			logger.warn("Не удалось получить rewrite", e);
+			logger.l3("Не удалось получить rewrite", e);
 		}
 	}
 
@@ -872,7 +870,7 @@ public final class FtnTools {
 					ret.setReadlevel(0L);
 					ret.setWritelevel(0L);
 					ret.setGroup("");
-					logger.info("Создана эхоария " + name);
+					logger.l3("Создана эхоария " + name.toUpperCase());
 					ORMManager.INSTANSE.echoarea().create(ret);
 					if (link != null) {
 						Subscription sub = new Subscription();
@@ -892,7 +890,7 @@ public final class FtnTools {
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Не могу создать/получить арию " + name, e);
+			logger.l2("Не могу создать/получить арию " + name, e);
 			ret = null;
 		}
 		return ret;
@@ -906,7 +904,7 @@ public final class FtnTools {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.warn("Не удалось проверить " + msgid + " на дюпы", e);
+			logger.l4("Не удалось проверить " + msgid + " на дюпы", e);
 		}
 		return false;
 	}

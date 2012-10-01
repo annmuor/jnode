@@ -5,16 +5,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public final class Logger {
-	public static final int LOG_DEBG = 5;
-	public static final int LOG_INFO = 4;
-	public static final int LOG_WARN = 3;
-	public static final int LOG_ERRR = 2;
-	public static int Loglevel = LOG_DEBG;
+	public static final int LOG_L5 = 5;
+	public static final int LOG_L4 = 4;
+	public static final int LOG_L3 = 3;
+	public static final int LOG_L2 = 2;
+	public static final int LOG_L1 = 1;
+	public static int Loglevel = LOG_L5;
 
 	private String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"HH:mm:ss");
-	private static final String LOG_FORMAT = "%s %s [%08d] %s %s";
+	private static final String LOG_FORMAT = "%s [%08d] %s %s";
 
 	public static Logger getLogger(Class<?> clazz) {
 		String className = clazz.getSimpleName();
@@ -32,48 +33,55 @@ public final class Logger {
 
 	private void log(int _type, String log) {
 		if (Loglevel >= _type) {
-			String type = (_type == 2) ? "ERRR" : (_type == 3) ? "WARN"
-					: (_type == 4) ? "INFO" : (_type == 5) ? "DEBG" : "";
-			System.out.println(String.format(LOG_FORMAT, type, DATE_FORMAT
+			System.out.println(String.format(LOG_FORMAT, DATE_FORMAT
 					.format(new Date()), Thread.currentThread().getId(),
 					className, log));
 		}
 	}
 
-	public void debug(String log) {
-		log(LOG_DEBG, log);
+	public void l5(String log) {
+		log(LOG_L5, log);
 	}
 
-	public void info(String log) {
-		log(LOG_INFO, log);
+	public void l4(String log) {
+		log(LOG_L4, log);
 	}
 
-	public void warn(String log) {
-		log(LOG_WARN, log);
+	public void l3(String log) {
+		log(LOG_L3, log);
 	}
 
-	public void error(String log) {
-		log(LOG_ERRR, log);
+	public void l2(String log) {
+		log(LOG_L2, log);
 	}
 
-	public void debug(String log, Throwable e) {
-		log(LOG_DEBG, log);
-		e.printStackTrace();
+	public void l1(String log) {
+		log(LOG_L1, log);
 	}
 
-	public void info(String log, Throwable e) {
-		log(LOG_INFO, log);
-		e.printStackTrace();
+	public void l5(String log, Throwable e) {
+		log(LOG_L5, log);
+		log(LOG_L2, e.toString());
 	}
 
-	public void warn(String log, Throwable e) {
-		log(LOG_WARN, log);
-		e.printStackTrace();
+	public void l4(String log, Throwable e) {
+		log(LOG_L4, log);
+		log(LOG_L2, e.toString());
 	}
 
-	public void error(String log, Throwable e) {
-		log(LOG_ERRR, log);
-		e.printStackTrace();
+	public void l3(String log, Throwable e) {
+		log(LOG_L3, log);
+		log(LOG_L2, e.toString());
+	}
+
+	public void l2(String log, Throwable e) {
+		log(LOG_L2, log);
+		log(LOG_L2, e.toString());
+	}
+
+	public void l1(String log, Throwable e) {
+		log(LOG_L1, log);
+		log(LOG_L2, e.toString());
 	}
 
 }

@@ -96,12 +96,12 @@ public class NodelistScanner {
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(idx));
 			oos.writeObject(index);
-			logger.info("Создан индекс нодлиста: " + address.size()
+			logger.l4("Создан индекс нодлиста: " + address.size()
 					+ " адресов");
 			oos.close();
 			ok = true;
 		} catch (IOException e) {
-			logger.error("Ошибка при создании индекса нодлиста "
+			logger.l2("Ошибка при создании индекса нодлиста "
 					+ ndl.getAbsolutePath() + " -> " + idx.getAbsolutePath()
 					+ " : " + e.getMessage());
 		}
@@ -132,11 +132,11 @@ public class NodelistScanner {
 					}
 				}
 			} catch (IOException e) {
-				logger.error("Не могу прочитать nodelist.index");
+				logger.l2("Не могу прочитать nodelist.index");
 			} catch (ClassNotFoundException e) {
-				logger.error("Не могу найти nodelist.index");
+				logger.l2("Не могу найти nodelist.index");
 			} catch (ClassCastException e) {
-				logger.error("В файле nodelist.index содержится не nodelist.index");
+				logger.l2("В файле nodelist.index содержится не nodelist.index");
 				if (createNdlIndexFile()) {
 					return createNdlIndex();
 				}
@@ -152,7 +152,7 @@ public class NodelistScanner {
 	public FtnNdlAddress isExists(FtnAddress address) {
 		NodelistIndex index = createNdlIndex();
 		if (index == null) {
-			logger.warn("Нодлист не найден, разрешаем считаем адрес " + address
+			logger.l3("Нодлист не найден, разрешаем считаем адрес " + address
 					+ " существующим");
 			return new FtnNdlAddress(address);
 		} else {

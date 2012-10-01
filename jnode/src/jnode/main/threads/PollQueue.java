@@ -27,7 +27,7 @@ public enum PollQueue {
 
 	public void poll() {
 		if (queue.size() > 0) {
-			logger.debug("В PollQueue " + queue.size() + " узлов, делаем poll");
+			logger.l4("В PollQueue " + queue.size() + " узлов, делаем poll");
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
 			queue = new HashSet<Link>();
 			for (Link link : currentQueue) {
@@ -62,13 +62,13 @@ public enum PollQueue {
 			try {
 				BinkpConnector binkpConnector = new BinkpConnector();
 				Connector connector = new Connector(binkpConnector);
-				logger.debug(String.format("Соединяемся с %s (%s:%d)",
+				logger.l3(String.format("Соединяемся с %s (%s:%d)",
 						link.getLinkAddress(), link.getProtocolHost(),
 						link.getProtocolPort()));
 				connector.connect(link);
 
 			} catch (ProtocolException e) {
-				logger.error("Ошибка протокола:" + e.getMessage());
+				logger.l2("Ошибка протокола:" + e.getMessage());
 			}
 		}
 	}

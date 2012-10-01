@@ -22,7 +22,7 @@ public class TimerPoll extends TimerTask {
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Не могу получить список узлов");
+			logger.l2("Не могу получить список узлов");
 		}
 	}
 }

@@ -3,7 +3,10 @@ package jnode.protocol.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +14,6 @@ import java.util.List;
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
 import jnode.logger.Logger;
-import jnode.main.threads.TosserQueue;
 import jnode.protocol.io.exception.ProtocolException;
 
 /**
@@ -26,6 +28,7 @@ public class Connector {
 	private Link link;
 	private int index = 0;
 	private static final Logger logger = Logger.getLogger(Connector.class);
+	private FtnTosser tosser = new FtnTosser();
 
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
@@ -42,7 +45,7 @@ public class Connector {
 
 	public void setLink(Link link) {
 		this.link = link;
-		logger.debug(String.format("Получаем сообщения для %s ",
+		logger.l4(String.format("Получаем сообщения для %s ",
 				link.getLinkAddress()));
 		List<Message> messages = FtnTosser.getMessagesForLink(link);
 		this.messages = messages;
@@ -51,13 +54,11 @@ public class Connector {
 
 	public void onReceived(final Message message) {
 		// TODO max_ondemand_lengh to config
-		if (message.getMessageLength() < 512000) {
-			FtnTosser tosser = new FtnTosser();
-			tosser.tossIncoming(message, link);
-			tosser.end();
-		} else {
-			TosserQueue.INSTANSE.add(message, link);
-		}
+		// if (message.getMessageLength() < 512000) {
+		tosser.tossIncoming(message, link);
+		// } else {
+		// TosserQueue.INSTANSE.add(message, link);
+		// }
 	}
 
 	private void doSocket(Socket clientSocket) {
@@ -69,6 +70,12 @@ public class Connector {
 			is = clientSocket.getInputStream();
 			os = clientSocket.getOutputStream();
 		} catch (IOException e) {
+			if (clientSocket != null) {
+				try {
+					clientSocket.close();
+				} catch (IOException ignore) {
+				}
+			}
 			return;
 		}
 
@@ -89,9 +96,10 @@ public class Connector {
 						lastactive = System.currentTimeMillis();
 					} catch (IOException e) {
 						try {
-							clientSocket.close();
+							if (clientSocket != null) {
+								clientSocket.close();
+							}
 						} catch (IOException ignore) {
-						} catch (RuntimeException ignore) {
 						}
 					}
 				}
@@ -107,18 +115,20 @@ public class Connector {
 			}
 			if (connector.closed()) {
 				try {
-					clientSocket.close();
+					if (clientSocket != null) {
+						clientSocket.close();
+					}
 				} catch (IOException e) {
-				} catch (RuntimeException e) {
 				}
 				break;
 			}
 			if (System.currentTimeMillis() - lastactive > 30000) {
-				logger.info("Соединение разорвано по таймауту");
+				logger.l3("Соединение разорвано по таймауту");
 				try {
-					clientSocket.close();
+					if (clientSocket != null) {
+						clientSocket.close();
+					}
 				} catch (IOException ignore) {
-				} catch (RuntimeException e) {
 				}
 				break;
 			}
@@ -134,26 +144,33 @@ public class Connector {
 		connector.reset();
 		connector.initOutgoing(this);
 		try {
-			clientSocket = new Socket(link.getProtocolHost(),
-					link.getProtocolPort());
+			SocketAddress soAddr = new InetSocketAddress(
+					link.getProtocolHost(), link.getProtocolPort());
+			clientSocket = new Socket();
+			clientSocket.connect(soAddr, 30000);
 			doSocket(clientSocket);
 		} catch (UnknownHostException e) {
 			throw new ProtocolException("Неизвестный хост:"
 					+ link.getProtocolHost());
-		} catch (Exception e) {
+		} catch (SocketTimeoutException e) {
+			throw new ProtocolException("Соединение завершено по тайм-ауту");
+		} catch (IOException e) {
 			throw new ProtocolException(e.getLocalizedMessage());
 		} finally {
 			try {
-				clientSocket.close();
+				if (clientSocket != null) {
+					clientSocket.close();
+				}
 			} catch (IOException e) {
-			} catch (RuntimeException e) {
 			}
 		}
+		tosser.end();
 	}
 
 	public void accept(Socket clientSocket) throws ProtocolException {
 		connector.reset();
 		connector.initIncoming(this);
 		doSocket(clientSocket);
+		tosser.end();
 	}
 }

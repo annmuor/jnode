@@ -67,13 +67,13 @@ public class FtnTosser {
 
 		if (from == null) {
 			if (!secure) {
-				logger.warn(String
+				logger.l3(String
 						.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 				drop = true;
 			} else {
-				logger.warn(String
+				logger.l4(String
 						.format("Netmail %s -> %s warn ( отправитель не найден в нодлисте )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
@@ -84,7 +84,7 @@ public class FtnTosser {
 					netmail,
 					"Destination not found",
 					"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
-			logger.warn(String
+			logger.l3(String
 					.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
 							netmail.getFromAddr().toString(), netmail
 									.getToAddr().toString()));
@@ -93,7 +93,7 @@ public class FtnTosser {
 		} else if (to.getStatus().equals(Status.DOWN)) {
 			FtnTools.writeReply(netmail, "Destination is DOWN",
 					"Warning! Destination of your netmail is DOWN");
-			logger.warn(String.format(
+			logger.l3(String.format(
 					"Netmail %s -> %s warn ( получатель имеет статус Down )",
 					netmail.getFromAddr().toString(), netmail.getToAddr()
 							.toString()));
@@ -101,7 +101,7 @@ public class FtnTosser {
 		} else if (to.getStatus().equals(Status.HOLD)) {
 			FtnTools.writeReply(netmail, "Destination is HOLD",
 					"Warning! Destination of your netmail is HOLD");
-			logger.warn(String.format(
+			logger.l4(String.format(
 					"Netmail %s -> %s warn ( получатель имеет статус Hold )",
 					netmail.getFromAddr().toString(), netmail.getToAddr()
 							.toString()));
@@ -133,14 +133,14 @@ public class FtnTosser {
 				Integer n = tossed.get("netmail");
 				tossed.put("netmail", (n == null) ? 1 : n + 1);
 				if (routeVia == null) {
-					logger.warn(String
+					logger.l4(String
 							.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
 									netmail.getFromAddr().toString(), netmail
 											.getToAddr().toString()));
 				} else {
 					routeVia = ORMManager.INSTANSE.link().queryForSameId(
 							routeVia);
-					logger.debug(String.format(
+					logger.l4(String.format(
 							"Netmail %s -> %s будет отправлен через %s",
 							netmail.getFromAddr().toString(), netmail
 									.getToAddr().toString(), routeVia
@@ -151,7 +151,7 @@ public class FtnTosser {
 					}
 				}
 			} catch (SQLException e) {
-				logger.error("Ошибка при сохранении нетмейла", e);
+				logger.l2("Ошибка при сохранении нетмейла", e);
 			}
 		}
 	}
@@ -159,19 +159,19 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
-			logger.warn("Эхомейл по unsecure-соединению - уничтожен");
+			logger.l3("Эхомейл по unsecure-соединению - уничтожен");
 			return;
 		}
 		Echoarea area = FtnTools.getAreaByName(echomail.getArea(), link);
 		if (area == null) {
-			logger.warn("Эхоконференция " + echomail.getArea()
+			logger.l3("Эхоконференция " + echomail.getArea()
 					+ " недоступна для узла " + link.getLinkAddress());
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
 		if (FtnTools.isADupe(area, echomail.getMsgid())) {
-			logger.warn("Сообщение " + echomail.getArea() + " "
+			logger.l3("Сообщение " + echomail.getArea() + " "
 					+ echomail.getMsgid() + " является дюпом");
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
@@ -193,7 +193,7 @@ public class FtnTosser {
 		try {
 			ORMManager.INSTANSE.echomail().create(mail);
 		} catch (SQLException e) {
-			logger.warn("Не удалось сохранить сообщение", e);
+			logger.l3("Не удалось сохранить сообщение", e);
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -242,7 +242,7 @@ public class FtnTosser {
 						LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
 					if (!link.getPaketPassword().equalsIgnoreCase(
 							pkt.getPassword())) {
-						logger.warn("Пароль для пакета не совпал - пакет перемещен в inbound");
+						logger.l2("Пароль для пакета не совпал - пакет перемещен в inbound");
 						FtnTools.moveToBad(pkt);
 						continue;
 					}
@@ -270,7 +270,7 @@ public class FtnTosser {
 			if (file.getName().matches("^[a-f0-9]{8}\\.pkt$")) {
 				try {
 					Message m = new Message(file);
-					logger.debug("Обрабатываем файл " + file.getAbsolutePath());
+					logger.l4("Обрабатываем файл " + file.getAbsolutePath());
 					FtnPkt[] pkts = FtnTools.unpack(m);
 					for (FtnPkt pkt : pkts) {
 						for (FtnMessage ftnm : pkt.getMessages()) {
@@ -283,7 +283,7 @@ public class FtnTosser {
 					}
 					file.delete();
 				} catch (Exception e) {
-					logger.warn("Не могу обработать пакет "
+					logger.l3("Не могу обработать пакет "
 							+ file.getAbsolutePath());
 				}
 			}
@@ -292,15 +292,15 @@ public class FtnTosser {
 
 	public void end() {
 		if (!tossed.isEmpty()) {
-			logger.info("Записано сообщений:");
+			logger.l3("Записано сообщений:");
 			for (String area : tossed.keySet()) {
-				logger.info(String.format("\t%s - %d", area, tossed.get(area)));
+				logger.l3(String.format("\t%s - %d", area, tossed.get(area)));
 			}
 		}
 		if (!bad.isEmpty()) {
-			logger.warn("Уничтожено сообщений:");
+			logger.l2("Уничтожено сообщений:");
 			for (String area : bad.keySet()) {
-				logger.warn(String.format("\t%s - %d", area, bad.get(area)));
+				logger.l2(String.format("\t%s - %d", area, bad.get(area)));
 			}
 		}
 		for (Echoarea areas : affectedAreas) {
@@ -334,7 +334,7 @@ public class FtnTosser {
 				for (Netmail netmail : netmails) {
 					FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
 					messages.add(msg);
-					logger.debug(String.format(
+					logger.l4(String.format(
 							"Пакуем netmail #%d %s -> %s для %s (%d)",
 							netmail.getId(), netmail.getFromFTN(),
 							netmail.getToFTN(), link.getLinkAddress(),
@@ -346,7 +346,7 @@ public class FtnTosser {
 								+ filename);
 						if (file.canRead()) {
 							attachedFiles.add(file);
-							logger.debug("К сообщению прикреплен файл "
+							logger.l5("К сообщению прикреплен файл "
 									+ filename + ", пересылаем");
 						}
 					}
@@ -355,7 +355,7 @@ public class FtnTosser {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(
+			logger.l2(
 					"Ошибка обработки netmail для " + link.getLinkAddress(), e);
 		}
 		try {
@@ -389,7 +389,7 @@ public class FtnTosser {
 							FtnTools.read2D((String) result[9]));
 					subcription.put((Long) result[2], (Long) result[1]);
 					if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-						logger.debug(link2d + " есть в синбаях для "
+						logger.l5(link2d + " есть в синбаях для "
 								+ link_address);
 					} else {
 						signs.add((Long) result[1]);
@@ -420,7 +420,7 @@ public class FtnTosser {
 						message.setText((String) result[8]);
 						message.setSeenby(new ArrayList<Ftn2D>(seenby));
 						message.setPath(path);
-						logger.debug("Пакуем сообщение #" + result[1] + " ("
+						logger.l4("Пакуем сообщение #" + result[1] + " ("
 								+ result[0] + ") для " + link.getLinkAddress());
 						messages.add(message);
 					}
@@ -444,7 +444,7 @@ public class FtnTosser {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error(
+			logger.l2(
 					"Ошибка обработки echomail для " + link.getLinkAddress(), e);
 		}
 		if (!messages.isEmpty()) {
@@ -454,7 +454,7 @@ public class FtnTosser {
 					ret.add(new Message(f));
 					f.delete();
 				} catch (Exception e) {
-					logger.warn("Не могу прикрепить файл "
+					logger.l3("Не могу прикрепить файл "
 							+ f.getAbsolutePath());
 				}
 			}
