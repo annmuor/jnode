@@ -172,7 +172,7 @@ public class FtnMessage {
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
 			os.writeShort(FtnTools.revShort(toAddr.getNet()));
 			if (isNetmail) {
-				//attribute &= ATTR_PVT;
+				// attribute &= ATTR_PVT;
 				os.writeShort(FtnTools.revShort((short) attribute)); // attributes
 			} else {
 				os.write(new byte[] { 0, 0 });
@@ -240,7 +240,8 @@ public class FtnMessage {
 				toName = FtnTools.readUntillNull(is);
 				fromName = FtnTools.readUntillNull(is);
 				subject = FtnTools.readUntillNull(is);
-				String lines[] = FtnTools.readUntillNull(is).split("\r");
+				String lines[] = FtnTools.readUntillNull(is)
+						.replaceAll("\n", "").split("\r");
 				StringBuilder builder = new StringBuilder();
 				int linenum = 0;
 				boolean eofKluges = false;
