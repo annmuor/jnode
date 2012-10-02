@@ -413,7 +413,7 @@ public final class FtnTools {
 	 * @param message
 	 * @return
 	 */
-	public static FtnPkt[] unpack(Message message) {
+	public static FtnPkt[] unpack(Message message) throws IOException {
 		ArrayList<FtnPkt> unzipped = new ArrayList<FtnPkt>();
 		String filename = message.getMessageName().toLowerCase();
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
@@ -421,34 +421,24 @@ public final class FtnTools {
 			pkt.unpack(message.getInputStream());
 			unzipped.add(pkt);
 		} else if (filename.matches("^[a-f0-9]{8}\\.[a-z0-9][a-z0-9][a-z0-9]$")) {
-			try {
-				ZipInputStream zis = new ZipInputStream(
-						message.getInputStream());
-				while (zis.getNextEntry() != null) {
-					FtnPkt pkt = new FtnPkt();
-					pkt.unpack(zis, false);
-					unzipped.add(pkt);
-				}
-			} catch (IOException e) {
-				logger.l2("Не удалось распаковать " + filename);
+			ZipInputStream zis = new ZipInputStream(message.getInputStream());
+			while (zis.getNextEntry() != null) {
+				FtnPkt pkt = new FtnPkt();
+				pkt.unpack(zis, false);
+				unzipped.add(pkt);
 			}
 		} else {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
 			File file = new File(Main.getInbound() + File.separator + filename);
-			try {
-				FileOutputStream fos = new FileOutputStream(file);
-				while (message.getInputStream().available() > 0) {
-					byte[] block = new byte[1024];
-					int len = message.getInputStream().read(block);
-					fos.write(block, 0, len);
-				}
-				fos.close();
-				logger.l3("Получен файл " + file.getAbsolutePath() + " ("
-						+ file.length() + ")");
-			} catch (IOException e) {
-				logger.l2("Не удалось записать файл " + filename + ": "
-						+ e.getMessage());
+			FileOutputStream fos = new FileOutputStream(file);
+			while (message.getInputStream().available() > 0) {
+				byte[] block = new byte[1024];
+				int len = message.getInputStream().read(block);
+				fos.write(block, 0, len);
 			}
+			fos.close();
+			logger.l3("Получен файл " + file.getAbsolutePath() + " ("
+					+ file.length() + ")");
 		}
 		return unzipped.toArray(new FtnPkt[0]);
 	}
@@ -588,12 +578,12 @@ public final class FtnTools {
 						irobot.execute(message);
 					}
 				} catch (SQLException e) {
-					logger.l2("Ошибка при получении робота",e);
+					logger.l2("Ошибка при получении робота", e);
 				} catch (ClassNotFoundException e) {
-					logger.l2("Ошибка при инициализации робота " + robotname,e);
+					logger.l2("Ошибка при инициализации робота " + robotname, e);
 				} catch (Exception e) {
 					logger.l2("Ошибка при обработке сообщения робота "
-							+ robotname,e);
+							+ robotname, e);
 				}
 			}
 		}
@@ -674,8 +664,8 @@ public final class FtnTools {
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
 				+ ")\n");
 		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")\n");
-		sb.append("Date: " + fmsg.getDate()+"\n");
-		sb.append("Subject: " + fmsg.getSubject()+"\n");
+		sb.append("Date: " + fmsg.getDate() + "\n");
+		sb.append("Subject: " + fmsg.getSubject() + "\n");
 		sb.append(fmsg.getText().replaceAll("\001", "@")
 				.replaceAll("---", "+++")
 				.replaceAll(" \\* Origin:", " + Origin:"));
@@ -813,7 +803,10 @@ public final class FtnTools {
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
 				new Date().getTime() / 1000), bis.available());
 		message.setInputStream(bis);
-		unpack(message);
+		try {
+			unpack(message);
+		} catch (IOException e) {
+		}
 	}
 
 	/**

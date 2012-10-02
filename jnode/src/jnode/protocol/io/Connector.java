@@ -52,10 +52,10 @@ public class Connector {
 		index = 0;
 	}
 
-	public void onReceived(final Message message) {
+	public int onReceived(final Message message) {
 		// TODO max_ondemand_lengh to config
 		// if (message.getMessageLength() < 512000) {
-		tosser.tossIncoming(message, link);
+		return tosser.tossIncoming(message, link);
 		// } else {
 		// TosserQueue.INSTANSE.add(message, link);
 		// }

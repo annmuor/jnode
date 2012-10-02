@@ -230,38 +230,44 @@ public class FtnTosser {
 	 * 
 	 * @param connector
 	 */
-	public void tossIncoming(Message message, Link link) {
+	public int tossIncoming(Message message, Link link) {
 		if (message == null) {
-			return;
+			return 0;
 		}
-		FtnPkt[] pkts = FtnTools.unpack(message);
 
-		for (FtnPkt pkt : pkts) {
-			if (message.isSecure()) {
-				if (!FtnTools.getOptionBooleanDefFalse(link,
-						LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
-					if (!link.getPaketPassword().equalsIgnoreCase(
-							pkt.getPassword())) {
-						logger.l2("Пароль для пакета не совпал - пакет перемещен в inbound");
-						FtnTools.moveToBad(pkt);
-						continue;
-					}
-				}
-			}
-			for (FtnMessage ftnm : pkt.getMessages()) {
+		try {
+			FtnPkt[] pkts = FtnTools.unpack(message);
+			for (FtnPkt pkt : pkts) {
 				if (message.isSecure()) {
-					if (FtnTools.checkRobot(ftnm)) {
-						continue;
+					if (!FtnTools.getOptionBooleanDefFalse(link,
+							LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
+						if (!link.getPaketPassword().equalsIgnoreCase(
+								pkt.getPassword())) {
+							logger.l2("Пароль для пакета не совпал - пакет перемещен в inbound");
+							FtnTools.moveToBad(pkt);
+							continue;
+						}
 					}
 				}
-				if (ftnm.isNetmail()) {
-					tossNetmail(ftnm, message.isSecure());
-				} else {
-					tossEchomail(ftnm, link, message.isSecure());
+				for (FtnMessage ftnm : pkt.getMessages()) {
+					if (message.isSecure()) {
+						if (FtnTools.checkRobot(ftnm)) {
+							continue;
+						}
+					}
+					if (ftnm.isNetmail()) {
+						tossNetmail(ftnm, message.isSecure());
+					} else {
+						tossEchomail(ftnm, link, message.isSecure());
+					}
 				}
-			}
 
+			}
+		} catch (Exception e) {
+			logger.l2("Ошибка при распаковке " + message.getMessageName(), e);
+			return 1;
 		}
+		return 0;
 	}
 
 	public void tossInbound() {
@@ -346,8 +352,8 @@ public class FtnTosser {
 								+ filename);
 						if (file.canRead()) {
 							attachedFiles.add(file);
-							logger.l5("К сообщению прикреплен файл "
-									+ filename + ", пересылаем");
+							logger.l5("К сообщению прикреплен файл " + filename
+									+ ", пересылаем");
 						}
 					}
 					netmail.setSend(true);
@@ -355,8 +361,8 @@ public class FtnTosser {
 				}
 			}
 		} catch (Exception e) {
-			logger.l2(
-					"Ошибка обработки netmail для " + link.getLinkAddress(), e);
+			logger.l2("Ошибка обработки netmail для " + link.getLinkAddress(),
+					e);
 		}
 		try {
 			final String echomail_query = "SELECT a.name as AREA,e.* FROM subscription s LEFT JOIN echoarea"
@@ -444,8 +450,8 @@ public class FtnTosser {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.l2(
-					"Ошибка обработки echomail для " + link.getLinkAddress(), e);
+			logger.l2("Ошибка обработки echomail для " + link.getLinkAddress(),
+					e);
 		}
 		if (!messages.isEmpty()) {
 			List<Message> ret = FtnTools.pack(messages, link);
@@ -454,8 +460,7 @@ public class FtnTosser {
 					ret.add(new Message(f));
 					f.delete();
 				} catch (Exception e) {
-					logger.l3("Не могу прикрепить файл "
-							+ f.getAbsolutePath());
+					logger.l3("Не могу прикрепить файл " + f.getAbsolutePath());
 				}
 			}
 			return ret;

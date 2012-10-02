@@ -449,16 +449,26 @@ public class BinkpConnector implements ProtocolConnector {
 											currentOutputStream.toByteArray()));
 							currentOutputStream.close();
 							currentOutputStream = null;
-							frames.add(new BinkpFrame(BinkpCommand.M_GOT,
+							Frame m_got = new BinkpFrame(BinkpCommand.M_GOT,
 									String.format("%s %d %d",
 											currentMessage.getMessageName(),
 											currentMessage.getMessageLength(),
-											currentMessageTimestamp)));
+											currentMessageTimestamp));
+							Frame m_skip = new BinkpFrame(BinkpCommand.M_SKIP,
+									String.format("%s %d %d",
+											currentMessage.getMessageName(),
+											currentMessage.getMessageLength(),
+											currentMessageTimestamp));
 							logger.l3(String.format("Принят файл: %s (%d)",
 									currentMessage.getMessageName(),
 									currentMessage.getMessageLength()));
 							currentMessage.setSecure(secure);
-							connector.onReceived(currentMessage);
+							if (connector.onReceived(currentMessage) == 0) {
+								frames.add(m_got);
+							} else {
+								logger.l4("Посылаем M_SKIP для повторного получения файла в дальнейшем");
+								frames.add(m_skip);
+							}
 							totalin += currentMessage.getMessageLength();
 							currentMessage = null;
 							recvfile = false;

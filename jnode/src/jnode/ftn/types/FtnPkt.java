@@ -28,7 +28,7 @@ public class FtnPkt {
 	private List<FtnMessage> messages;
 	private Date date;
 	private static DateFormat format = new SimpleDateFormat(
-			"YYYY MM dd HH mm ss", Locale.US);
+			"yyyy MM dd HH mm ss", Locale.US);
 
 	public FtnAddress getFromAddr() {
 		return fromAddr;
