@@ -45,20 +45,15 @@ public class Connector {
 
 	public void setLink(Link link) {
 		this.link = link;
-		logger.l4(String.format("Получаем сообщения для %s ",
-				link.getLinkAddress()));
 		List<Message> messages = FtnTosser.getMessagesForLink(link);
 		this.messages = messages;
 		index = 0;
+		logger.l4(String.format("Получено %d сообщений для %s",
+				messages.size(), link.getLinkAddress()));
 	}
 
 	public int onReceived(final Message message) {
-		// TODO max_ondemand_lengh to config
-		// if (message.getMessageLength() < 512000) {
 		return tosser.tossIncoming(message, link);
-		// } else {
-		// TosserQueue.INSTANSE.add(message, link);
-		// }
 	}
 
 	private void doSocket(Socket clientSocket) {
@@ -66,7 +61,7 @@ public class Connector {
 		OutputStream os = null;
 		long lastactive = System.currentTimeMillis();
 		try {
-			clientSocket.setSoTimeout(30000);
+			clientSocket.setSoTimeout(1000);
 			is = clientSocket.getInputStream();
 			os = clientSocket.getOutputStream();
 		} catch (IOException e) {
@@ -149,6 +144,7 @@ public class Connector {
 			clientSocket = new Socket();
 			clientSocket.connect(soAddr, 30000);
 			doSocket(clientSocket);
+			tosser.end();
 		} catch (UnknownHostException e) {
 			throw new ProtocolException("Неизвестный хост:"
 					+ link.getProtocolHost());
@@ -164,7 +160,6 @@ public class Connector {
 			} catch (IOException e) {
 			}
 		}
-		tosser.end();
 	}
 
 	public void accept(Socket clientSocket) throws ProtocolException {

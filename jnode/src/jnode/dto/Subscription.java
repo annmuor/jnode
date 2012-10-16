@@ -14,8 +14,6 @@ public class Subscription {
 	private Link link;
 	@DatabaseField(columnName = "echoarea_id", foreign = true, uniqueIndexName = "subs_idx")
 	private Echoarea area;
-	@DatabaseField(columnName = "lastmessageid")
-	private Long last;
 
 	public Link getLink() {
 		return link;
@@ -31,14 +29,6 @@ public class Subscription {
 
 	public void setArea(Echoarea area) {
 		this.area = area;
-	}
-
-	public Long getLast() {
-		return last;
-	}
-
-	public void setLast(Long last) {
-		this.last = last;
 	}
 
 }

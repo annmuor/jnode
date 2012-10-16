@@ -141,9 +141,7 @@ public class FtnAddress implements Serializable {
 		if (boss.zone == this.zone) {
 			if (boss.net == this.net) {
 				if (boss.node == this.node) {
-					if (boss.point != this.point) {
-						return true;
-					}
+					return true;
 				}
 			}
 		}

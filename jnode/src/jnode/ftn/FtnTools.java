@@ -24,8 +24,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import com.j256.ormlite.dao.GenericRawResults;
-
 import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
@@ -41,6 +39,9 @@ import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.main.threads.PollQueue;
+import jnode.ndl.FtnNdlAddress;
+import jnode.ndl.NodelistScanner;
+import jnode.ndl.FtnNdlAddress.Status;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
@@ -329,18 +330,10 @@ public final class FtnTools {
 	 */
 	private static String getOption(Link link, String option) {
 		String value = "";
-		try {
-			GenericRawResults<String[]> res = ORMManager.INSTANSE
-					.linkoption()
-					.queryRaw(
-							String.format(
-									"SELECT value FROM linkoptions WHERE link_id=%d AND name='%s'",
-									link.getId(), option.toLowerCase()));
-			String[] q = res.getFirstResult();
-			if (q != null) {
-				value = q[0];
-			}
-		} catch (SQLException e) {
+		LinkOption opt = ORMManager.INSTANSE.getLinkOptionDAO().getFirstAnd(
+				"link_id", "=", link, "name", "=", option.toLowerCase());
+		if (opt != null) {
+			value = opt.getValue();
 		}
 		return value;
 	}
@@ -566,7 +559,7 @@ public final class FtnTools {
 		if (message.isNetmail()) {
 			if (message.getToAddr().equals(Main.info.getAddress())) {
 				try {
-					Robot robot = ORMManager.INSTANSE.robot().queryForId(
+					Robot robot = ORMManager.INSTANSE.getRobotDAO().getById(
 							message.getToName().toLowerCase());
 					if (robot != null) {
 						robotname = robot.getRobot();
@@ -599,38 +592,28 @@ public final class FtnTools {
 	public static Link getRouting(FtnMessage message) {
 		Link routeVia = null;
 		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
-		{
-			try {
-				List<Link> lnk = ORMManager.INSTANSE.link().queryForEq(
-						"ftn_address", routeTo.toString());
-				if (lnk.isEmpty()) {
-					if (routeTo.getPoint() > 0) {
-						routeTo.setPoint(0);
-						lnk = ORMManager.INSTANSE.link().queryForEq(
-								"ftn_address", routeTo.toString());
-						if (!lnk.isEmpty()) {
-							routeVia = lnk.get(0);
-						}
-					}
-				} else {
-					routeVia = lnk.get(0);
-				}
-			} catch (SQLException e) {
-				logger.l2("Ошибка при поиска routeVia", e);
-			}
-		}
-		if (routeVia == null) {
-			try {
-				List<Route> routes = ORMManager.INSTANSE.route().queryBuilder()
-						.orderBy("nice", true).query();
+		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
+				"=", routeTo.toString());
+		// не наш пойнт
+		if (!routeTo.isPointOf(Main.info.getAddress())) {
+			routeTo.setPoint(0);
+			routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
+					"ftn_address", "=", routeTo.toString());
+			// а теперь - по роутингу
+			if (routeVia == null) {
+				List<Route> routes = ORMManager.INSTANSE.getRouteDAO()
+						.getOrderAnd("nice", true);
 				for (Route route : routes) {
 					if (completeMask(route, message)) {
 						routeVia = route.getRouteVia();
 						break;
 					}
 				}
-			} catch (SQLException e) {
-				logger.l2("Ошибка при получении роутинга", e);
+			}
+		} else {
+			if (routeVia == null) { // пойнт не найден :-)
+				writeReply(message, "Recepient not found",
+						"Sorry, but recepient of this message is unknown");
 			}
 		}
 		return routeVia;
@@ -682,15 +665,11 @@ public final class FtnTools {
 			return;
 		}
 		netmail.setRouteVia(routeVia);
-		try {
-			ORMManager.INSTANSE.netmail().create(netmail);
-			logger.l4("Создан Netmail #" + netmail.getId());
-			if (FtnTools.getOptionBooleanDefTrue(routeVia,
-					LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-				PollQueue.INSTANSE.add(routeVia);
-			}
-		} catch (SQLException e) {
-			logger.l3("Не удалось создать netmail" + e.getMessage());
+		ORMManager.INSTANSE.getNetmailDAO().save(netmail);
+		logger.l4("Создан Netmail #" + netmail.getId());
+		if (FtnTools.getOptionBooleanDefTrue(routeVia,
+				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+			PollQueue.INSTANSE.add(routeVia);
 		}
 
 	}
@@ -766,34 +745,6 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Получаем подписчиков
-	 * 
-	 * @param area
-	 * @param link
-	 * @return
-	 */
-	public static List<Link> getSubscribers(Echoarea area, Link link) {
-		List<Link> links = new ArrayList<Link>();
-		try {
-			List<Subscription> subs = ORMManager.INSTANSE.subscription()
-					.queryForEq("echoarea_id", area);
-			for (Subscription s : subs) {
-				if (link == null || !s.getLink().getId().equals(link.getId()))
-					links.add(ORMManager.INSTANSE.link().queryForSameId(
-							s.getLink()));
-			}
-		} catch (Exception e) {
-			logger.l3("Не могу получить список подписчиков эхи "
-					+ area.getName());
-		}
-		return links;
-	}
-
-	public static List<Link> getSubscribers(Echoarea area) {
-		return getSubscribers(area, null);
-	}
-
-	/**
 	 * Кривые пакеты - в инбаунд
 	 * 
 	 * @param pkt
@@ -815,28 +766,24 @@ public final class FtnTools {
 	 * @param message
 	 */
 	public static void processRewrite(FtnMessage message) {
-		try {
-			List<Rewrite> rewrites = ORMManager.INSTANSE
-					.rewrite()
-					.queryBuilder()
-					.orderBy("nice", true)
-					.where()
-					.eq("type",
-							(message.isNetmail()) ? (Rewrite.Type.NETMAIL)
-									: (Rewrite.Type.ECHOMAIL)).query();
-			for (Rewrite rewrite : rewrites) {
-				if (FtnTools.completeMask(rewrite, message)) {
-					logger.l5(((message.isNetmail()) ? "NET" : "ECH")
-							+ " - найдено соответствие, переписываем сообщение "
-							+ message.getMsgid());
-					rewrite(rewrite, message);
-					if (rewrite.isLast()) {
-						break;
-					}
+		List<Rewrite> rewrites = ORMManager.INSTANSE.getRewriteDAO()
+				.getOrderAnd(
+						"nice",
+						true,
+						"type",
+						"=",
+						(message.isNetmail()) ? (Rewrite.Type.NETMAIL)
+								: (Rewrite.Type.ECHOMAIL));
+		for (Rewrite rewrite : rewrites) {
+			if (FtnTools.completeMask(rewrite, message)) {
+				logger.l5(((message.isNetmail()) ? "NET" : "ECH")
+						+ " - найдено соответствие, переписываем сообщение "
+						+ message.getMsgid());
+				rewrite(rewrite, message);
+				if (rewrite.isLast()) {
+					break;
 				}
 			}
-		} catch (SQLException e) {
-			logger.l3("Не удалось получить rewrite", e);
 		}
 	}
 
@@ -850,56 +797,115 @@ public final class FtnTools {
 	public static Echoarea getAreaByName(String name, Link link) {
 		Echoarea ret = null;
 		name = name.toLowerCase();
-		try {
-			List<Echoarea> areas = ORMManager.INSTANSE.echoarea().queryForEq(
-					"name", name);
-			if (areas.isEmpty()) {
-				if (link == null
-						|| getOptionBooleanDefFalse(link,
-								LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
-					ret = new Echoarea();
-					ret.setName(name);
-					ret.setDescription("Autocreated echoarea");
-					ret.setReadlevel(0L);
-					ret.setWritelevel(0L);
-					ret.setGroup("");
-					logger.l3("Создана эхоария " + name.toUpperCase());
-					ORMManager.INSTANSE.echoarea().create(ret);
-					if (link != null) {
-						Subscription sub = new Subscription();
-						sub.setArea(ret);
-						sub.setLink(link);
-						sub.setLast(0L);
-						ORMManager.INSTANSE.subscription().create(sub);
-					}
-				}
-			} else {
-				ret = areas.get(0);
-				if (link != null
-						&& ORMManager.INSTANSE.subscription().queryBuilder()
-								.where().eq("echoarea_id", ret.getId()).and()
-								.eq("link_id", link.getId()).query().isEmpty()) {
-					ret = null;
+		ret = ORMManager.INSTANSE.getEchoareaDAO().getFirstAnd("name", "=",
+				name);
+		if (ret == null) {
+			if (link == null
+					|| getOptionBooleanDefFalse(link,
+							LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+				ret = new Echoarea();
+				ret.setName(name);
+				ret.setDescription("Autocreated echoarea");
+				ret.setReadlevel(0L);
+				ret.setWritelevel(0L);
+				ret.setGroup("");
+				logger.l3("Создана эхоария " + name.toUpperCase());
+				ORMManager.INSTANSE.getEchoareaDAO().save(ret);
+				if (link != null) {
+					Subscription sub = new Subscription();
+					sub.setArea(ret);
+					sub.setLink(link);
+					ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
 				}
 			}
-		} catch (SQLException e) {
-			logger.l2("Не могу создать/получить арию " + name, e);
-			ret = null;
+		} else {
+			if (link != null
+					&& ORMManager.INSTANSE.getSubscriptionDAO().getFirstAnd(
+							"echoarea_id", "=", ret.getId(), "link_id", "=",
+							link.getId()) == null) {
+				ret = null;
+			}
 		}
 		return ret;
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		try {
-			if (!ORMManager.INSTANSE.dupe().queryBuilder().where()
-					.eq("msgid", msgid).and().eq("echoarea_id", area).query()
-					.isEmpty()) {
-				return true;
-			}
-		} catch (SQLException e) {
-			logger.l4("Не удалось проверить " + msgid + " на дюпы", e);
+		if (ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
+				"echoarea_id", "=", area) != null) {
+			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Проверка на дроп нетмейла
+	 * 
+	 * @param netmail
+	 * @param secure
+	 * @return
+	 */
+	public static boolean isNetmailMustBeDropped(FtnMessage netmail,
+			boolean secure) {
+		boolean validFrom = false;
+		boolean validTo = false;
+		// к нам на узел
+		if (netmail.getToAddr().isPointOf(Main.info.getAddress())) {
+			validTo = true;
+		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
+				"=", netmail.getToAddr().toString()) != null) {
+			validTo = true;
+		} else {
+			FtnNdlAddress to = NodelistScanner.getInstance().isExists(
+					netmail.getToAddr());
+			if (to == null) {
+				FtnTools.writeReply(
+						netmail,
+						"Destination not found",
+						"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
+				logger.l3(String
+						.format("Netmail %s -> %s reject ( получатель не найден в нодлисте )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+
+			} else if (to.getStatus().equals(Status.DOWN)) {
+				FtnTools.writeReply(netmail, "Destination is DOWN",
+						"Warning! Destination of your netmail is DOWN.\nMessage rejected");
+				logger.l3(String
+						.format("Netmail %s -> %s reject ( получатель имеет статус Down )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+			} else if (to.getStatus().equals(Status.HOLD)) {
+				FtnTools.writeReply(netmail, "Destination is HOLD",
+						"Warning! Destination of your netmail is HOLD");
+				logger.l4(String
+						.format("Netmail %s -> %s warn ( получатель имеет статус Hold )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+				validTo = true;
+			} else {
+				validTo = true;
+			}
+		}
+
+		if (netmail.getFromAddr().isPointOf(Main.info.getAddress())) {
+			validFrom = true;
+		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
+				"=", netmail.getFromAddr().toString()) != null) {
+			validFrom = true;
+		} else {
+			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
+					netmail.getFromAddr());
+			if (from == null) {
+				logger.l3(String
+						.format("Netmail %s -> %s reject ( отправитель не найден в нодлисте )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+			} else {
+				validFrom = true;
+			}
+		}
+
+		return !(validFrom && validTo);
 	}
 
 }

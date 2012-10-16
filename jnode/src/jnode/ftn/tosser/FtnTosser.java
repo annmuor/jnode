@@ -1,26 +1,20 @@
 package jnode.ftn.tosser;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.stmt.UpdateBuilder;
-
 import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
+import jnode.dto.EchomailAwaiting;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
-import jnode.dto.Readsign;
 import jnode.dto.Subscription;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.Ftn2D;
@@ -30,9 +24,6 @@ import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.main.threads.PollQueue;
-import jnode.ndl.FtnNdlAddress;
-import jnode.ndl.FtnNdlAddress.Status;
-import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 
@@ -45,7 +36,7 @@ public class FtnTosser {
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
 	private Map<String, Integer> tossed = new HashMap<String, Integer>();
 	private Map<String, Integer> bad = new HashMap<String, Integer>();
-	private Set<Echoarea> affectedAreas = new HashSet<Echoarea>();
+	private Set<Link> pollLinks = new HashSet<Link>();
 
 	/**
 	 * Разбор нетмейла
@@ -54,58 +45,12 @@ public class FtnTosser {
 	 * @param secure
 	 */
 	private void tossNetmail(FtnMessage netmail, boolean secure) {
-		boolean drop = false;
 		if (secure) {
 			if (FtnTools.checkRobot(netmail)) {
 				return;
 			}
 		}
-		FtnNdlAddress from = NodelistScanner.getInstance().isExists(
-				netmail.getFromAddr());
-		FtnNdlAddress to = NodelistScanner.getInstance().isExists(
-				netmail.getToAddr());
-
-		if (from == null) {
-			if (!secure) {
-				logger.l3(String
-						.format("Netmail %s -> %s уничтожен ( отправитель не найден в нодлисте )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
-				drop = true;
-			} else {
-				logger.l4(String
-						.format("Netmail %s -> %s warn ( отправитель не найден в нодлисте )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
-			}
-
-		} else if (to == null) {
-			FtnTools.writeReply(
-					netmail,
-					"Destination not found",
-					"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
-			logger.l3(String
-					.format("Netmail %s -> %s уничтожен ( получатель не найден в нодлисте )",
-							netmail.getFromAddr().toString(), netmail
-									.getToAddr().toString()));
-
-			drop = true;
-		} else if (to.getStatus().equals(Status.DOWN)) {
-			FtnTools.writeReply(netmail, "Destination is DOWN",
-					"Warning! Destination of your netmail is DOWN");
-			logger.l3(String.format(
-					"Netmail %s -> %s warn ( получатель имеет статус Down )",
-					netmail.getFromAddr().toString(), netmail.getToAddr()
-							.toString()));
-			drop = true;
-		} else if (to.getStatus().equals(Status.HOLD)) {
-			FtnTools.writeReply(netmail, "Destination is HOLD",
-					"Warning! Destination of your netmail is HOLD");
-			logger.l4(String.format(
-					"Netmail %s -> %s warn ( получатель имеет статус Hold )",
-					netmail.getFromAddr().toString(), netmail.getToAddr()
-							.toString()));
-		}
+		boolean drop = FtnTools.isNetmailMustBeDropped(netmail, secure);
 
 		if (drop) {
 			Integer n = bad.get("netmail");
@@ -128,30 +73,25 @@ public class FtnTosser {
 			dbnm.setSubject(netmail.getSubject());
 			dbnm.setText(netmail.getText());
 			dbnm.setAttr(netmail.getAttribute());
-			try {
-				ORMManager.INSTANSE.netmail().create(dbnm);
-				Integer n = tossed.get("netmail");
-				tossed.put("netmail", (n == null) ? 1 : n + 1);
-				if (routeVia == null) {
-					logger.l4(String
-							.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
-									netmail.getFromAddr().toString(), netmail
-											.getToAddr().toString()));
-				} else {
-					routeVia = ORMManager.INSTANSE.link().queryForSameId(
-							routeVia);
-					logger.l4(String.format(
-							"Netmail %s -> %s будет отправлен через %s",
-							netmail.getFromAddr().toString(), netmail
-									.getToAddr().toString(), routeVia
-									.getLinkAddress()));
-					if (FtnTools.getOptionBooleanDefTrue(routeVia,
-							LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-						PollQueue.INSTANSE.add(routeVia);
-					}
+			ORMManager.INSTANSE.getNetmailDAO().save(dbnm);
+			Integer n = tossed.get("netmail");
+			tossed.put("netmail", (n == null) ? 1 : n + 1);
+			if (routeVia == null) {
+				logger.l4(String
+						.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
+								netmail.getFromAddr().toString(), netmail
+										.getToAddr().toString()));
+			} else {
+				routeVia = ORMManager.INSTANSE.getLinkDAO().getById(
+						routeVia.getId());
+				logger.l4(String.format(
+						"Netmail %s -> %s будет отправлен через %s", netmail
+								.getFromAddr().toString(), netmail.getToAddr()
+								.toString(), routeVia.getLinkAddress()));
+				if (FtnTools.getOptionBooleanDefTrue(routeVia,
+						LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+					PollQueue.INSTANSE.add(routeVia);
 				}
-			} catch (SQLException e) {
-				logger.l2("Ошибка при сохранении нетмейла", e);
 			}
 		}
 	}
@@ -190,33 +130,22 @@ public class FtnTosser {
 		mail.setText(echomail.getText());
 		mail.setSeenBy(FtnTools.write2D(echomail.getSeenby(), true));
 		mail.setPath(FtnTools.write2D(echomail.getPath(), false));
-		try {
-			ORMManager.INSTANSE.echomail().create(mail);
-		} catch (SQLException e) {
-			logger.l3("Не удалось сохранить сообщение", e);
-			Integer n = bad.get(echomail.getArea());
-			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
-			return;
-		}
-		affectedAreas.add(area);
-		{
-			if (link != null) {
-				Readsign sign = new Readsign();
-				sign.setLink(link);
-				sign.setMail(mail);
-				try {
+		ORMManager.INSTANSE.getEchomailDAO().save(mail);
 
-					ORMManager.INSTANSE.readsign().create(sign);
-				} catch (SQLException e) {
-				}
+		for (Subscription sub : ORMManager.INSTANSE.getSubscriptionDAO()
+				.getAnd("echoarea_id", "=", area)) {
+			if (!sub.getLink().getId().equals(link.getId())) {
+				ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
+						new EchomailAwaiting(sub.getLink(), mail));
+				pollLinks.add(sub.getLink());
 			}
+		}
+
+		{
 			Dupe dupe = new Dupe();
 			dupe.setEchoarea(area);
 			dupe.setMsgid(echomail.getMsgid());
-			try {
-				ORMManager.INSTANSE.dupe().create(dupe);
-			} catch (SQLException e1) {
-			}
+			ORMManager.INSTANSE.getDupeDAO().save(dupe);
 
 		}
 
@@ -265,6 +194,7 @@ public class FtnTosser {
 			}
 		} catch (Exception e) {
 			logger.l2("Ошибка при распаковке " + message.getMessageName(), e);
+			e.printStackTrace();
 			return 1;
 		}
 		return 0;
@@ -297,6 +227,7 @@ public class FtnTosser {
 	}
 
 	public void end() {
+
 		if (!tossed.isEmpty()) {
 			logger.l3("Записано сообщений:");
 			for (String area : tossed.keySet()) {
@@ -309,14 +240,15 @@ public class FtnTosser {
 				logger.l2(String.format("\t%s - %d", area, bad.get(area)));
 			}
 		}
-		for (Echoarea areas : affectedAreas) {
-			for (Link l : FtnTools.getSubscribers(areas)) {
-				if (FtnTools.getOptionBooleanDefFalse(l,
-						LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
-					PollQueue.INSTANSE.add(l);
-				}
+
+		for (Link l : pollLinks) {
+			if (FtnTools.getOptionBooleanDefFalse(l,
+					LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
+				PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
+						.getById(l.getId()));
 			}
 		}
+
 	}
 
 	/**
@@ -333,9 +265,9 @@ public class FtnTosser {
 		List<FtnMessage> messages = new ArrayList<FtnMessage>();
 		List<File> attachedFiles = new ArrayList<File>();
 		try {
-			List<Netmail> netmails = ORMManager.INSTANSE.netmail()
-					.queryBuilder().where().eq("send", false).and()
-					.eq("route_via", link).query();
+			List<Netmail> netmails = ORMManager.INSTANSE.getNetmailDAO()
+					.getAnd("send", "=", false, "route_via", "=", link);
+
 			if (!netmails.isEmpty()) {
 				for (Netmail netmail : netmails) {
 					FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
@@ -357,102 +289,63 @@ public class FtnTosser {
 						}
 					}
 					netmail.setSend(true);
-					ORMManager.INSTANSE.netmail().update(netmail);
+					ORMManager.INSTANSE.getNetmailDAO().update(netmail);
 				}
 			}
 		} catch (Exception e) {
 			logger.l2("Ошибка обработки netmail для " + link.getLinkAddress(),
 					e);
 		}
-		try {
-			final String echomail_query = "SELECT a.name as AREA,e.* FROM subscription s LEFT JOIN echoarea"
-					+ " a ON (a.id=s.echoarea_id) LEFT JOIN echomail e ON"
-					+ " (e.echoarea_id=s.echoarea_id) WHERE e.id > s.lastmessageid AND"
-					+ " e.id NOT IN (SELECT r.echomail_id FROM readsing r WHERE"
-					+ " r.link_id=s.link_id AND r.echomail_id > s.lastmessageid) AND"
-					+ " s.link_id=%d ORDER BY e.id ASC LIMIT 100";
-			final String seenby_query = "SELECT l.ftn_address from subscription s left join links l on (l.id=s.link_id) where s.echoarea_id=%d";
-			DataType[] types = new DataType[] { DataType.STRING, // area [0]
-					DataType.LONG_OBJ, // id [1]
-					DataType.LONG_OBJ, // earea_id [2]
-					DataType.STRING, // from name [3]
-					DataType.STRING, // to name [4]
-					DataType.STRING, // from addr [5]
-					DataType.DATE_LONG, // date [6]
-					DataType.LONG_STRING, // subject [7]
-					DataType.LONG_STRING, // message [8]
-					DataType.LONG_STRING, // seenby [9]
-					DataType.LONG_STRING // path [10]
-			};
-			Map<Long, Long> subcription = new HashMap<Long, Long>();
-			List<Long> signs = new ArrayList<Long>();
-			GenericRawResults<Object[]> results = ORMManager.INSTANSE
-					.echomail().queryRaw(
-							String.format(echomail_query, link.getId()), types);
-			if (results.getNumberColumns() > 0) {
-				for (Object[] result : results.getResults()) {
-					Set<Ftn2D> seenby = new HashSet<Ftn2D>(
-							FtnTools.read2D((String) result[9]));
-					subcription.put((Long) result[2], (Long) result[1]);
-					if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-						logger.l5(link2d + " есть в синбаях для "
-								+ link_address);
-					} else {
-						signs.add((Long) result[1]);
-						seenby.add(our2d);
-						seenby.add(link2d);
-						List<Ftn2D> path = FtnTools.read2D((String) result[10]);
-						if (!path.contains(our2d)) {
-							path.add(our2d);
-						}
-						GenericRawResults<String[]> seens = ORMManager.INSTANSE
-								.link().queryRaw(
-										String.format(seenby_query,
-												(Long) result[2]));
-						for (String[] seen : seens.getResults()) {
-							FtnAddress addr = new FtnAddress(seen[0]);
-							Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
-							seenby.add(d2);
-						}
-						FtnMessage message = new FtnMessage();
-						message.setNetmail(false);
-						message.setArea(((String) result[0]).toUpperCase());
-						message.setFromName((String) result[3]);
-						message.setToName((String) result[4]);
-						message.setFromAddr(Main.info.getAddress());
-						message.setToAddr(link_address);
-						message.setDate((Date) result[6]);
-						message.setSubject((String) result[7]);
-						message.setText((String) result[8]);
-						message.setSeenby(new ArrayList<Ftn2D>(seenby));
-						message.setPath(path);
-						logger.l4("Пакуем сообщение #" + result[1] + " ("
-								+ result[0] + ") для " + link.getLinkAddress());
-						messages.add(message);
-					}
-				}
-				for (Long id : signs) {
-					Echomail m = new Echomail();
-					m.setId(id);
-					ORMManager.INSTANSE.readsign()
-							.create(new Readsign(link, m));
-
-				}
-				for (Long echoid : subcription.keySet()) {
-					UpdateBuilder<Subscription, ?> upd = ORMManager.INSTANSE
-							.subscription().updateBuilder();
-					upd.updateColumnValue("lastmessageid",
-							subcription.get(echoid));
-					upd.where().eq("link_id", link).and()
-							.eq("echoarea_id", echoid);
-					ORMManager.INSTANSE.subscription().update(upd.prepare());
-				}
+		List<Echomail> toRemove = new ArrayList<Echomail>();
+		List<EchomailAwaiting> mailToSend = ORMManager.INSTANSE
+				.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
+		for (EchomailAwaiting ema : mailToSend) {
+			Echomail mail = ema.getMail();
+			Echoarea area = mail.getArea();
+			toRemove.add(mail);
+			Set<Ftn2D> seenby = new HashSet<Ftn2D>(FtnTools.read2D(mail
+					.getSeenBy()));
+			if (seenby.contains(link2d) && link_address.getPoint() == 0) {
+				logger.l5(link2d + " есть в синбаях для " + link_address);
+				continue;
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.l2("Ошибка обработки echomail для " + link.getLinkAddress(),
-					e);
+			List<Ftn2D> path = FtnTools.read2D(mail.getPath());
+			seenby.add(our2d);
+			seenby.add(link2d);
+
+			if (!path.contains(our2d)) {
+				path.add(our2d);
+			}
+
+			List<Subscription> ssubs = ORMManager.INSTANSE.getSubscriptionDAO()
+					.getAnd("echoarea_id", "=", area);
+			for (Subscription ssub : ssubs) {
+				Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
+						ssub.getLink().getId());
+				FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
+				Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
+				seenby.add(d2);
+			}
+
+			FtnMessage message = new FtnMessage();
+			message.setNetmail(false);
+			message.setArea(area.getName().toUpperCase());
+			message.setFromName(mail.getFromName());
+			message.setToName(mail.getToName());
+			message.setFromAddr(Main.info.getAddress());
+			message.setToAddr(link_address);
+			message.setDate(mail.getDate());
+			message.setSubject(mail.getSubject());
+			message.setText(mail.getText());
+			message.setSeenby(new ArrayList<Ftn2D>(seenby));
+			message.setPath(path);
+			logger.l4("Пакуем сообщение #" + mail.getId() + " ("
+					+ area.getName() + ") для " + link.getLinkAddress());
+			messages.add(message);
+
 		}
+		ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id", "=",
+				link, "echomail_id", "in", toRemove);
 		if (!messages.isEmpty()) {
 			List<Message> ret = FtnTools.pack(messages, link);
 			for (File f : attachedFiles) {

@@ -3,16 +3,11 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-/**
- * 
- * @author kreon
- * 
- */
-@DatabaseTable(tableName = "readsing")
-public class Readsign {
-	@DatabaseField(foreign = true, columnName = "link_id", index = true)
+@DatabaseTable(tableName = "echomailawait")
+public class EchomailAwaiting {
+	@DatabaseField(foreign = true, columnName = "link_id")
 	private Link link;
-	@DatabaseField(foreign = true, columnName = "echomail_id", index = true)
+	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "echomail_id")
 	private Echomail mail;
 
 	public Link getLink() {
@@ -31,11 +26,11 @@ public class Readsign {
 		this.mail = mail;
 	}
 
-	public Readsign() {
+	public EchomailAwaiting() {
 		super();
 	}
 
-	public Readsign(Link link, Echomail mail) {
+	public EchomailAwaiting(Link link, Echomail mail) {
 		super();
 		this.link = link;
 		this.mail = mail;

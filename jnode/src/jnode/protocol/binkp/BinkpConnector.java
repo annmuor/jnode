@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -179,7 +178,15 @@ public class BinkpConnector implements ProtocolConnector {
 						if (len > 1) {
 							byte[] data = new byte[len - 1];
 							in.read(data);
-							arg = new String(data);
+							if (data[data.length - 1] == 0) { // null at the end
+								byte[] datawonull = new byte[data.length - 1];
+								for (int i = 0; i < data.length - 1; i++) {
+									datawonull[i] = data[i];
+								}
+								arg = new String(datawonull);
+							} else {
+								arg = new String(data);
+							}
 						}
 						ret = new BinkpFrame(getCommand(cmd), arg);
 					} else {
@@ -267,20 +274,13 @@ public class BinkpConnector implements ProtocolConnector {
 									Pattern.CASE_INSENSITIVE);
 					Matcher m = ftn.matcher(frame.getArg());
 					while (m.find()) {
-						try {
-							String sFtn = m.group(2);
-							List<Link> links = ORMManager.INSTANSE.link()
-									.queryForEq("ftn_address", sFtn);
-							if (!links.isEmpty()) {
-								this.link = links.get(0);
-								authorized = true;
-								secure = true;
-								break;
-							}
-						} catch (SQLException e) {
-							logger.l1(
-									"Не могу получить линк по адресу:"
-											+ m.group(2), e);
+						String sFtn = m.group(2);
+						this.link = ORMManager.INSTANSE.getLinkDAO()
+								.getFirstAnd("ftn_address", "=", sFtn);
+						if (link != null) {
+							authorized = true;
+							secure = true;
+							break;
 						}
 					}
 					if (!authorized) {
@@ -304,6 +304,10 @@ public class BinkpConnector implements ProtocolConnector {
 					}
 
 					if (authorized) {
+//						if(!(link != null && link.getLinkAddress().matches("^2:5020/849.*$"))) {
+//							error("Only local points now avalible");
+//							return;
+//						}
 						password = (secure) ? (link.getProtocolPassword() != null) ? link
 								.getProtocolPassword() : "-"
 								: "-";
@@ -313,7 +317,7 @@ public class BinkpConnector implements ProtocolConnector {
 						}
 						connectionState = (incoming) ? STATE_WAITPWD
 								: STATE_WAITOK;
-
+						
 					} else {
 						error("unknown m_addr");
 					}
@@ -389,8 +393,8 @@ public class BinkpConnector implements ProtocolConnector {
 				String arg = frame.getArg();
 				if (frame.getCommand().equals(BinkpCommand.M_FILE)) {
 					Pattern p[] = new Pattern[] {
-							Pattern.compile("^(\\S+) (\\d+) (\\d+) 0\0?$"),
-							Pattern.compile("^(\\S+ \\d+ \\d+) -1\0?$") };
+							Pattern.compile("^(\\S+) (\\d+) (\\d+) 0$"),
+							Pattern.compile("^(\\S+ \\d+ \\d+) -1$") };
 					Matcher m = p[1].matcher(arg);
 					if (m.matches()) {
 						frames.add(new BinkpFrame(BinkpCommand.M_GET, m
@@ -415,7 +419,7 @@ public class BinkpConnector implements ProtocolConnector {
 					reob = true;
 				} else if (frame.getCommand().equals(BinkpCommand.M_GOT)
 						&& sendfile) {
-					Pattern p = Pattern.compile("^(\\S+) (\\d+) (\\d+)\0?$");
+					Pattern p = Pattern.compile("^(\\S+) (\\d+) (\\d+)$");
 					Matcher m = p.matcher(frame.getArg());
 					if (m.matches()) {
 						String messageName = m.group(1);
@@ -486,6 +490,9 @@ public class BinkpConnector implements ProtocolConnector {
 	public Frame[] getFrames() {
 		Frame[] frames = this.frames.toArray(new Frame[0]);
 		this.frames.clear();
+		for (Frame frame : frames) {
+			logger.l5("Отправлен фрейм:" + frame.toString());
+		}
 		return frames;
 	}
 
@@ -587,42 +594,46 @@ public class BinkpConnector implements ProtocolConnector {
 	 */
 	private String getPassword() {
 		MessageDigest md;
+		String ret;
 		if (password.equals("-") || !useCram) {
-			return password;
-		}
-		try {
-			md = MessageDigest.getInstance(cramAlgo);
-		} catch (NoSuchAlgorithmException e) {
-			return password;
-		}
-		byte[] text = new byte[cramText.length() / 2];
-		byte[] key = password.getBytes();
-		byte[] k_ipad = new byte[64];
-		byte[] k_opad = new byte[64];
-		for (int i = 0; i < cramText.length(); i += 2) {
-			text[i / 2] = hex2decimal(cramText.substring(i, i + 2));
-		}
+			ret = password;
+		} else {
+			try {
+				md = MessageDigest.getInstance(cramAlgo);
+			} catch (NoSuchAlgorithmException e) {
+				return password;
+			}
+			byte[] text = new byte[cramText.length() / 2];
+			byte[] key = password.getBytes();
+			byte[] k_ipad = new byte[64];
+			byte[] k_opad = new byte[64];
+			for (int i = 0; i < cramText.length(); i += 2) {
+				text[i / 2] = hex2decimal(cramText.substring(i, i + 2));
+			}
 
-		for (int i = 0; i < key.length; i++) {
-			k_ipad[i] = key[i];
-			k_opad[i] = key[i];
-		}
+			for (int i = 0; i < key.length; i++) {
+				k_ipad[i] = key[i];
+				k_opad[i] = key[i];
+			}
 
-		for (int i = 0; i < 64; i++) {
-			k_ipad[i] ^= 0x36;
-			k_opad[i] ^= 0x5c;
+			for (int i = 0; i < 64; i++) {
+				k_ipad[i] ^= 0x36;
+				k_opad[i] ^= 0x5c;
+			}
+			md.update(k_ipad);
+			md.update(text);
+			byte[] digest = md.digest();
+			md.update(k_opad);
+			md.update(digest);
+			digest = md.digest();
+			StringBuilder builder = new StringBuilder();
+			builder.append("CRAM-" + cramAlgo + "-");
+			for (int i = 0; i < 16; i++) {
+				builder.append(String.format("%02x", digest[i]));
+			}
+			ret = builder.toString();
 		}
-		md.update(k_ipad);
-		md.update(text);
-		byte[] digest = md.digest();
-		md.update(k_opad);
-		md.update(digest);
-		digest = md.digest();
-		StringBuilder builder = new StringBuilder();
-		builder.append("CRAM-" + cramAlgo + "-");
-		for (int i = 0; i < 16; i++) {
-			builder.append(String.format("%02x", digest[i]));
-		}
-		return builder.toString();
+		logger.l5("Expected password: " + ret);
+		return ret;
 	}
 }

@@ -31,13 +31,9 @@ public enum PollQueue {
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
 			queue = new HashSet<Link>();
 			for (Link link : currentQueue) {
-				if (!"".equals(link.getLinkAddress())
-						&& link.getProtocolPort() > 0) {
-					new Poll(link).start();
-				}
+				new Poll(link).start();
 			}
 		}
-
 	}
 
 	public void add(Link link) {

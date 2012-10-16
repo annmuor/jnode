@@ -1,16 +1,7 @@
 package jnode.orm;
 
-import java.sql.SQLException;
-import java.util.Hashtable;
-
+import jnode.dao.GenericDAO;
 import jnode.dto.*;
-import jnode.main.Main;
-
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.jdbc.JdbcConnectionSource;
-import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
 
 /**
  * Singleton
@@ -21,122 +12,141 @@ import com.j256.ormlite.table.TableUtils;
 
 public enum ORMManager {
 	INSTANSE;
-	private boolean started = false;
-	private Dao<Link, Long> daoLink;
-	private Dao<Echoarea, Long> daoEchoarea;
-	private Dao<Subscription, ?> daoSubscription;
-	private Dao<Echomail, Long> daoEchomail;
-	private Dao<Readsign, ?> daoReadsign;
-	private Dao<Netmail, Long> daoNetmail;
-	private Dao<Route, ?> daoRoute;
-	private Dao<Dupe, ?> daoDupe;
-	private Dao<Robot, String> daoRobot;
-	private Dao<Rewrite, ?> daoRewrite;
-	private Dao<LinkOption, ?> daoLinkOption;
+	private GenericDAO<Dupe> dupeDAO;
+	private GenericDAO<Echoarea> echoareaDAO;
+	private GenericDAO<Echomail> echomailDAO;
+	private GenericDAO<Link> linkDAO;
+	private GenericDAO<LinkOption> linkOptionDAO;
+	private GenericDAO<Netmail> netmailDAO;
+	private GenericDAO<Rewrite> rewriteDAO;
+	private GenericDAO<Robot> robotDAO;
+	private GenericDAO<Route> routeDAO;
+	private GenericDAO<Subscription> subscriptionDAO;
+	private GenericDAO<EchomailAwaiting> echomailAwaitingDAO;
 
-	/**
-	 * Инициализация DAO и создание таблиц
-	 * 
-	 * @param settings
-	 * @throws SQLException
-	 */
-	public void start(Hashtable<String, String> settings) throws SQLException {
-		if (!started) {
-			ConnectionSource source = new JdbcConnectionSource(
-					settings.get(Main.Settings.JDBC_URL.getCfgline()),
-					settings.get(Main.Settings.JDBC_USER.getCfgline()),
-					settings.get(Main.Settings.JDBC_PASS.getCfgline()));
-			daoLink = DaoManager.createDao(source, Link.class);
-			daoEchoarea = DaoManager.createDao(source, Echoarea.class);
-			daoSubscription = DaoManager.createDao(source, Subscription.class);
-			daoEchomail = DaoManager.createDao(source, Echomail.class);
-			daoReadsign = DaoManager.createDao(source, Readsign.class);
-			daoNetmail = DaoManager.createDao(source, Netmail.class);
-			daoRoute = DaoManager.createDao(source, Route.class);
-			daoDupe = DaoManager.createDao(source, Dupe.class);
-			daoRobot = DaoManager.createDao(source, Robot.class);
-			daoRewrite = DaoManager.createDao(source, Rewrite.class);
-			daoLinkOption = DaoManager.createDao(source, LinkOption.class);
+	public void start() throws Exception {
+		dupeDAO = new GenericDAO<Dupe>() {
 
-			if (!daoLink.isTableExists()) {
-				TableUtils.createTable(source, Link.class);
+			@Override
+			protected Class<?> getType() {
+				return Dupe.class;
 			}
-			if (!daoEchoarea.isTableExists()) {
-				TableUtils.createTable(source, Echoarea.class);
+		};
+		echoareaDAO = new GenericDAO<Echoarea>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Echoarea.class;
 			}
-			if (!daoSubscription.isTableExists()) {
-				TableUtils.createTable(source, Subscription.class);
+		};
+		echomailDAO = new GenericDAO<Echomail>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Echomail.class;
 			}
-			if (!daoEchomail.isTableExists()) {
-				TableUtils.createTable(source, Echomail.class);
+		};
+		linkDAO = new GenericDAO<Link>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Link.class;
 			}
-			if (!daoReadsign.isTableExists()) {
-				TableUtils.createTable(source, Readsign.class);
+		};
+		linkOptionDAO = new GenericDAO<LinkOption>() {
+
+			@Override
+			protected Class<?> getType() {
+				return LinkOption.class;
 			}
-			if (!daoNetmail.isTableExists()) {
-				TableUtils.createTable(source, Netmail.class);
+		};
+		netmailDAO = new GenericDAO<Netmail>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Netmail.class;
 			}
-			if (!daoRoute.isTableExists()) {
-				TableUtils.createTable(source, Route.class);
+		};
+		rewriteDAO = new GenericDAO<Rewrite>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Rewrite.class;
 			}
-			if (!daoDupe.isTableExists()) {
-				TableUtils.createTable(source, Dupe.class);
+		};
+		robotDAO = new GenericDAO<Robot>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Robot.class;
 			}
-			if (!daoRobot.isTableExists()) {
-				TableUtils.createTable(source, Robot.class);
+		};
+		routeDAO = new GenericDAO<Route>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Route.class;
 			}
-			if (!daoRewrite.isTableExists()) {
-				TableUtils.createTable(source, Rewrite.class);
+		};
+		subscriptionDAO = new GenericDAO<Subscription>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Subscription.class;
 			}
-			if (!daoLinkOption.isTableExists()) {
-				TableUtils.createTable(source, LinkOption.class);
+		};
+		echomailAwaitingDAO = new GenericDAO<EchomailAwaiting>() {
+
+			@Override
+			protected Class<?> getType() {
+				return EchomailAwaiting.class;
 			}
-			started = true;
-		}
-
+		};
 	}
 
-	public Dao<Link, Long> link() {
-		return daoLink;
+	public GenericDAO<Dupe> getDupeDAO() {
+		return dupeDAO;
 	}
 
-	public Dao<Echoarea, Long> echoarea() {
-		return daoEchoarea;
+	public GenericDAO<Echoarea> getEchoareaDAO() {
+		return echoareaDAO;
 	}
 
-	public Dao<Subscription, ?> subscription() {
-		return daoSubscription;
+	public GenericDAO<Echomail> getEchomailDAO() {
+		return echomailDAO;
 	}
 
-	public Dao<Echomail, Long> echomail() {
-		return daoEchomail;
+	public GenericDAO<Link> getLinkDAO() {
+		return linkDAO;
 	}
 
-	public Dao<Readsign, ?> readsign() {
-		return daoReadsign;
+	public GenericDAO<LinkOption> getLinkOptionDAO() {
+		return linkOptionDAO;
 	}
 
-	public Dao<Netmail, Long> netmail() {
-		return daoNetmail;
+	public GenericDAO<Netmail> getNetmailDAO() {
+		return netmailDAO;
 	}
 
-	public Dao<Route, ?> route() {
-		return daoRoute;
+
+	public GenericDAO<Rewrite> getRewriteDAO() {
+		return rewriteDAO;
 	}
 
-	public Dao<Dupe, ?> dupe() {
-		return daoDupe;
+	public GenericDAO<Robot> getRobotDAO() {
+		return robotDAO;
 	}
 
-	public Dao<Robot, String> robot() {
-		return daoRobot;
+	public GenericDAO<Route> getRouteDAO() {
+		return routeDAO;
 	}
 
-	public Dao<Rewrite, ?> rewrite() {
-		return daoRewrite;
+	public GenericDAO<Subscription> getSubscriptionDAO() {
+		return subscriptionDAO;
 	}
 
-	public Dao<LinkOption, ?> linkoption() {
-		return daoLinkOption;
+	public GenericDAO<EchomailAwaiting> getEchomailAwaitingDAO() {
+		return echomailAwaitingDAO;
 	}
+
 }

@@ -56,7 +56,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.6d";
+		private final String version = "jNode/0.4.8";
 
 		public String getSysop() {
 			return sysop;
@@ -127,7 +127,7 @@ public class Main {
 		return getProperty(Settings.FILEECHO_PATH.cfgline, getInbound());
 	}
 
-	private Main(String configFile) {
+	public Main(String configFile) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(configFile));
 			String line;
@@ -171,9 +171,8 @@ public class Main {
 		} else {
 			new Main(args[0]);
 			try {
-				ORMManager.INSTANSE.start(Main.settings);
+				ORMManager.INSTANSE.start();
 			} catch (Exception e) {
-				e.printStackTrace();
 				logger.l1("Не удалось инициализировать СУБД, выходим", e);
 				System.exit(-1);
 			}
@@ -236,7 +235,6 @@ public class Main {
 
 		@Override
 		public void run() {
-			logger.l4("Всего потоков: " + Thread.activeCount());
 			PollQueue.INSTANSE.poll();
 		}
 
