@@ -1,7 +1,6 @@
 package jnode.main.threads;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +26,8 @@ public enum PollQueue {
 
 	public void poll() {
 		if (queue.size() > 0) {
-			logger.l4("В PollQueue " + queue.size() + " узлов, делаем poll");
+			logger.l4("PollQueue contains" + queue.size()
+					+ " nodes, making poll");
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
 			queue = new HashSet<Link>();
 			for (Link link : currentQueue) {
@@ -37,11 +37,9 @@ public enum PollQueue {
 	}
 
 	public void add(Link link) {
-		queue.add(link);
-	}
-
-	public void addAll(Collection<Link> links) {
-		queue.addAll(links);
+		if (link.getProtocolPort() > 0) {
+			queue.add(link);
+		}
 	}
 
 	private static class Poll extends Thread {
@@ -58,13 +56,13 @@ public enum PollQueue {
 			try {
 				BinkpConnector binkpConnector = new BinkpConnector();
 				Connector connector = new Connector(binkpConnector);
-				logger.l3(String.format("Соединяемся с %s (%s:%d)",
+				logger.l3(String.format("Outgoing to %s (%s:%d)",
 						link.getLinkAddress(), link.getProtocolHost(),
 						link.getProtocolPort()));
 				connector.connect(link);
 
 			} catch (ProtocolException e) {
-				logger.l2("Ошибка протокола:" + e.getMessage());
+				logger.l2("Protocol exception", e);
 			}
 		}
 	}

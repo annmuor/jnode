@@ -18,7 +18,6 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-import jnode.logger.Logger;
 import jnode.main.Main;
 
 /**
@@ -30,7 +29,6 @@ import jnode.main.Main;
  */
 public abstract class GenericDAO<T> {
 	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
-	private static final Logger logger = Logger.getLogger(GenericDAO.class);
 	private static ConnectionSource source;
 
 	protected GenericDAO() throws Exception {
@@ -99,7 +97,6 @@ public abstract class GenericDAO<T> {
 				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
 			}
 		}
-		logger.l5(wh.getStatement());
 		return wh;
 	}
 
@@ -215,7 +212,6 @@ public abstract class GenericDAO<T> {
 
 	public GenericRawResults<String[]> getRaw(String query) {
 		try {
-			logger.l5(query);
 			return getDao().queryRaw(query);
 		} catch (SQLException e) {
 		}
@@ -224,7 +220,6 @@ public abstract class GenericDAO<T> {
 
 	public GenericRawResults<Object[]> getRaw(String query, DataType[] types) {
 		try {
-			logger.l5(query);
 			return getDao().queryRaw(query, types);
 		} catch (SQLException e) {
 		}

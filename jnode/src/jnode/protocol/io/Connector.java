@@ -48,12 +48,13 @@ public class Connector {
 		List<Message> messages = FtnTosser.getMessagesForLink(link);
 		this.messages = messages;
 		index = 0;
-		logger.l4(String.format("Получено %d сообщений для %s",
-				messages.size(), link.getLinkAddress()));
+		logger.l4(String.format("Received %d messages for %s", messages.size(),
+				link.getLinkAddress()));
 	}
 
 	public int onReceived(final Message message) {
 		return tosser.tossIncoming(message, link);
+
 	}
 
 	private void doSocket(Socket clientSocket) {
@@ -61,7 +62,6 @@ public class Connector {
 		OutputStream os = null;
 		long lastactive = System.currentTimeMillis();
 		try {
-			clientSocket.setSoTimeout(1000);
 			is = clientSocket.getInputStream();
 			os = clientSocket.getOutputStream();
 		} catch (IOException e) {
@@ -87,6 +87,7 @@ public class Connector {
 			if (frames != null && frames.length > 0) {
 				for (Frame frame : frames) {
 					try {
+						logger.l5("Sent frame: " + frame);
 						os.write(frame.getBytes());
 						lastactive = System.currentTimeMillis();
 					} catch (IOException e) {
@@ -108,6 +109,7 @@ public class Connector {
 				}
 				continue;
 			}
+
 			if (connector.closed()) {
 				try {
 					if (clientSocket != null) {
@@ -117,8 +119,8 @@ public class Connector {
 				}
 				break;
 			}
-			if (System.currentTimeMillis() - lastactive > 30000) {
-				logger.l3("Соединение разорвано по таймауту");
+			if (System.currentTimeMillis() - lastactive > 60000) {
+				logger.l3("Connection timed out");
 				try {
 					if (clientSocket != null) {
 						clientSocket.close();
@@ -134,7 +136,7 @@ public class Connector {
 
 	public void connect(Link link) throws ProtocolException {
 		if (link == null) {
-			throw new ProtocolException("Для connect() надо указать линк");
+			throw new ProtocolException("Link can not be null");
 		}
 		connector.reset();
 		connector.initOutgoing(this);
@@ -146,10 +148,10 @@ public class Connector {
 			doSocket(clientSocket);
 			tosser.end();
 		} catch (UnknownHostException e) {
-			throw new ProtocolException("Неизвестный хост:"
+			throw new ProtocolException("Unknown host: "
 					+ link.getProtocolHost());
 		} catch (SocketTimeoutException e) {
-			throw new ProtocolException("Соединение завершено по тайм-ауту");
+			throw new ProtocolException("Connection timeout");
 		} catch (IOException e) {
 			throw new ProtocolException(e.getLocalizedMessage());
 		} finally {

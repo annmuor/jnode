@@ -13,6 +13,7 @@ import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
+import jnode.main.threads.TosserQueue;
 //import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
 
@@ -56,7 +57,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.4.8";
+		private final String version = "jNode/0.4.9";
 
 		public String getSysop() {
 			return sysop;
@@ -150,15 +151,15 @@ public class Main {
 			if (info.sysop == null || info.location == null
 					|| info.stationName == null || info.NDL == null
 					|| addressline == null) {
-				throw new Exception("Не заданы основные параметры системы");
+				throw new Exception("You MUST send info.* in config");
 			}
 			try {
 				info.address = new FtnAddress(addressline);
 			} catch (NumberFormatException e) {
-				throw new Exception(addressline + " не является FTN-адресом");
+				throw new Exception(addressline + " is not valid FTN-address");
 			}
 		} catch (Exception e) {
-			logger.l1("Не удалось настроить систему - выходим", e);
+			logger.l1("Configuration check failed, exiting", e);
 			System.exit(-1);
 		}
 	}
@@ -166,14 +167,14 @@ public class Main {
 	public static void main(String[] args) {
 		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
 		if (args.length == 0) {
-			System.out.println("Первым аргументом должен быть путь к конфигу");
+			System.out.println("Usage: $0 <config-file>");
 			System.exit(-1);
 		} else {
 			new Main(args[0]);
 			try {
 				ORMManager.INSTANSE.start();
 			} catch (Exception e) {
-				logger.l1("Не удалось инициализировать СУБД, выходим", e);
+				logger.l1("Database init failed, exiting", e);
 				System.exit(-1);
 			}
 			int delay = 0;
@@ -186,23 +187,23 @@ public class Main {
 				period = Integer.valueOf(settings
 						.get(Settings.POLL_PERIOD.cfgline));
 			} catch (RuntimeException e) {
-				logger.l3("Не указаны poll.delay/poll.period, используем 0/600");
+				logger.l3("Falling to default poll.delay/poll.period: 0/600");
 			}
 			try {
 				port = Integer.valueOf(settings
 						.get(Settings.BINKD_PORT.cfgline));
 			} catch (RuntimeException e) {
-				logger.l3("Не указан binkd.port, используем 24554");
+				logger.l3("Falling to default binkd.port: 24554");
 			}
 			try {
 				loglevel = Integer.valueOf(settings
 						.get(Settings.LOG_LEVEL.cfgline));
 			} catch (RuntimeException e) {
-				logger.l3("Не указан log.level, используем " + loglevel);
+				logger.l3("Falling to default log.level: " + loglevel);
 			}
 			Logger.Loglevel = loglevel;
 
-			logger.l1(Main.info.version + " запускается");
+			logger.l1(Main.info.version + " starting");
 			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
 				Thread server = new Server(
 						settings.get(Settings.BINKD_BIND.cfgline), port);
@@ -210,26 +211,26 @@ public class Main {
 				server = null;
 			}
 			if (settings.get(Settings.BINKD_CLIENT.cfgline) != null) {
-				logger.l4("Запускается client ( раз в " + period + " секунд )");
+				logger.l4("Started client ( period " + period + " seconds )");
 				new Timer().schedule(new TimerPoll(), delay * 1000,
 						period * 1000);
 			}
-			logger.l4("Запускается PollQueue");
+			logger.l4("Started PollQueue");
 			new Timer().schedule(new PollerTask(), 10000, 10000);
-			// logger.debug("Запускается TossQueue");
-			// new Timer().schedule(new TosserTask(), 10000, 10000);
-			logger.l1("jNode запущен и работает");
+			logger.l4("Started TossQueue");
+			new Timer().schedule(new TosserTask(), 10000, 10000);
+			logger.l1("jNode is working now");
 		}
 	}
 
-	// private static final class TosserTask extends TimerTask {
-	//
-	// @Override
-	// public void run() {
-	// TosserQueue.INSTANSE.toss();
-	// }
-	//
-	// }
+	private static final class TosserTask extends TimerTask {
+
+		@Override
+		public void run() {
+			TosserQueue.INSTANSE.toss();
+		}
+
+	}
 
 	private static final class PollerTask extends TimerTask {
 

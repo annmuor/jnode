@@ -430,7 +430,7 @@ public final class FtnTools {
 				fos.write(block, 0, len);
 			}
 			fos.close();
-			logger.l3("Получен файл " + file.getAbsolutePath() + " ("
+			logger.l3("File saved " + file.getAbsolutePath() + " ("
 					+ file.length() + ")");
 		}
 		return unzipped.toArray(new FtnPkt[0]);
@@ -453,8 +453,7 @@ public final class FtnTools {
 				message.getToName(), message.getSubject() };
 		for (int i = 0; i < 5; i++) {
 			if (regexp[i] != null && !regexp[i].equals("*")) {
-				logger.l5("Проверяем " + check[i] + " на соответствие "
-						+ regexp[i]);
+				logger.l5("Checks " + check[i] + " via regexp " + regexp[i]);
 				if (check[i] == null || !check[i].matches(regexp[i])) {
 					ok = false;
 				}
@@ -480,8 +479,7 @@ public final class FtnTools {
 				message.getToName(), message.getSubject() };
 		for (int i = 0; i < 5; i++) {
 			if (regexp[i] != null && !regexp[i].equals("*")) {
-				logger.l5("Проверяем " + check[i] + " на соответствие "
-						+ regexp[i]);
+				logger.l5("Checks " + check[i] + " via " + regexp[i]);
 				if (check[i] == null || !check[i].matches(regexp[i])) {
 					ok = false;
 				}
@@ -524,23 +522,23 @@ public final class FtnTools {
 								+ nfa + ")"));
 					}
 					message.setFromAddr(nfa);
-					logger.l5("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Rewrite fromAddr to " + fields[i]);
 					break;
 				case 1:
 					message.setToAddr(new FtnAddress(fields[i]));
-					logger.l5("Перезаписываем toAddr на " + fields[i]);
+					logger.l5("Rewrite toAddr to " + fields[i]);
 					break;
 				case 2:
 					message.setFromName(fields[i]);
-					logger.l5("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Rewrite fromAddr to " + fields[i]);
 					break;
 				case 3:
 					message.setToName(fields[i]);
-					logger.l5("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Rewrite fromAddr to " + fields[i]);
 					break;
 				case 4:
 					message.setSubject(fields[i]);
-					logger.l5("Перезаписываем fromAddr на " + fields[i]);
+					logger.l5("Rewrite fromAddr to " + fields[i]);
 					break;
 				}
 			}
@@ -566,17 +564,17 @@ public final class FtnTools {
 						isRobot = true;
 						Class<?> clazz = Class.forName(robot.getClassName());
 						IRobot irobot = (IRobot) clazz.newInstance();
-						logger.l4("Сообщение " + message.getMsgid()
-								+ " передано роботу " + robotname);
+						logger.l4("Message " + message.getMsgid()
+								+ " sent to robot " + robotname);
 						irobot.execute(message);
 					}
 				} catch (SQLException e) {
-					logger.l2("Ошибка при получении робота", e);
+					logger.l2("Robot exception (GET) ", e);
 				} catch (ClassNotFoundException e) {
-					logger.l2("Ошибка при инициализации робота " + robotname, e);
+					logger.l2("Robot excception (INIT) " + robotname, e);
 				} catch (Exception e) {
-					logger.l2("Ошибка при обработке сообщения робота "
-							+ robotname, e);
+					logger.l2("Robot excception  " + robotname + " (MESSAGE) ",
+							e);
 				}
 			}
 		}
@@ -660,13 +658,12 @@ public final class FtnTools {
 		ret.setToAddr(fmsg.getFromAddr());
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
-			logger.l2("Не могу найти роутинг для ответа на сообщение"
-					+ fmsg.getMsgid());
+			logger.l2("Routing for reply not found" + fmsg.getMsgid());
 			return;
 		}
 		netmail.setRouteVia(routeVia);
 		ORMManager.INSTANSE.getNetmailDAO().save(netmail);
-		logger.l4("Создан Netmail #" + netmail.getId());
+		logger.l4("Netmail #" + netmail.getId() + " created");
 		if (FtnTools.getOptionBooleanDefTrue(routeVia,
 				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
 			PollQueue.INSTANSE.add(routeVia);
@@ -777,7 +774,7 @@ public final class FtnTools {
 		for (Rewrite rewrite : rewrites) {
 			if (FtnTools.completeMask(rewrite, message)) {
 				logger.l5(((message.isNetmail()) ? "NET" : "ECH")
-						+ " - найдено соответствие, переписываем сообщение "
+						+ " - match found, rewriting "
 						+ message.getMsgid());
 				rewrite(rewrite, message);
 				if (rewrite.isLast()) {
@@ -809,7 +806,7 @@ public final class FtnTools {
 				ret.setReadlevel(0L);
 				ret.setWritelevel(0L);
 				ret.setGroup("");
-				logger.l3("Создана эхоария " + name.toUpperCase());
+				logger.l3("Echoarea " + name.toUpperCase() + " created");
 				ORMManager.INSTANSE.getEchoareaDAO().save(ret);
 				if (link != null) {
 					Subscription sub = new Subscription();
@@ -863,7 +860,7 @@ public final class FtnTools {
 						"Destination not found",
 						"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
 				logger.l3(String
-						.format("Netmail %s -> %s reject ( получатель не найден в нодлисте )",
+						.format("Netmail %s -> %s reject ( dest not found )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 
@@ -871,14 +868,14 @@ public final class FtnTools {
 				FtnTools.writeReply(netmail, "Destination is DOWN",
 						"Warning! Destination of your netmail is DOWN.\nMessage rejected");
 				logger.l3(String
-						.format("Netmail %s -> %s reject ( получатель имеет статус Down )",
+						.format("Netmail %s -> %s reject ( dest is DOWN )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 			} else if (to.getStatus().equals(Status.HOLD)) {
 				FtnTools.writeReply(netmail, "Destination is HOLD",
 						"Warning! Destination of your netmail is HOLD");
 				logger.l4(String
-						.format("Netmail %s -> %s warn ( получатель имеет статус Hold )",
+						.format("Netmail %s -> %s warn ( dest is Hold )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 				validTo = true;
@@ -897,7 +894,7 @@ public final class FtnTools {
 					netmail.getFromAddr());
 			if (from == null) {
 				logger.l3(String
-						.format("Netmail %s -> %s reject ( отправитель не найден в нодлисте )",
+						.format("Netmail %s -> %s reject ( origin not found )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 			} else {

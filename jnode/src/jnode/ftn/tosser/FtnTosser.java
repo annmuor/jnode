@@ -78,15 +78,14 @@ public class FtnTosser {
 			tossed.put("netmail", (n == null) ? 1 : n + 1);
 			if (routeVia == null) {
 				logger.l4(String
-						.format("Netmail %s -> %s не будет отправлен ( не найден роутинг )",
+						.format("Netmail %s -> %s is not transferred ( routing not found )",
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 			} else {
 				routeVia = ORMManager.INSTANSE.getLinkDAO().getById(
 						routeVia.getId());
-				logger.l4(String.format(
-						"Netmail %s -> %s будет отправлен через %s", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
+				logger.l4(String.format("Netmail %s -> %s transferred via %s",
+						netmail.getFromAddr().toString(), netmail.getToAddr()
 								.toString(), routeVia.getLinkAddress()));
 				if (FtnTools.getOptionBooleanDefTrue(routeVia,
 						LinkOption.BOOLEAN_CRASH_NETMAIL)) {
@@ -99,20 +98,20 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
-			logger.l3("Эхомейл по unsecure-соединению - уничтожен");
+			logger.l3("Echomail via unsecure is dropped");
 			return;
 		}
 		Echoarea area = FtnTools.getAreaByName(echomail.getArea(), link);
 		if (area == null) {
-			logger.l3("Эхоконференция " + echomail.getArea()
-					+ " недоступна для узла " + link.getLinkAddress());
+			logger.l3("Echoarea " + echomail.getArea()
+					+ " is not avalible for " + link.getLinkAddress());
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
 		if (FtnTools.isADupe(area, echomail.getMsgid())) {
-			logger.l3("Сообщение " + echomail.getArea() + " "
-					+ echomail.getMsgid() + " является дюпом");
+			logger.l3("Message " + echomail.getArea() + " "
+					+ echomail.getMsgid() + " is a dupe");
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -172,7 +171,7 @@ public class FtnTosser {
 							LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
 						if (!link.getPaketPassword().equalsIgnoreCase(
 								pkt.getPassword())) {
-							logger.l2("Пароль для пакета не совпал - пакет перемещен в inbound");
+							logger.l2("Pkt password mismatch - package moved to inbound");
 							FtnTools.moveToBad(pkt);
 							continue;
 						}
@@ -193,8 +192,7 @@ public class FtnTosser {
 
 			}
 		} catch (Exception e) {
-			logger.l2("Ошибка при распаковке " + message.getMessageName(), e);
-			e.printStackTrace();
+			logger.l2("Unpack error " + message.getMessageName(), e);
 			return 1;
 		}
 		return 0;
@@ -206,7 +204,7 @@ public class FtnTosser {
 			if (file.getName().matches("^[a-f0-9]{8}\\.pkt$")) {
 				try {
 					Message m = new Message(file);
-					logger.l4("Обрабатываем файл " + file.getAbsolutePath());
+					logger.l4("Tossing file " + file.getAbsolutePath());
 					FtnPkt[] pkts = FtnTools.unpack(m);
 					for (FtnPkt pkt : pkts) {
 						for (FtnMessage ftnm : pkt.getMessages()) {
@@ -219,8 +217,7 @@ public class FtnTosser {
 					}
 					file.delete();
 				} catch (Exception e) {
-					logger.l3("Не могу обработать пакет "
-							+ file.getAbsolutePath());
+					logger.l3("Tossing failed " + file.getAbsolutePath());
 				}
 			}
 		}
@@ -229,13 +226,13 @@ public class FtnTosser {
 	public void end() {
 
 		if (!tossed.isEmpty()) {
-			logger.l3("Записано сообщений:");
+			logger.l3("Messages wrote:");
 			for (String area : tossed.keySet()) {
 				logger.l3(String.format("\t%s - %d", area, tossed.get(area)));
 			}
 		}
 		if (!bad.isEmpty()) {
-			logger.l2("Уничтожено сообщений:");
+			logger.l2("Messages dropped:");
 			for (String area : bad.keySet()) {
 				logger.l2(String.format("\t%s - %d", area, bad.get(area)));
 			}
@@ -273,7 +270,7 @@ public class FtnTosser {
 					FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
 					messages.add(msg);
 					logger.l4(String.format(
-							"Пакуем netmail #%d %s -> %s для %s (%d)",
+							"Pack netmail #%d %s -> %s for %s flags %d",
 							netmail.getId(), netmail.getFromFTN(),
 							netmail.getToFTN(), link.getLinkAddress(),
 							msg.getAttribute()));
@@ -284,8 +281,7 @@ public class FtnTosser {
 								+ filename);
 						if (file.canRead()) {
 							attachedFiles.add(file);
-							logger.l5("К сообщению прикреплен файл " + filename
-									+ ", пересылаем");
+							logger.l5("Netmail with attached file " + filename);
 						}
 					}
 					netmail.setSend(true);
@@ -293,7 +289,7 @@ public class FtnTosser {
 				}
 			}
 		} catch (Exception e) {
-			logger.l2("Ошибка обработки netmail для " + link.getLinkAddress(),
+			logger.l2("Netmail error " + link.getLinkAddress(),
 					e);
 		}
 		List<Echomail> toRemove = new ArrayList<Echomail>();
@@ -306,7 +302,7 @@ public class FtnTosser {
 			Set<Ftn2D> seenby = new HashSet<Ftn2D>(FtnTools.read2D(mail
 					.getSeenBy()));
 			if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-				logger.l5(link2d + " есть в синбаях для " + link_address);
+				logger.l5(link2d + " is in seenby for " + link_address);
 				continue;
 			}
 			List<Ftn2D> path = FtnTools.read2D(mail.getPath());
@@ -339,8 +335,8 @@ public class FtnTosser {
 			message.setText(mail.getText());
 			message.setSeenby(new ArrayList<Ftn2D>(seenby));
 			message.setPath(path);
-			logger.l4("Пакуем сообщение #" + mail.getId() + " ("
-					+ area.getName() + ") для " + link.getLinkAddress());
+			logger.l4("Echomail #" + mail.getId() + " ("
+					+ area.getName() + ") packed for " + link.getLinkAddress());
 			messages.add(message);
 
 		}
@@ -353,7 +349,7 @@ public class FtnTosser {
 					ret.add(new Message(f));
 					f.delete();
 				} catch (Exception e) {
-					logger.l3("Не могу прикрепить файл " + f.getAbsolutePath());
+					logger.l3("File attach filed " + f.getAbsolutePath());
 				}
 			}
 			return ret;

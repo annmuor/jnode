@@ -30,13 +30,13 @@ public class Server extends Thread {
 		@Override
 		public void run() {
 			try {
-				logger.l3(String.format("Входящее соединение от %s:%d",
+				logger.l3(String.format("Incoming connection from %s:%d",
 						socket.getInetAddress().getHostAddress(),
 						socket.getPort()));
 				Connector connector = new Connector(new BinkpConnector());
 				connector.accept(socket);
 			} catch (ProtocolException e) {
-				logger.l2("Не могу инициализировать connector");
+				logger.l2("Connector initialization failed");
 			} finally {
 				try {
 					socket.close();
