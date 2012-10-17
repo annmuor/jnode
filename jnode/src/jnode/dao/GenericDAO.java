@@ -95,6 +95,9 @@ public abstract class GenericDAO<T> {
 				wh.like(args[i].toString(), args[i + 2]);
 			} else if ("in".equals(w)) {
 				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
+			} else if ("between".equals(w)) {
+				wh.between(args[i].toString(), args[i + 2], args[i + 3]);
+				i += 1;
 			}
 		}
 		return wh;

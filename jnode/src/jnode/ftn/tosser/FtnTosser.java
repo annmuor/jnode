@@ -247,6 +247,7 @@ public class FtnTosser {
 					FileInputStream fis = new FileInputStream(file);
 					FtnTIC tic = new FtnTIC();
 					tic.unpack(fis);
+					fis.close();
 					File attach = new File(Main.getInbound() + File.separator
 							+ tic.getFile().toLowerCase());
 					if (attach.canRead()) { // processing
@@ -337,6 +338,7 @@ public class FtnTosser {
 								+ " not found, wait");
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 			for (Link l : poll) {

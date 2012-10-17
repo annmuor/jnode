@@ -32,33 +32,37 @@ public class FtnTIC {
 				"CP866"));
 		String line;
 		while ((line = reader.readLine()) != null) {
-			if (line.startsWith("File ")) {
-				file = line.replaceFirst("File ", "");
-			} else if (line.startsWith("Area ")) {
-				area = line.replaceFirst("Area ", "");
-			} else if (line.startsWith("Desc ")) {
-				desc = line.replaceFirst("Desc ", "");
-			} else if (line.startsWith("Areadesc ")) {
-				areaDesc = line.replaceFirst("Areadesc ", "");
-			} else if (line.startsWith("Pw ")) {
-				password = line.replaceFirst("Pw ", "");
-			} else if (line.startsWith("From ")) {
-				from = new FtnAddress(line.replaceFirst("From ", ""));
-			} else if (line.startsWith("To ")) {
-				to = new FtnAddress(line.replaceFirst("To ", ""));
-			} else if (line.startsWith("Origin ")) {
-				origin = new FtnAddress(line.replaceFirst("Origin ", ""));
-			} else if (line.startsWith("Size ")) {
+			if (line.toLowerCase().startsWith("file ")) {
+				file = line.replaceFirst("[Ff][Ii][Ll][Ee] ", "");
+			} else if (line.toLowerCase().startsWith("area ")) {
+				area = line.replaceFirst("[Aa][Rr][Ee][Aa] ", "");
+			} else if (line.toLowerCase().startsWith("desc ")) {
+				desc = line.replaceFirst("[Dd][Ee][Ss][Cc] ", "");
+			} else if (line.toLowerCase().startsWith("areadesc ")) {
+				areaDesc = line.replaceFirst(
+						"[Aa][Rr][Ee][Aa][Dd][Ee][Ss][Cc] ", "");
+			} else if (line.toLowerCase().startsWith("pw ")) {
+				password = line.replaceFirst("[Pp][Ww] ", "");
+			} else if (line.toLowerCase().startsWith("from ")) {
+				from = new FtnAddress(line.replaceFirst("[Ff][Rr][Oo][Mm] ", ""));
+			} else if (line.toLowerCase().startsWith("to ")) {
+				to = new FtnAddress(line.replaceFirst("[Tt][Oo] ", ""));
+			} else if (line.toLowerCase().startsWith("origin ")) {
+				origin = new FtnAddress(line.replaceFirst(
+						"[Oo][Rr][Ii][Gg][Ii][Nn] ", ""));
+			} else if (line.toLowerCase().startsWith("size ")) {
 				try {
-					size = Long.valueOf(line.replaceFirst("Size ", ""));
+					size = Long.valueOf(line.replaceFirst("[Ss][Ii][Zz][Ee] ",
+							""));
 				} catch (NumberFormatException e) {
 					size = 0L;
 				}
-			} else if (line.startsWith("Path ")) {
+			} else if (line.toLowerCase().startsWith("path ")) {
 				_path.append(line);
 				_path.append("\r\n");
-			} else if (line.startsWith("Seenby ")) {
-				seenby.add(new FtnAddress(line.replaceFirst("Seenby ", "")));
+			} else if (line.toLowerCase().startsWith("seenby ")) {
+				seenby.add(new FtnAddress(line.replaceFirst(
+						"[Ss][Ee][Ee][Nn][Bb][Yy] ", "")));
 			}
 		}
 		path = _path.toString();

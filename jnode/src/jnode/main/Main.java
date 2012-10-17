@@ -16,6 +16,7 @@ import jnode.main.threads.Server;
 import jnode.main.threads.TosserQueue;
 //import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
+import jnode.stat.threads.StatPoster;
 
 import com.j256.ormlite.logger.LocalLog;
 
@@ -39,7 +40,8 @@ public class Main {
 				"binkp.client"), BINKD_SERVER("binkp.server"), LOG_LEVEL(
 				"log.level"), NODELIST_PATH("nodelist.path"), NODELIST_INDEX(
 				"nodelist.index"), FILEECHO_ENABLE("fileecho.enable"), FILEECHO_PATH(
-				"fileecho.path");
+				"fileecho.path"), STAT_ENABLE("stat.enable"), STAT_ECHOAREA(
+				"stat.area");
 		private String cfgline;
 
 		private Settings(String cfgline) {
@@ -57,7 +59,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.1a";
+		private final String version = "jNode/0.5.2";
 
 		public String getSysop() {
 			return sysop;
@@ -219,6 +221,8 @@ public class Main {
 			new Timer().schedule(new PollerTask(), 10000, 10000);
 			logger.l4("Started TossQueue");
 			new Timer().schedule(new TosserTask(), 10000, 10000);
+			new StatPoster();
+			logger.l4("Started StatPoster");
 			logger.l1("jNode is working now");
 		}
 	}
