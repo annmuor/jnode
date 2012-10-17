@@ -204,6 +204,7 @@ public class FtnTosser {
 			}
 		} catch (Exception e) {
 			logger.l2("Unpack error " + message.getMessageName(), e);
+			e.printStackTrace();
 			return 1;
 		}
 		return 0;
@@ -247,7 +248,7 @@ public class FtnTosser {
 					FtnTIC tic = new FtnTIC();
 					tic.unpack(fis);
 					File attach = new File(Main.getInbound() + File.separator
-							+ tic.getFile());
+							+ tic.getFile().toLowerCase());
 					if (attach.canRead()) { // processing
 						if (!tic.getTo().equals(Main.info.getAddress())) {
 							file.delete();

@@ -694,11 +694,6 @@ public final class FtnTools {
 					}
 				}
 			}
-		} else {
-			if (routeVia == null) { // пойнт не найден :-)
-				writeReply(message, "Recepient not found",
-						"Sorry, but recepient of this message is unknown");
-			}
 		}
 		return routeVia;
 	}
@@ -733,9 +728,11 @@ public final class FtnTools {
 		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")\n");
 		sb.append("Date: " + fmsg.getDate() + "\n");
 		sb.append("Subject: " + fmsg.getSubject() + "\n");
-		sb.append(fmsg.getText().replaceAll("\001", "@")
-				.replaceAll("---", "+++")
-				.replaceAll(" \\* Origin:", " + Origin:"));
+		if (fmsg.getText() != null) {
+			sb.append(fmsg.getText().replaceAll("\001", "@")
+					.replaceAll("---", "+++")
+					.replaceAll(" \\* Origin:", " + Origin:"));
+		}
 		sb.append("========== Original message ==========\n\n--- "
 				+ Main.info.getVersion() + "\n");
 		netmail.setText(sb.toString());
