@@ -7,17 +7,21 @@ import java.util.regex.Pattern;
 
 import com.j256.ormlite.dao.GenericRawResults;
 
-import jnode.dto.*;
+import jnode.dto.FileSubscription;
+import jnode.dto.Filearea;
+import jnode.dto.Link;
+import jnode.dto.LinkOption;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
 import jnode.orm.ORMManager;
 
 /**
+ * Простой filefix
  * 
  * @author kreon
  * 
  */
-public class AreaFix implements IRobot {
+public class FileFix implements IRobot {
 	private static final Pattern help = Pattern.compile("^%HELP$",
 			Pattern.CASE_INSENSITIVE);
 	private static final Pattern list = Pattern.compile("^%LIST$",
@@ -28,10 +32,6 @@ public class AreaFix implements IRobot {
 			Pattern.CASE_INSENSITIVE);
 	private static final Pattern rem = Pattern.compile("^%?\\-(\\S+)$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern rescan = Pattern.compile(
-			"^%RESCAN (\\S+) (\\d+)$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern add_rescan = Pattern.compile(
-			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
@@ -46,7 +46,7 @@ public class AreaFix implements IRobot {
 			}
 			link = links.get(0);
 		}
-		if (!FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_AREAFIX)) {
+		if (!FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_FILEFIX)) {
 			FtnTools.writeReply(fmsg, "You are not welcome",
 					"Sorry, AreaFix is off for you");
 			return;
@@ -55,16 +55,15 @@ public class AreaFix implements IRobot {
 			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
 			return;
 		}
-
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			line = line.toLowerCase();
 			if (help.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix help", help());
+				FtnTools.writeReply(fmsg, "FileFix help", help());
 			} else if (list.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix list", list(link));
+				FtnTools.writeReply(fmsg, "FileFix list", list(link));
 			} else if (query.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix query", query(link));
+				FtnTools.writeReply(fmsg, "FileFix query", query(link));
 			} else {
 				Matcher m = rem.matcher(line);
 				if (m.matches()) {
@@ -76,21 +75,6 @@ public class AreaFix implements IRobot {
 				if (m.matches()) {
 					String area = m.group(1);
 					reply.append(add(link, area));
-					continue;
-				}
-				m = rescan.matcher(line);
-				if (m.matches()) {
-					String area = m.group(1);
-					int num = Integer.valueOf(m.group(2));
-					reply.append(rescan(link, area, num));
-					continue;
-				}
-				m = add_rescan.matcher(line);
-				if (m.matches()) {
-					String area = m.group(1);
-					int num = Integer.valueOf(m.group(2));
-					reply.append(add(link, area));
-					reply.append(rescan(link, area, num));
 					continue;
 				}
 			}
@@ -107,12 +91,10 @@ public class AreaFix implements IRobot {
 	 */
 	private String help() {
 		return "Avalible commands:\n" + "%HELP - this message\n"
-				+ "%LIST - list of avalible areas\n"
-				+ "%QUERY - list of subscribed areas\n"
-				+ "+echo.area - subscribe echo.area\n"
-				+ "-echo.area - unsibscribe echo.area"
-				+ "+echo.area /r=N - subscribe and rescan N messages\n"
-				+ "%RESCAN echo.area - rescan N messages";
+				+ "%LIST - list of avalible fileareas\n"
+				+ "%QUERY - list of subscribed fileareas\n"
+				+ "+file.area - subscribe echo.area\n"
+				+ "-file.area - unsibscribe echo.area";
 
 	}
 
@@ -125,12 +107,12 @@ public class AreaFix implements IRobot {
 	 */
 	private String list(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Legend: * - subscribed\n\n========== List of echoareas ==========\n");
-		String[] groups = FtnTools.getOptionStringArray(link,
-				LinkOption.SARRAY_LINK_GROUPS);
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO()
+		sb.append("Legend: * - subscribed\n\n========== List of fileareas ==========\n");
+		 String[] groups = FtnTools.getOptionStringArray(link,
+		 LinkOption.SARRAY_LINK_GROUPS);
+		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO()
 				.getOrderAnd("name", true);
-		for (Echoarea area : areas) {
+		for (Filearea area : areas) {
 			boolean denied = true;
 			if (!"".equals(area.getGroup())) {
 				for (String group : groups) {
@@ -145,8 +127,8 @@ public class AreaFix implements IRobot {
 			if (denied) {
 				continue;
 			}
-			Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
-					.getFirstAnd("echoarea_id", "=", area.getId(), "link_id",
+			FileSubscription sub = ORMManager.INSTANSE.getFileSubscriptionDAO()
+					.getFirstAnd("filearea_id", "=", area.getId(), "link_id",
 							"=", link.getId());
 
 			if (sub != null) {
@@ -161,7 +143,7 @@ public class AreaFix implements IRobot {
 			}
 			sb.append('\n');
 		}
-		sb.append("========== List of echoareas ==========\n");
+		sb.append("========== List of fileareas ==========\n");
 		return sb.toString();
 
 	}
@@ -175,12 +157,12 @@ public class AreaFix implements IRobot {
 	 */
 	private String query(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("========== List of subscribed areas ==========\n");
+		sb.append("========== List of subscribed fileareas ==========\n");
 		GenericRawResults<String[]> echoes = ORMManager.INSTANSE
-				.getEchoareaDAO()
+				.getFileareaDAO()
 				.getRaw(String
-						.format("SELECT a.name,a.description FROM subscription s"
-								+ " RIGHT JOIN echoarea a on (a.id=s.echoarea_id)"
+						.format("SELECT a.name,a.description FROM filesubscription s"
+								+ " RIGHT JOIN filearea a on (a.id=s.filearea_id)"
 								+ " WHERE s.link_id=%d ORDER BY a.name",
 								link.getId()));
 		for (String[] echo : echoes.getResults()) {
@@ -192,7 +174,7 @@ public class AreaFix implements IRobot {
 			}
 			sb.append('\n');
 		}
-		sb.append("========== List of subscribed areas ==========\n");
+		sb.append("========== List of subscribed fileareas ==========\n");
 		return sb.toString();
 
 	}
@@ -202,16 +184,17 @@ public class AreaFix implements IRobot {
 		String like = area.replace("*", "%");
 		String[] grps = FtnTools.getOptionStringArray(link,
 				LinkOption.SARRAY_LINK_GROUPS);
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
+		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO().getAnd(
 				"name", "~", like);
 		if (areas.isEmpty()) {
 			sb.append(area + " not found");
 		} else {
-			for (Echoarea earea : areas) {
+			for (Filearea earea : areas) {
 				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
-						.getFirstAnd("echoarea_id", "=", earea.getId(),
-								"link_id", "=", link.getId());
+				FileSubscription sub = ORMManager.INSTANSE
+						.getFileSubscriptionDAO().getFirstAnd("filearea_id",
+								"=", earea.getId(), "link_id", "=",
+								link.getId());
 				if (sub != null) {
 					sb.append(" already subscribed");
 				} else {
@@ -229,10 +212,10 @@ public class AreaFix implements IRobot {
 					if (denied) {
 						sb.append(" access denied");
 					} else {
-						sub = new Subscription();
+						sub = new FileSubscription();
 						sub.setArea(earea);
 						sub.setLink(link);
-						ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
+						ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
 						sb.append(" subscribed");
 					}
 				}
@@ -246,22 +229,23 @@ public class AreaFix implements IRobot {
 	private String rem(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
+		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO().getAnd(
 				"name", "~", like);
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
-			for (Echoarea earea : areas) {
+			for (Filearea earea : areas) {
 				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
-						.getFirstAnd("echoarea_id", "=", earea.getId(),
-								"link_id", "=", link.getId());
+				FileSubscription sub = ORMManager.INSTANSE
+						.getFileSubscriptionDAO().getFirstAnd("filearea_id",
+								"=", earea.getId(), "link_id", "=",
+								link.getId());
 				if (sub == null) {
 					sb.append(" is not subscribed");
 				} else {
-					ORMManager.INSTANSE.getSubscriptionDAO().delete("link_id",
-							"=", link, "echoarea_id", "=", earea);
+					ORMManager.INSTANSE.getFileSubscriptionDAO().delete(
+							"link_id", "=", link, "filearea_id", "=", earea);
 					sb.append(" unsubscribed");
 				}
 				sb.append('\n');
@@ -271,36 +255,4 @@ public class AreaFix implements IRobot {
 		return sb.toString();
 	}
 
-	private String rescan(Link link, String area, int num) throws SQLException {
-		StringBuilder sb = new StringBuilder();
-		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
-				"name", "~", like);
-		if (areas.isEmpty()) {
-			sb.append(area);
-			sb.append(" not found");
-		} else {
-			for (Echoarea earea : areas) {
-				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
-						.getFirstAnd("echoarea_id", "=", earea.getId(),
-								"link_id", "=", link.getId());
-				if (sub == null) {
-					sb.append(" is not subscribed");
-				} else {
-					List<Echomail> mails = ORMManager.INSTANSE.getEchomailDAO()
-							.getOrderLimitAnd(num, "id", false, "echoarea_id",
-									"=", earea);
-					for (Echomail mail : mails) {
-						ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
-								new EchomailAwaiting(link, mail));
-					}
-					sb.append(" rescanned " + mails.size() + " messages");
-				}
-				sb.append('\n');
-			}
-		}
-		sb.append('\n');
-		return sb.toString();
-	}
 }

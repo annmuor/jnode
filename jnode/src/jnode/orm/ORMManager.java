@@ -15,6 +15,11 @@ public enum ORMManager {
 	private GenericDAO<Dupe> dupeDAO;
 	private GenericDAO<Echoarea> echoareaDAO;
 	private GenericDAO<Echomail> echomailDAO;
+	private GenericDAO<EchomailAwaiting> echomailAwaitingDAO;
+	private GenericDAO<Filearea> fileareaDAO;
+	private GenericDAO<Filemail> filemailDAO;
+	private GenericDAO<FilemailAwaiting> filemailAwaitingDAO;
+	private GenericDAO<FileSubscription> FileSubscriptionDAO;
 	private GenericDAO<Link> linkDAO;
 	private GenericDAO<LinkOption> linkOptionDAO;
 	private GenericDAO<Netmail> netmailDAO;
@@ -22,7 +27,6 @@ public enum ORMManager {
 	private GenericDAO<Robot> robotDAO;
 	private GenericDAO<Route> routeDAO;
 	private GenericDAO<Subscription> subscriptionDAO;
-	private GenericDAO<EchomailAwaiting> echomailAwaitingDAO;
 
 	public void start() throws Exception {
 		dupeDAO = new GenericDAO<Dupe>() {
@@ -44,6 +48,41 @@ public enum ORMManager {
 			@Override
 			protected Class<?> getType() {
 				return Echomail.class;
+			}
+		};
+		echomailAwaitingDAO = new GenericDAO<EchomailAwaiting>() {
+
+			@Override
+			protected Class<?> getType() {
+				return EchomailAwaiting.class;
+			}
+		};
+		fileareaDAO = new GenericDAO<Filearea>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Filearea.class;
+			}
+		};
+		filemailDAO = new GenericDAO<Filemail>() {
+
+			@Override
+			protected Class<?> getType() {
+				return Filemail.class;
+			}
+		};
+		filemailAwaitingDAO = new GenericDAO<FilemailAwaiting>() {
+
+			@Override
+			protected Class<?> getType() {
+				return FilemailAwaiting.class;
+			}
+		};
+		FileSubscriptionDAO = new GenericDAO<FileSubscription>() {
+
+			@Override
+			protected Class<?> getType() {
+				return FileSubscription.class;
 			}
 		};
 		linkDAO = new GenericDAO<Link>() {
@@ -95,13 +134,7 @@ public enum ORMManager {
 				return Subscription.class;
 			}
 		};
-		echomailAwaitingDAO = new GenericDAO<EchomailAwaiting>() {
 
-			@Override
-			protected Class<?> getType() {
-				return EchomailAwaiting.class;
-			}
-		};
 	}
 
 	public GenericDAO<Dupe> getDupeDAO() {
@@ -116,6 +149,26 @@ public enum ORMManager {
 		return echomailDAO;
 	}
 
+	public GenericDAO<EchomailAwaiting> getEchomailAwaitingDAO() {
+		return echomailAwaitingDAO;
+	}
+
+	public GenericDAO<Filearea> getFileareaDAO() {
+		return fileareaDAO;
+	}
+
+	public GenericDAO<Filemail> getFilemailDAO() {
+		return filemailDAO;
+	}
+
+	public GenericDAO<FilemailAwaiting> getFilemailAwaitingDAO() {
+		return filemailAwaitingDAO;
+	}
+
+	public GenericDAO<FileSubscription> getFileSubscriptionDAO() {
+		return FileSubscriptionDAO;
+	}
+
 	public GenericDAO<Link> getLinkDAO() {
 		return linkDAO;
 	}
@@ -127,7 +180,6 @@ public enum ORMManager {
 	public GenericDAO<Netmail> getNetmailDAO() {
 		return netmailDAO;
 	}
-
 
 	public GenericDAO<Rewrite> getRewriteDAO() {
 		return rewriteDAO;
@@ -143,10 +195,6 @@ public enum ORMManager {
 
 	public GenericDAO<Subscription> getSubscriptionDAO() {
 		return subscriptionDAO;
-	}
-
-	public GenericDAO<EchomailAwaiting> getEchomailAwaitingDAO() {
-		return echomailAwaitingDAO;
 	}
 
 }

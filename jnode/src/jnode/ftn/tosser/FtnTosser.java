@@ -1,17 +1,27 @@
 package jnode.ftn.tosser;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.CRC32;
 
 import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
+import jnode.dto.FileSubscription;
+import jnode.dto.Filearea;
+import jnode.dto.Filemail;
+import jnode.dto.FilemailAwaiting;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
@@ -21,6 +31,7 @@ import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
 import jnode.ftn.types.FtnPkt;
+import jnode.ftn.types.FtnTIC;
 import jnode.logger.Logger;
 import jnode.main.Main;
 import jnode.main.threads.PollQueue;
@@ -198,10 +209,14 @@ public class FtnTosser {
 		return 0;
 	}
 
+	/**
+	 * Разбор входящих файлов
+	 */
 	public void tossInbound() {
+		Set<Link> poll = new HashSet<Link>();
 		File inbound = new File(Main.getInbound());
 		for (File file : inbound.listFiles()) {
-			if (file.getName().matches("^[a-f0-9]{8}\\.pkt$")) {
+			if (file.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
 				try {
 					Message m = new Message(file);
 					logger.l4("Tossing file " + file.getAbsolutePath());
@@ -218,6 +233,116 @@ public class FtnTosser {
 					file.delete();
 				} catch (Exception e) {
 					logger.l3("Tossing failed " + file.getAbsolutePath());
+				}
+			} else if (file.getName().toLowerCase()
+					.matches("^[a-z0-9]{8}\\.tic$")) {
+				if (Main.getProperty(
+						Main.Settings.FILEECHO_ENABLE.getCfgline(), "0")
+						.equals("0")) {
+					continue;
+				}
+				try {
+					logger.l3("Proccessing " + file.getName());
+					FileInputStream fis = new FileInputStream(file);
+					FtnTIC tic = new FtnTIC();
+					tic.unpack(fis);
+					File attach = new File(Main.getInbound() + File.separator
+							+ tic.getFile());
+					if (attach.canRead()) { // processing
+						if (!tic.getTo().equals(Main.info.getAddress())) {
+							file.delete();
+							logger.l3("Tic " + file.getName()
+									+ " is not for us");
+							continue;
+						}
+						Filearea area = ORMManager.INSTANSE.getFileareaDAO()
+								.getFirstAnd("name", "=",
+										tic.getArea().toLowerCase());
+						Link source = ORMManager.INSTANSE.getLinkDAO()
+								.getFirstAnd("ftn_address", "=",
+										tic.getFrom().toString());
+						if (source == null) {
+							logger.l3("Link " + tic.getFrom() + " not found");
+							file.renameTo(new File(Main.getInbound()
+									+ File.separator + "bad_"
+									+ FtnTools.generateTic()));
+							continue;
+						}
+						if (area == null) {
+							if (FtnTools.getOptionBooleanDefFalse(source,
+									LinkOption.BOOLEAN_AUTOCREATE_FILE)) {
+								area = new Filearea();
+								area.setName(tic.getArea().toLowerCase());
+								area.setDescription("Autocreated area");
+								area.setGroup("");
+								area.setReadlevel(0L);
+								area.setWritelevel(0L);
+								ORMManager.INSTANSE.getFileareaDAO().save(area);
+								FileSubscription sub = new FileSubscription();
+								sub.setArea(area);
+								sub.setLink(source);
+								ORMManager.INSTANSE.getFileSubscriptionDAO()
+										.save(sub);
+							} else {
+								logger.l3("No such filearea - " + tic.getArea());
+								file.renameTo(new File(Main.getInbound()
+										+ File.separator + "bad_"
+										+ FtnTools.generateTic()));
+								continue;
+							}
+						}
+						if (ORMManager.INSTANSE.getFileSubscriptionDAO()
+								.getFirstAnd("link_id", "=", source,
+										"filearea_id", "=", area) != null) {
+							new File(Main.getFileechoPath() + File.separator
+									+ area.getName()).mkdir();
+							Filemail mail = new Filemail();
+							if (attach.renameTo(new File(Main.getFileechoPath()
+									+ File.separator + area.getName()
+									+ File.separator + tic.getFile()))) {
+								mail.setFilepath(Main.getFileechoPath()
+										+ File.separator + area.getName()
+										+ File.separator + tic.getFile());
+							} else {
+								mail.setFilepath(attach.getAbsolutePath());
+							}
+							mail.setFilearea(area);
+							mail.setFilename(tic.getFile());
+							mail.setFiledesc(tic.getDesc());
+							mail.setOrigin(tic.getOrigin().toString());
+							mail.setPath(tic.getPath());
+							mail.setSeenby(FtnTools.write4D(tic.getSeenby()));
+							ORMManager.INSTANSE.getFilemailDAO().save(mail);
+							for (FileSubscription sub : ORMManager.INSTANSE
+									.getFileSubscriptionDAO().getAnd(
+											"filearea_id", "=", area,
+											"link_id", "!=", source)) {
+
+								ORMManager.INSTANSE.getFilemailAwaitingDAO()
+										.save(new FilemailAwaiting(sub
+												.getLink(), mail));
+								poll.add(sub.getLink());
+							}
+						} else {
+							logger.l3("No subscribed - " + tic.getArea());
+							file.renameTo(new File(Main.getInbound()
+									+ File.separator + "bad_"
+									+ FtnTools.generateTic()));
+							continue;
+						}
+						file.delete();
+					} else {
+						logger.l3("File " + attach.getName()
+								+ " not found, wait");
+					}
+				} catch (Exception e) {
+				}
+			}
+			for (Link l : poll) {
+				if (FtnTools.getOptionBooleanDefFalse(l,
+						LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+					PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
+							.getById(l.getId()));
 				}
 			}
 		}
@@ -261,6 +386,8 @@ public class FtnTosser {
 		Ftn2D our2d = new Ftn2D(our_address.getNet(), our_address.getNode());
 		List<FtnMessage> messages = new ArrayList<FtnMessage>();
 		List<File> attachedFiles = new ArrayList<File>();
+		List<FtnTIC> tics = new ArrayList<FtnTIC>();
+		List<Message> ret = new ArrayList<Message>();
 		try {
 			List<Netmail> netmails = ORMManager.INSTANSE.getNetmailDAO()
 					.getAnd("send", "=", false, "route_via", "=", link);
@@ -289,72 +416,161 @@ public class FtnTosser {
 				}
 			}
 		} catch (Exception e) {
-			logger.l2("Netmail error " + link.getLinkAddress(),
-					e);
+			logger.l2("Netmail error " + link.getLinkAddress(), e);
 		}
-		List<Echomail> toRemove = new ArrayList<Echomail>();
-		List<EchomailAwaiting> mailToSend = ORMManager.INSTANSE
-				.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
-		for (EchomailAwaiting ema : mailToSend) {
-			Echomail mail = ema.getMail();
-			Echoarea area = mail.getArea();
-			toRemove.add(mail);
-			Set<Ftn2D> seenby = new HashSet<Ftn2D>(FtnTools.read2D(mail
-					.getSeenBy()));
-			if (seenby.contains(link2d) && link_address.getPoint() == 0) {
-				logger.l5(link2d + " is in seenby for " + link_address);
-				continue;
-			}
-			List<Ftn2D> path = FtnTools.read2D(mail.getPath());
-			seenby.add(our2d);
-			seenby.add(link2d);
-
-			if (!path.contains(our2d)) {
-				path.add(our2d);
-			}
-
-			List<Subscription> ssubs = ORMManager.INSTANSE.getSubscriptionDAO()
-					.getAnd("echoarea_id", "=", area);
-			for (Subscription ssub : ssubs) {
-				Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
-						ssub.getLink().getId());
-				FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
-				Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
-				seenby.add(d2);
-			}
-
-			FtnMessage message = new FtnMessage();
-			message.setNetmail(false);
-			message.setArea(area.getName().toUpperCase());
-			message.setFromName(mail.getFromName());
-			message.setToName(mail.getToName());
-			message.setFromAddr(Main.info.getAddress());
-			message.setToAddr(link_address);
-			message.setDate(mail.getDate());
-			message.setSubject(mail.getSubject());
-			message.setText(mail.getText());
-			message.setSeenby(new ArrayList<Ftn2D>(seenby));
-			message.setPath(path);
-			logger.l4("Echomail #" + mail.getId() + " ("
-					+ area.getName() + ") packed for " + link.getLinkAddress());
-			messages.add(message);
-
-		}
-		ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id", "=",
-				link, "echomail_id", "in", toRemove);
-		if (!messages.isEmpty()) {
-			List<Message> ret = FtnTools.pack(messages, link);
-			for (File f : attachedFiles) {
-				try {
-					ret.add(new Message(f));
-					f.delete();
-				} catch (Exception e) {
-					logger.l3("File attach filed " + f.getAbsolutePath());
+		// echomail
+		{
+			List<Echomail> toRemove = new ArrayList<Echomail>();
+			List<EchomailAwaiting> mailToSend = ORMManager.INSTANSE
+					.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
+			for (EchomailAwaiting ema : mailToSend) {
+				Echomail mail = ema.getMail();
+				Echoarea area = mail.getArea();
+				toRemove.add(mail);
+				Set<Ftn2D> seenby = new HashSet<Ftn2D>(FtnTools.read2D(mail
+						.getSeenBy()));
+				if (seenby.contains(link2d) && link_address.getPoint() == 0) {
+					logger.l5(link2d + " is in seenby for " + link_address);
+					continue;
 				}
+				List<Ftn2D> path = FtnTools.read2D(mail.getPath());
+				seenby.add(our2d);
+				seenby.add(link2d);
+
+				if (!path.contains(our2d)) {
+					path.add(our2d);
+				}
+
+				List<Subscription> ssubs = ORMManager.INSTANSE
+						.getSubscriptionDAO().getAnd("echoarea_id", "=", area);
+				for (Subscription ssub : ssubs) {
+					Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
+							ssub.getLink().getId());
+					FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
+					Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
+					seenby.add(d2);
+				}
+
+				FtnMessage message = new FtnMessage();
+				message.setNetmail(false);
+				message.setArea(area.getName().toUpperCase());
+				message.setFromName(mail.getFromName());
+				message.setToName(mail.getToName());
+				message.setFromAddr(our_address);
+				message.setToAddr(link_address);
+				message.setDate(mail.getDate());
+				message.setSubject(mail.getSubject());
+				message.setText(mail.getText());
+				message.setSeenby(new ArrayList<Ftn2D>(seenby));
+				message.setPath(path);
+				logger.l4("Echomail #" + mail.getId() + " (" + area.getName()
+						+ ") packed for " + link.getLinkAddress());
+				messages.add(message);
+
 			}
-			return ret;
-		} else {
-			return new ArrayList<Message>();
+			ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id", "=",
+					link, "echomail_id", "in", toRemove);
 		}
+		// fileechoes
+		{
+			List<Filemail> toRemove = new ArrayList<Filemail>();
+			List<FilemailAwaiting> filemail = ORMManager.INSTANSE
+					.getFilemailAwaitingDAO().getAnd("link_id", "=", link);
+			for (FilemailAwaiting awmail : filemail) {
+				Filemail mail = awmail.getMail();
+				Filearea area = mail.getFilearea();
+				toRemove.add(mail);
+				File f = new File(mail.getFilepath());
+
+				if (!f.canRead()) {
+					logger.l3("File unavalible");
+					continue;
+				}
+
+				Set<FtnAddress> seenby = new HashSet<FtnAddress>(
+						FtnTools.read4D(mail.getSeenby()));
+				if (seenby.contains(link_address)) {
+					logger.l3("This file have a seen-by for link");
+					continue;
+				}
+				FtnTIC tic = new FtnTIC();
+				try {
+					CRC32 crc32 = new CRC32();
+					FileInputStream fis = new FileInputStream(f);
+					int len = 0;
+					do {
+						byte buf[];
+						len = fis.available();
+						if (len > 1024) {
+							buf = new byte[1024];
+						} else {
+							buf = new byte[len];
+						}
+						fis.read(buf);
+						crc32.update(buf);
+					} while (len > 0);
+					tic.setCrc32(crc32.getValue());
+					fis.close();
+				} catch (IOException e) {
+				}
+				tic.setArea(area.getName().toUpperCase());
+				tic.setAreaDesc(area.getDescription());
+				tic.setFile(mail.getFilename());
+				tic.setSize(f.length());
+				tic.setDesc(mail.getFiledesc());
+				tic.setPassword(link.getPaketPassword());
+				tic.setFrom(our_address);
+				tic.setTo(link_address);
+				tic.setOrigin(new FtnAddress(mail.getOrigin()));
+				seenby.add(our_address);
+				for (FileSubscription sub : ORMManager.INSTANSE
+						.getFileSubscriptionDAO().getAnd("filearea_id", "=",
+								area)) {
+					Link l = ORMManager.INSTANSE.getLinkDAO().getById(
+							sub.getLink().getId());
+					seenby.add(new FtnAddress(l.getLinkAddress()));
+				}
+				List<FtnAddress> sb = new ArrayList<FtnAddress>(seenby);
+				Collections.sort(sb, new FtnTools.Ftn4DComparator());
+				tic.setSeenby(sb);
+				tic.setPath(mail.getPath() + "Path " + Main.info.getAddress()
+						+ " " + System.currentTimeMillis() / 1000 + " "
+						+ FtnTools.format.format(new Date()) + " "
+						+ Main.info.getVersion() + "\r\n");
+				tic.setRealpath(mail.getFilepath());
+				tics.add(tic);
+			}
+			ORMManager.INSTANSE.getFilemailAwaitingDAO().delete("link_id", "=",
+					link, "filemail_id", "in", toRemove);
+		}
+		if (!messages.isEmpty()) {
+			ret.addAll(FtnTools.pack(messages, link));
+		}
+		for (FtnTIC tic : tics) {
+			try {
+				byte[] data = tic.pack();
+				Message message = new Message(FtnTools.generateTic(),
+						data.length);
+				message.setInputStream(new ByteArrayInputStream(data));
+				ret.add(message);
+
+				message = new Message(tic.getFile(), tic.getSize());
+				message.setInputStream(new FileInputStream(tic.getRealpath()));
+				ret.add(message);
+				logger.l4("Packed tic " + message.getMessageName()
+						+ " for file " + tic.getFile());
+			} catch (Exception e) {
+				logger.l3("Tic attach failed");
+			}
+		}
+		for (File f : attachedFiles) {
+			try {
+				ret.add(new Message(f));
+				f.delete();
+			} catch (Exception e) {
+				logger.l3("File attach filed " + f.getAbsolutePath());
+			}
+		}
+		return ret;
 	}
 }

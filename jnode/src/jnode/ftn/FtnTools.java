@@ -58,7 +58,7 @@ public final class FtnTools {
 	public static Charset cp866 = Charset.forName("CP866");
 	private final static String ROUTE_VIA = "\001Via %s "
 			+ Main.info.getVersion() + " %s";
-	private final static DateFormat format = new SimpleDateFormat(
+	public final static DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
@@ -81,6 +81,36 @@ public final class FtnTools {
 	}
 
 	/**
+	 * Сортировщик 4D-адресов
+	 * 
+	 * @author kreon
+	 * 
+	 */
+	public static class Ftn4DComparator implements Comparator<FtnAddress> {
+
+		@Override
+		public int compare(FtnAddress o1, FtnAddress o2) {
+			if (o1.getZone() == o2.getZone()) {
+				if (o1.getNet() == o2.getNet()) {
+					if (o1.getNode() == o2.getNode()) {
+						if (o1.getPoint() == o2.getPoint()) {
+							return 0;
+						} else {
+							return o1.getPoint() - o2.getPoint();
+						}
+					} else {
+						return o1.getNode() - o2.getNode();
+					}
+				} else {
+					return o1.getNet() - o2.getNet();
+				}
+			} else {
+				return o1.getZone() - o2.getZone();
+			}
+		}
+	}
+
+	/**
 	 * Генерация 8d-рандома
 	 * 
 	 * @return
@@ -96,6 +126,20 @@ public final class FtnTools {
 		}
 		return String.format("%02x%02x%02x%02x", digest[0], digest[1],
 				digest[2], digest[3]);
+	}
+
+	public static String generateTic() {
+		char[] chars = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'h', 'i',
+				'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+				'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
+				'7', '8', '9' };
+		StringBuilder sb = new StringBuilder(11);
+		sb.append("jt");
+		for (int i = 0; i < 6; i++) {
+			sb.append(chars[(int) Math.round((chars.length - 1) * Math.random())]);
+		}
+		sb.append(".tic");
+		return sb.toString();
 	}
 
 	/**
@@ -298,6 +342,24 @@ public final class FtnTools {
 	}
 
 	/**
+	 * Читаем 4d-адреса через разделитель
+	 * 
+	 * @param list2d
+	 * @return
+	 */
+	public static List<FtnAddress> read4D(String list2d) {
+		List<FtnAddress> ret = new ArrayList<FtnAddress>();
+		for (String l2d : list2d.split(" ")) {
+			try {
+				ret.add(new FtnAddress(l2d));
+			} catch (RuntimeException e) {
+
+			}
+		}
+		return ret;
+	}
+
+	/**
 	 * Пишем 2d-адреса через разделитель
 	 * 
 	 * @param list
@@ -317,6 +379,28 @@ public final class FtnTools {
 				flag = true;
 			}
 			ret.append(String.format("%d/%d", d.getNet(), d.getNode()));
+		}
+		return ret.toString();
+	}
+
+	/**
+	 * Пишем 4d-адреса через разделитель
+	 * 
+	 * @param list
+	 * @param sort
+	 * @return
+	 */
+	public static String write4D(List<FtnAddress> list) {
+		StringBuilder ret = new StringBuilder();
+
+		boolean flag = false;
+		for (FtnAddress d : list) {
+			if (flag) {
+				ret.append(" ");
+			} else {
+				flag = true;
+			}
+			ret.append(d.toString());
 		}
 		return ret.toString();
 	}
@@ -420,7 +504,7 @@ public final class FtnTools {
 				pkt.unpack(zis, false);
 				unzipped.add(pkt);
 			}
-		} else {
+		} else if (message.isSecure()) {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
 			File file = new File(Main.getInbound() + File.separator + filename);
 			FileOutputStream fos = new FileOutputStream(file);
@@ -432,6 +516,8 @@ public final class FtnTools {
 			fos.close();
 			logger.l3("File saved " + file.getAbsolutePath() + " ("
 					+ file.length() + ")");
+		} else {
+			logger.l2("File rejected via unsecure " + filename);
 		}
 		return unzipped.toArray(new FtnPkt[0]);
 	}
@@ -774,8 +860,7 @@ public final class FtnTools {
 		for (Rewrite rewrite : rewrites) {
 			if (FtnTools.completeMask(rewrite, message)) {
 				logger.l5(((message.isNetmail()) ? "NET" : "ECH")
-						+ " - match found, rewriting "
-						+ message.getMsgid());
+						+ " - match found, rewriting " + message.getMsgid());
 				rewrite(rewrite, message);
 				if (rewrite.isLast()) {
 					break;
@@ -859,25 +944,25 @@ public final class FtnTools {
 						netmail,
 						"Destination not found",
 						"Sorry, but destination of your netmail is not found in nodelist\nMessage rejected");
-				logger.l3(String
-						.format("Netmail %s -> %s reject ( dest not found )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
+				logger.l3(String.format(
+						"Netmail %s -> %s reject ( dest not found )", netmail
+								.getFromAddr().toString(), netmail.getToAddr()
+								.toString()));
 
 			} else if (to.getStatus().equals(Status.DOWN)) {
 				FtnTools.writeReply(netmail, "Destination is DOWN",
 						"Warning! Destination of your netmail is DOWN.\nMessage rejected");
-				logger.l3(String
-						.format("Netmail %s -> %s reject ( dest is DOWN )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
+				logger.l3(String.format(
+						"Netmail %s -> %s reject ( dest is DOWN )", netmail
+								.getFromAddr().toString(), netmail.getToAddr()
+								.toString()));
 			} else if (to.getStatus().equals(Status.HOLD)) {
 				FtnTools.writeReply(netmail, "Destination is HOLD",
 						"Warning! Destination of your netmail is HOLD");
-				logger.l4(String
-						.format("Netmail %s -> %s warn ( dest is Hold )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
+				logger.l4(String.format(
+						"Netmail %s -> %s warn ( dest is Hold )", netmail
+								.getFromAddr().toString(), netmail.getToAddr()
+								.toString()));
 				validTo = true;
 			} else {
 				validTo = true;
@@ -893,10 +978,10 @@ public final class FtnTools {
 			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
 					netmail.getFromAddr());
 			if (from == null) {
-				logger.l3(String
-						.format("Netmail %s -> %s reject ( origin not found )",
-								netmail.getFromAddr().toString(), netmail
-										.getToAddr().toString()));
+				logger.l3(String.format(
+						"Netmail %s -> %s reject ( origin not found )", netmail
+								.getFromAddr().toString(), netmail.getToAddr()
+								.toString()));
 			} else {
 				validFrom = true;
 			}
