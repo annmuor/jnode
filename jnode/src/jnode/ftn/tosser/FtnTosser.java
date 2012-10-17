@@ -247,7 +247,7 @@ public class FtnTosser {
 					FtnTIC tic = new FtnTIC();
 					tic.unpack(fis);
 					File attach = new File(Main.getInbound() + File.separator
-							+ tic.getFile());
+							+ tic.getFile().toLowerCase());
 					if (attach.canRead()) { // processing
 						if (!tic.getTo().equals(Main.info.getAddress())) {
 							file.delete();
