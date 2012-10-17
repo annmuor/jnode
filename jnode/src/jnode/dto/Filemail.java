@@ -1,5 +1,7 @@
 package jnode.dto;
 
+import java.util.Date;
+
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -22,6 +24,8 @@ public class Filemail {
 	private String seenby;
 	@DatabaseField(dataType = DataType.LONG_STRING)
 	private String path;
+	@DatabaseField(dataType = DataType.DATE_LONG)
+	private Date created;
 
 	public Long getId() {
 		return id;
@@ -85,6 +89,14 @@ public class Filemail {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
 	}
 
 }

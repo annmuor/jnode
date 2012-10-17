@@ -237,9 +237,7 @@ public class FtnTosser {
 				}
 			} else if (file.getName().toLowerCase()
 					.matches("^[a-z0-9]{8}\\.tic$")) {
-				if (Main.getProperty(
-						Main.Settings.FILEECHO_ENABLE.getCfgline(), "0")
-						.equals("0")) {
+				if (!Main.isFileechoEnable()) {
 					continue;
 				}
 				try {
@@ -257,9 +255,6 @@ public class FtnTosser {
 									+ " is not for us");
 							continue;
 						}
-						Filearea area = ORMManager.INSTANSE.getFileareaDAO()
-								.getFirstAnd("name", "=",
-										tic.getArea().toLowerCase());
 						Link source = ORMManager.INSTANSE.getLinkDAO()
 								.getFirstAnd("ftn_address", "=",
 										tic.getFrom().toString());
@@ -270,75 +265,53 @@ public class FtnTosser {
 									+ FtnTools.generateTic()));
 							continue;
 						}
+						Filearea area = FtnTools.getFileareaByName(tic
+								.getArea().toLowerCase(), source);
 						if (area == null) {
-							if (FtnTools.getOptionBooleanDefFalse(source,
-									LinkOption.BOOLEAN_AUTOCREATE_FILE)) {
-								area = new Filearea();
-								area.setName(tic.getArea().toLowerCase());
-								area.setDescription("Autocreated area");
-								area.setGroup("");
-								area.setReadlevel(0L);
-								area.setWritelevel(0L);
-								ORMManager.INSTANSE.getFileareaDAO().save(area);
-								FileSubscription sub = new FileSubscription();
-								sub.setArea(area);
-								sub.setLink(source);
-								ORMManager.INSTANSE.getFileSubscriptionDAO()
-										.save(sub);
-							} else {
-								logger.l3("No such filearea - " + tic.getArea());
-								file.renameTo(new File(Main.getInbound()
-										+ File.separator + "bad_"
-										+ FtnTools.generateTic()));
-								continue;
-							}
-						}
-						if (ORMManager.INSTANSE.getFileSubscriptionDAO()
-								.getFirstAnd("link_id", "=", source,
-										"filearea_id", "=", area) != null) {
-							new File(Main.getFileechoPath() + File.separator
-									+ area.getName()).mkdir();
-							Filemail mail = new Filemail();
-							if (attach.renameTo(new File(Main.getFileechoPath()
-									+ File.separator + area.getName()
-									+ File.separator + tic.getFile()))) {
-								mail.setFilepath(Main.getFileechoPath()
-										+ File.separator + area.getName()
-										+ File.separator + tic.getFile());
-							} else {
-								mail.setFilepath(attach.getAbsolutePath());
-							}
-							mail.setFilearea(area);
-							mail.setFilename(tic.getFile());
-							mail.setFiledesc(tic.getDesc());
-							mail.setOrigin(tic.getOrigin().toString());
-							mail.setPath(tic.getPath());
-							mail.setSeenby(FtnTools.write4D(tic.getSeenby()));
-							ORMManager.INSTANSE.getFilemailDAO().save(mail);
-							for (FileSubscription sub : ORMManager.INSTANSE
-									.getFileSubscriptionDAO().getAnd(
-											"filearea_id", "=", area,
-											"link_id", "!=", source)) {
-
-								ORMManager.INSTANSE.getFilemailAwaitingDAO()
-										.save(new FilemailAwaiting(sub
-												.getLink(), mail));
-								poll.add(sub.getLink());
-							}
-						} else {
-							logger.l3("No subscribed - " + tic.getArea());
+							logger.l3("Filearea " + tic.getArea()
+									+ " is not avalible for "
+									+ source.getLinkAddress());
 							file.renameTo(new File(Main.getInbound()
 									+ File.separator + "bad_"
 									+ FtnTools.generateTic()));
 							continue;
 						}
-						file.delete();
+						new File(Main.getFileechoPath() + File.separator
+								+ area.getName()).mkdir();
+						Filemail mail = new Filemail();
+						if (attach.renameTo(new File(Main.getFileechoPath()
+								+ File.separator + area.getName()
+								+ File.separator + tic.getFile()))) {
+							mail.setFilepath(Main.getFileechoPath()
+									+ File.separator + area.getName()
+									+ File.separator + tic.getFile());
+						} else {
+							mail.setFilepath(attach.getAbsolutePath());
+						}
+						mail.setFilearea(area);
+						mail.setFilename(tic.getFile());
+						mail.setFiledesc(tic.getDesc());
+						mail.setOrigin(tic.getOrigin().toString());
+						mail.setPath(tic.getPath());
+						mail.setSeenby(FtnTools.write4D(tic.getSeenby()));
+						mail.setCreated(new Date());
+						ORMManager.INSTANSE.getFilemailDAO().save(mail);
+						for (FileSubscription sub : ORMManager.INSTANSE
+								.getFileSubscriptionDAO().getAnd("filearea_id",
+										"=", area, "link_id", "!=", source)) {
+
+							ORMManager.INSTANSE.getFilemailAwaitingDAO().save(
+									new FilemailAwaiting(sub.getLink(), mail));
+							poll.add(sub.getLink());
+						}
 					} else {
-						logger.l3("File " + attach.getName()
-								+ " not found, wait");
+						logger.l3("File " + tic.getFile()
+								+ " not found in inbound, waiting");
+						continue;
 					}
+					file.delete();
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.l1("Error while processing tic " + file.getName(), e);
 				}
 			}
 			for (Link l : poll) {

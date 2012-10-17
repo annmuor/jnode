@@ -59,7 +59,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.2";
+		private final String version = "jNode/0.5.3";
 
 		public String getSysop() {
 			return sysop;
@@ -128,6 +128,19 @@ public class Main {
 
 	public static String getFileechoPath() {
 		return getProperty(Settings.FILEECHO_PATH.cfgline, getInbound());
+	}
+
+	public static String getTechArea() {
+		return Main.getProperty(Main.Settings.STAT_ECHOAREA.getCfgline(),
+				"jnode.local.stat");
+	}
+
+	public static boolean isStatisticEnable() {
+		String idx = settings.get(Settings.STAT_ENABLE.cfgline);
+		if (idx == null) {
+			return false;
+		}
+		return true;
 	}
 
 	public Main(String configFile) {

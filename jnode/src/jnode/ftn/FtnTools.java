@@ -25,6 +25,10 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import jnode.dto.Echoarea;
+import jnode.dto.Echomail;
+import jnode.dto.EchomailAwaiting;
+import jnode.dto.FileSubscription;
+import jnode.dto.Filearea;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
@@ -896,12 +900,70 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
 				}
+				writeEchomail(
+						getAreaByName(Main.getTechArea(), null),
+						"Created new echoarea",
+						"Echoarea "
+								+ name
+								+ " created by "
+								+ ((link == null) ? "local system" : link
+										.getLinkAddress()) + "\n");
 			}
 		} else {
 			if (link != null
 					&& ORMManager.INSTANSE.getSubscriptionDAO().getFirstAnd(
 							"echoarea_id", "=", ret.getId(), "link_id", "=",
 							link.getId()) == null) {
+				ret = null;
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * получение и аутокриейт
+	 * 
+	 * @param name
+	 * @param link
+	 * @return
+	 */
+	public static Filearea getFileareaByName(String name, Link link) {
+		Filearea ret = null;
+		name = name.toLowerCase();
+		ret = ORMManager.INSTANSE.getFileareaDAO().getFirstAnd("name", "=",
+				name);
+		if (ret == null) {
+			if (link == null
+					|| getOptionBooleanDefFalse(link,
+							LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+				ret = new Filearea();
+				ret.setName(name);
+				ret.setDescription("Autocreated filearea");
+				ret.setReadlevel(0L);
+				ret.setWritelevel(0L);
+				ret.setGroup("");
+				logger.l3("Filearea " + name.toUpperCase() + " created");
+				ORMManager.INSTANSE.getFileareaDAO().save(ret);
+				if (link != null) {
+					FileSubscription sub = new FileSubscription();
+					sub.setArea(ret);
+					sub.setLink(link);
+					ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
+				}
+				writeEchomail(
+						getAreaByName(Main.getTechArea(), null),
+						"Created new filearea",
+						"Filearea "
+								+ name
+								+ " created by "
+								+ ((link == null) ? "local system" : link
+										.getLinkAddress()) + "\n");
+			}
+		} else {
+			if (link != null
+					&& ORMManager.INSTANSE.getFileSubscriptionDAO()
+							.getFirstAnd("filearea_id", "=", ret.getId(),
+									"link_id", "=", link.getId()) == null) {
 				ret = null;
 			}
 		}
@@ -987,4 +1049,31 @@ public final class FtnTools {
 		return !(validFrom && validTo);
 	}
 
+	public static void writeEchomail(Echoarea area, String subject, String text) {
+		Echomail mail = new Echomail();
+		mail.setFromFTN(Main.info.getAddress().toString());
+		mail.setFromName(Main.info.getStationName());
+		mail.setArea(area);
+		mail.setDate(new Date());
+		mail.setPath("");
+		mail.setSeenBy("");
+		mail.setToName("All");
+		mail.setSubject(subject);
+		StringBuilder b = new StringBuilder();
+		b.append(String.format(
+				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n", Main.info
+						.getAddress().toString(), FtnTools.generate8d(),
+				Main.info.getVersion(), Main.info.getVersion()));
+		b.append(text);
+		b.append("\n--- " + Main.info.getStationName() + "\n");
+		b.append(" * Origin: " + Main.info.getVersion() + " ("
+				+ Main.info.getAddress().toString() + ")\n");
+		mail.setText(b.toString());
+		ORMManager.INSTANSE.getEchomailDAO().save(mail);
+		for (Subscription s : ORMManager.INSTANSE.getSubscriptionDAO().getAnd(
+				"echoarea_id", "=", area)) {
+			ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
+					new EchomailAwaiting(s.getLink(), mail));
+		}
+	}
 }

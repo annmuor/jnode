@@ -6,15 +6,15 @@ import com.j256.ormlite.dao.GenericRawResults;
 
 import jnode.orm.ORMManager;
 
-public class EchoareaStat extends AStatPoster {
+public class EchoareaStat implements IStatPoster {
 
 	@Override
-	protected String _getSubject() {
+	public String getSubject() {
 		return "Echoarea messages per day";
 	}
 
 	@Override
-	protected String _getText() {
+	public String getText() {
 
 		Long before = new Date().getTime() - (24 * 3600 * 1000);
 		Long after = new Date().getTime();
