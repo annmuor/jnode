@@ -900,14 +900,16 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
 				}
-				writeEchomail(
-						getAreaByName(Main.getTechArea(), null),
-						"Created new echoarea",
-						"Echoarea "
-								+ name
-								+ " created by "
-								+ ((link == null) ? "local system" : link
-										.getLinkAddress()) + "\n");
+				if (Main.isStatisticEnable()) {
+					writeEchomail(
+							getAreaByName(Main.getTechArea(), null),
+							"Created new echoarea",
+							"Echoarea "
+									+ name
+									+ " created by "
+									+ ((link == null) ? "local system" : link
+											.getLinkAddress()) + "\n");
+				}
 			}
 		} else {
 			if (link != null
@@ -950,14 +952,16 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
 				}
-				writeEchomail(
-						getAreaByName(Main.getTechArea(), null),
-						"Created new filearea",
-						"Filearea "
-								+ name
-								+ " created by "
-								+ ((link == null) ? "local system" : link
-										.getLinkAddress()) + "\n");
+				if (Main.isStatisticEnable()) {
+					writeEchomail(
+							getAreaByName(Main.getTechArea(), null),
+							"Created new filearea",
+							"Filearea "
+									+ name
+									+ " created by "
+									+ ((link == null) ? "local system" : link
+											.getLinkAddress()) + "\n");
+				}
 			}
 		} else {
 			if (link != null
