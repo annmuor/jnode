@@ -20,7 +20,7 @@ binkp.bind = 0.0.0.0
 # Listen port for binkp protocol
 binkp.port = 24554
 # The folder for incoming files
-binkp.inbound = inbound
+binkp.inbound = /var/spool/jnode/inbound
 # Comment this if you want turn off server
 binkp.server = 1
 # Comment this if you want turn off client
@@ -32,6 +32,10 @@ poll.period = 600
 # Log level, 5->1
 log.level = 4
 # path to latest nodelist (r/o)
-nodelist.path = NODELIST
+nodelist.path = /var/spool/jnode/NODELIST
 # path to nodelist index (r/w)
-nodelist.index = NODELIST.idx
+nodelist.index = /var/spool/jnode/NODELIST.idx
+# Comment this if you want turn off fileechoes
+fileecho.enable = 1
+# Fileecho base dir
+fileecho.path = /var/spool/jnode/files

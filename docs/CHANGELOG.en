@@ -54,4 +54,23 @@
 30.09.2012, 0.4.6:
 + +FileAtt netmail support added
 + Local inbound support added
-
+02.10.2012, 0.4.6(d):
+~ Old JVM crash fixed
+~ Sending m_skip if unpack failed
++ New option Groups - check access to areas
++ New option AreaFix - turn on/off areafix for link
++ New option PollByTimeout - turn on/off poll by binkp.client
+16.10.2012, 0.4.8:
+~ Major internal framework fixed
+16.10.2012, 0.4.9:
+~ Log speaks english now
+~ A big perfomance improvement in echomail processing part
+~ Routing & netmail drop logic fixed
+17.10.2012, 0.5.0:
++ Fileechoes support
++ New options:
+- CrashFilemail - make poll when new files avalible for this link
+- FileFix - turn on/off filefix robot
+- FileAutoCreate - create fileecho is not exists
+17.10.2012, 0.5.1:
++ New robot FileFix

@@ -23,7 +23,8 @@
         Set { host='' and port=0 } if this is a point or a pvt node.
    5.3. To add netmail default route path, execute query: { INSERT INTO routing(nice, route_via) SELECT 65535,id FROM links WHERE ftn_address='4D ftn address of link'; }
    5.4. To turn on AreaFix, execute query: { INSERT INTO robots VALUES('areafix', 'jnode.robot.AreaFix'); }
-   5.5. See routing, rewrite, echoarea and subscription tables for advanced features.
+   5.5. To turn on FileFix, execute query: { INSERT INTO robots VALUES('filefix', 'jnode.robot.FileFix'); }
+   5.6. See routing, rewrite, echoarea and subscription tables for advanced features.
 6. Run:
    6.1. Run application and confirm there's no error.
    6.2. Fix your configuration or primary data if there was an error.

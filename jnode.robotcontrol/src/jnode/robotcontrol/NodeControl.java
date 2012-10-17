@@ -37,7 +37,7 @@ public class NodeControl implements IRobot {
 				.getAddress().toString());
 		if (!fmsg.getSubject().equals(password)
 				|| !fmsg.getFromAddr().toString().equals(operator)) {
-			logger.warn("Попытка неавторизованного доступа от "
+			logger.l4("Попытка неавторизованного доступа от "
 					+ fmsg.getFromAddr());
 			return;
 		}

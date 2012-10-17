@@ -19,7 +19,7 @@ binkp.bind = 0.0.0.0
 # Какой порт слушать
 binkp.port = 24554
 # Папка для приёма файлов
-binkp.inbound = inbound
+binkp.inbound = /var/spool/jnode/inbound
 # Закомментируйте если хотите выключить сервер
 binkp.server = 1
 # Закомментируйте если хотите выключить клиент
@@ -31,6 +31,10 @@ poll.period = 600
 # Логлевел, от 5 до 1
 log.level = 4
 # Путь к нодлисту ( только читать )
-nodelist.path = NODELIST
+nodelist.path = /var/spool/jnode/NODELIST
 # Путь к индексу нодлиста ( читать и писать )
-nodelist.index = NODELIST.idx
+nodelist.index = /var/spool/jnode/NODELIST.idx
+# Закоментируйте чтоб отключить обработку файлэх
+fileecho.enable = 1
+# Путь к фэхам
+fileecho.path = /var/spool/jnode/files

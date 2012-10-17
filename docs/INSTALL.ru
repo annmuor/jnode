@@ -23,7 +23,8 @@
        Для пойнтов ( или hold-узлов ) host укажите '', а порт - 0.
    5.3. Добавьте роутинг нетмейла по-умолчанию, выполнив команду { INSERT INTO routing(nice, route_via) SELECT 65535,id FROM links WHERE ftn_address='Фидо-адрес линка'; }
    5.4. Если хотите, включите робота AreaFix, выполнив команду { INSERT INTO robots VALUES('areafix', 'jnode.robot.AreaFix'); }
-   5.5. Вы можете настроить и другие параметры, управляя данными в таблицах routing, rewrite, echoarea и subscription.
+   5.5. Если хотите, включите робота FileFix, выполнив команду { INSERT INTO robots VALUES('filefix', 'jnode.robot.FileFix'); }
+   5.6. Вы можете настроить и другие параметры, управляя данными в таблицах routing, rewrite, echoarea и subscription.
 6. Запуск приложения:
    6.1. Запустите приложение и убедитесь в том, что оно успешно соединяется с линками.
    6.2. В случае возникновения ошибок - исправьте введенные данные.
