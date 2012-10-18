@@ -36,6 +36,9 @@ import jnode.dto.Rewrite;
 import jnode.dto.Robot;
 import jnode.dto.Route;
 import jnode.dto.Subscription;
+import jnode.event.NewEchoareaEvent;
+import jnode.event.NewFileareaEvent;
+import jnode.event.Notifier;
 import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
@@ -900,16 +903,7 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
 				}
-				if (Main.isStatisticEnable()) {
-					writeEchomail(
-							getAreaByName(Main.getTechArea(), null),
-							"Created new echoarea",
-							"Echoarea "
-									+ name
-									+ " created by "
-									+ ((link == null) ? "local system" : link
-											.getLinkAddress()) + "\n");
-				}
+				Notifier.INSTANSE.notify(new NewEchoareaEvent(name, link));
 			}
 		} else {
 			if (link != null
@@ -952,16 +946,7 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
 				}
-				if (Main.isStatisticEnable()) {
-					writeEchomail(
-							getAreaByName(Main.getTechArea(), null),
-							"Created new filearea",
-							"Filearea "
-									+ name
-									+ " created by "
-									+ ((link == null) ? "local system" : link
-											.getLinkAddress()) + "\n");
-				}
+				Notifier.INSTANSE.notify(new NewFileareaEvent(name, link));
 			}
 		} else {
 			if (link != null
