@@ -504,7 +504,7 @@ public final class FtnTools {
 			FtnPkt pkt = new FtnPkt();
 			pkt.unpack(message.getInputStream());
 			unzipped.add(pkt);
-		} else if (filename.matches("^[a-f0-9]{8}\\.[a-z0-9][a-z0-9][a-z0-9]$")) {
+		} else if (filename.matches("^[a-f0-9]{8}\\.[a-z0-9]{3}$")) {
 			ZipInputStream zis = new ZipInputStream(message.getInputStream());
 			while (zis.getNextEntry() != null) {
 				FtnPkt pkt = new FtnPkt();
@@ -513,16 +513,42 @@ public final class FtnTools {
 			}
 		} else if (message.isSecure()) {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
-			File file = new File(Main.getInbound() + File.separator + filename);
-			FileOutputStream fos = new FileOutputStream(file);
+			File f = new File(Main.getInbound() + File.separator + filename);
+			boolean ninetoa = false;
+			boolean ztonull = false;
+			boolean underll = false;
+			while (f.exists()) {
+				if ((ninetoa && ztonull) || underll) {
+					logger.l2("All possible files exists. Please delete something before continue");
+				} else {
+					char[] array = filename.toCharArray();
+					char c = array[array.length - 1];
+					if (c >= '0' || c <= '8' || c >= 'a' || c <= 'y') {
+						c++;
+					} else if (c == '9') {
+						c = 'a';
+						ninetoa = true;
+					} else if (c == 'z') {
+						c = '0';
+						ztonull = true;
+					} else {
+						c = '_';
+						underll = true;
+					}
+					array[array.length - 1] = c;
+					filename = new String(array);
+					f = new File(filename);
+				}
+			}
+			FileOutputStream fos = new FileOutputStream(f);
 			while (message.getInputStream().available() > 0) {
 				byte[] block = new byte[1024];
 				int len = message.getInputStream().read(block);
 				fos.write(block, 0, len);
 			}
 			fos.close();
-			logger.l3("File saved " + file.getAbsolutePath() + " ("
-					+ file.length() + ")");
+			logger.l3("File saved " + f.getAbsolutePath() + " (" + f.length()
+					+ ")");
 		} else {
 			logger.l2("File rejected via unsecure " + filename);
 		}

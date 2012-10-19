@@ -18,6 +18,7 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
+import jnode.logger.Logger;
 import jnode.main.Main;
 
 /**
@@ -30,6 +31,7 @@ import jnode.main.Main;
 public abstract class GenericDAO<T> {
 	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
 	private static ConnectionSource source;
+	private Logger logger = Logger.getLogger(getType());
 
 	protected GenericDAO() throws Exception {
 		if (source == null) {
@@ -113,6 +115,7 @@ public abstract class GenericDAO<T> {
 		try {
 			return getDaoV().queryForId(id);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getById", e);
 		}
 		return null;
 	}
@@ -126,6 +129,7 @@ public abstract class GenericDAO<T> {
 		try {
 			return getDao().queryForAll();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getAll", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -142,6 +146,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(qb, true, args);
 			return qb.query();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getAnd", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -153,6 +158,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(qb, true, args);
 			return qb.query();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getOrderAnd", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -166,6 +172,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(qb, true, args);
 			return qb.query();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getOrderLimitAnd", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -182,6 +189,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(qb, false, args);
 			return qb.query();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getOr", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -193,6 +201,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(qb, false, args);
 			return qb.query();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getOrderOr", e);
 		}
 		return new ArrayList<T>();
 	}
@@ -217,6 +226,7 @@ public abstract class GenericDAO<T> {
 		try {
 			return getDao().queryRaw(query);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getRaw", e);
 		}
 		return null;
 	}
@@ -225,6 +235,7 @@ public abstract class GenericDAO<T> {
 		try {
 			return getDao().queryRaw(query, types);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in getRaw", e);
 		}
 		return null;
 	}
@@ -233,6 +244,7 @@ public abstract class GenericDAO<T> {
 		try {
 			getDao().update(object);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in update", e);
 		}
 	}
 
@@ -240,6 +252,7 @@ public abstract class GenericDAO<T> {
 		try {
 			getDao().create(object);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in save", e);
 		}
 	}
 
@@ -247,6 +260,7 @@ public abstract class GenericDAO<T> {
 		try {
 			getDao().createOrUpdate(object);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in saveOrUpdate", e);
 		}
 	}
 
@@ -254,6 +268,7 @@ public abstract class GenericDAO<T> {
 		try {
 			getDao().delete(object);
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in delete", e);
 		}
 	}
 
@@ -264,6 +279,7 @@ public abstract class GenericDAO<T> {
 			ub.updateColumnValue(field, value);
 			ub.update();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in update", e);
 		}
 	}
 
@@ -273,6 +289,7 @@ public abstract class GenericDAO<T> {
 			buildWhere(db, true, args);
 			db.delete();
 		} catch (SQLException e) {
+			logger.l1("SQL Exception in delete", e);
 		}
 	}
 

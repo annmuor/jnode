@@ -2,8 +2,12 @@ package jnode.protocol.binkp;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -53,9 +57,10 @@ public class BinkpConnector implements ProtocolConnector {
 	private List<Frame> frames;
 	private int connectionState;
 	private Message currentMessage;
-	private ByteArrayOutputStream currentOutputStream;
+	private OutputStream currentOutputStream;
 	private long currentMessageTimestamp;
 	private int currentMessageBytesLeft;
+	private File currentTempFile;
 	private boolean useCram = false;
 	private String cramAlgo = "";
 	private String cramText;
@@ -313,7 +318,7 @@ public class BinkpConnector implements ProtocolConnector {
 						}
 						connectionState = (incoming) ? STATE_WAITPWD
 								: STATE_WAITOK;
-						
+
 					} else {
 						error("unknown m_addr");
 					}
@@ -404,8 +409,19 @@ public class BinkpConnector implements ProtocolConnector {
 						currentMessageTimestamp = new Long(m.group(3));
 						currentMessageBytesLeft = (int) currentMessage
 								.getMessageLength();
-						currentOutputStream = new ByteArrayOutputStream(
-								currentMessageBytesLeft);
+						try {
+							currentTempFile = File.createTempFile("receive",
+									"jnode");
+							currentOutputStream = new FileOutputStream(
+									currentTempFile);
+							logger.l5("Receiving to tempfile "
+									+ currentTempFile.getAbsolutePath());
+						} catch (IOException e) {
+							currentTempFile = null;
+							currentOutputStream = new ByteArrayOutputStream(
+									currentMessageBytesLeft);
+						}
+
 						recvfile = true;
 						logger.l3(String.format("Receiving file: %s (%d)",
 								currentMessage.getMessageName(),
@@ -428,8 +444,7 @@ public class BinkpConnector implements ProtocolConnector {
 						send = true;
 					}
 				} else {
-					logger.l4("(TRANSFER) Unknown frame "
-							+ frame.toString());
+					logger.l4("(TRANSFER) Unknown frame " + frame.toString());
 				}
 			} else {
 				if (recvfile) {
@@ -445,11 +460,18 @@ public class BinkpConnector implements ProtocolConnector {
 							currentMessageBytesLeft = 0;
 						}
 						if (currentMessageBytesLeft == 0) {
-							currentMessage
-									.setInputStream(new ByteArrayInputStream(
-											currentOutputStream.toByteArray()));
+							InputStream iz;
 							currentOutputStream.close();
+							if (currentTempFile != null) {
+								iz = new FileInputStream(currentTempFile);
+								currentTempFile.delete();
+							} else {
+								ByteArrayOutputStream bos = (ByteArrayOutputStream) currentOutputStream;
+								iz = new ByteArrayInputStream(bos.toByteArray());
+							}
 							currentOutputStream = null;
+							currentTempFile = null;
+							currentMessage.setInputStream(iz);
 							Frame m_got = new BinkpFrame(BinkpCommand.M_GOT,
 									String.format("%s %d %d",
 											currentMessage.getMessageName(),
@@ -513,16 +535,14 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 		if (connectionState == STATE_ERR) {
 			if (link != null) {
-				logger.l3(String.format(
-						"Done with errors, Sb/Rb: %d/%d (%s)",
+				logger.l3(String.format("Done with errors, Sb/Rb: %d/%d (%s)",
 						totalout, totalin, link.getLinkAddress()));
 			} else {
 				logger.l3("Done with errors");
 			}
 			return true;
 		} else if (connectionState == STATE_END) {
-			logger.l3(String.format(
-					"Done, Sb/Rb: %d/%d (%s)", totalout,
+			logger.l3(String.format("Done, Sb/Rb: %d/%d (%s)", totalout,
 					totalin, link.getLinkAddress()));
 
 			return true;

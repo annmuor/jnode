@@ -246,9 +246,39 @@ public class FtnTosser {
 					FtnTIC tic = new FtnTIC();
 					tic.unpack(fis);
 					fis.close();
+					String filename = tic.getFile().toLowerCase();
 					File attach = new File(Main.getInbound() + File.separator
-							+ tic.getFile().toLowerCase());
+							+ filename);
+					boolean ninetoa = false;
+					boolean ztonull = false;
+					boolean underll = false;
+
+					while (!attach.exists()) {
+						if ((ninetoa && ztonull) || underll) {
+							logger.l2("All possible files exists. Please delete something before continue");
+						} else {
+							char[] array = filename.toCharArray();
+							char c = array[array.length - 1];
+							if (c >= '0' || c <= '8' || c >= 'a' || c <= 'y') {
+								c++;
+							} else if (c == '9') {
+								c = 'a';
+								ninetoa = true;
+							} else if (c == 'z') {
+								c = '0';
+								ztonull = true;
+							} else {
+								c = '_';
+								underll = true;
+							}
+							array[array.length - 1] = c;
+							filename = new String(array);
+							attach = new File(Main.getInbound()
+									+ File.separator + filename);
+						}
+					}
 					if (attach.canRead()) { // processing
+						logger.l3("File found as " + filename);
 						if (!tic.getTo().equals(Main.info.getAddress())) {
 							file.delete();
 							logger.l3("Tic " + file.getName()
@@ -313,6 +343,10 @@ public class FtnTosser {
 				} catch (Exception e) {
 					logger.l1("Error while processing tic " + file.getName(), e);
 				}
+			} else if (file.getName().toLowerCase()
+					.matches("^[0-9a-f]\\..?lo$")) {
+				// TODO: make poll
+
 			}
 			for (Link l : poll) {
 				if (FtnTools.getOptionBooleanDefFalse(l,
@@ -444,8 +478,10 @@ public class FtnTosser {
 				messages.add(message);
 
 			}
-			ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id", "=",
-					link, "echomail_id", "in", toRemove);
+			if (!toRemove.isEmpty()) {
+				ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id",
+						"=", link, "echomail_id", "in", toRemove);
+			}
 		}
 		// fileechoes
 		{
@@ -455,7 +491,7 @@ public class FtnTosser {
 			for (FilemailAwaiting awmail : filemail) {
 				Filemail mail = awmail.getMail();
 				toRemove.add(mail);
-				if(mail == null) {
+				if (mail == null) {
 					continue;
 				}
 				Filearea area = mail.getFilearea();
@@ -519,8 +555,10 @@ public class FtnTosser {
 				tic.setRealpath(mail.getFilepath());
 				tics.add(tic);
 			}
-			ORMManager.INSTANSE.getFilemailAwaitingDAO().delete("link_id", "=",
-					link, "filemail_id", "in", toRemove);
+			if (!toRemove.isEmpty()) {
+				ORMManager.INSTANSE.getFilemailAwaitingDAO().delete("link_id",
+						"=", link, "filemail_id", "in", toRemove);
+			}
 		}
 		if (!messages.isEmpty()) {
 			ret.addAll(FtnTools.pack(messages, link));
