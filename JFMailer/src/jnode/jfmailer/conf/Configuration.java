@@ -14,7 +14,7 @@ public enum Configuration {
 	public static final String REMOTE_PASW = "REMOTEPASW";
 
 	private final String NDL = "9600,TCP,BINKP,MO";
-	private final String version = "JFMailer/0.2";
+	private final String version = "JFMailer/0.3";
 	private final String system = "Android";
 	private String sysop = "John Smith";
 	private String location = "Europe";

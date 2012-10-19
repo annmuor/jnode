@@ -15,6 +15,8 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.os.Environment;
 
@@ -59,9 +61,9 @@ public class Connector {
 				.getAbsolutePath();
 		File out = new File(root + "/fido/outbound");
 		out.mkdirs();
-		String loreg = String.format("^%04x%04x\\..lo$", link.getNet(),
+		String loreg = String.format("^%04x%04x\\..?lo$", link.getNet(),
 				link.getNode());
-		String netmailreg = String.format("^%04x%04x\\.pkt$", link.getNet(),
+		String netmailreg = String.format("^%04x%04x\\..?ut$", link.getNet(),
 				link.getNode());
 		for (File f : out.listFiles()) {
 			if (f.getName().toLowerCase().matches(loreg)) {
@@ -73,7 +75,37 @@ public class Connector {
 					while ((line = br.readLine()) != null) {
 						String path = line.replaceFirst("^[#^]", "");
 						File file = new File(path);
-						if (file.exists()) {
+						boolean split = false;
+						while (!file.exists()) {
+							file = new File(path.toLowerCase());
+							if (!file.exists()) {
+								Logger.log("File " + path + " not found");
+								file = new File(path.toUpperCase());
+								if (!file.exists()) {
+									Logger.log("File " + path + " not found");
+									if (!split) {
+										split = true;
+										Matcher m = Pattern
+												.compile(
+														".*[\\/]?([a-f0-9]{8}\\.[a-z0-9]{3})$",
+														Pattern.CASE_INSENSITIVE)
+												.matcher(path);
+										if (m.matches()) {
+											// try it ?
+											String tmp = root
+													+ "/fido/outbound/"
+													+ m.group(1);
+											Logger.log("Trying " + tmp);
+											path = tmp;
+										}
+									} else {
+										file = null;
+										break;
+									}
+								}
+							}
+						}
+						if (file != null) {
 							try {
 								Message lo = new Message(file);
 								ret.add(lo);
@@ -83,8 +115,11 @@ public class Connector {
 								newlo.append(path);
 								newlo.append("\r\n");
 							}
+						} else {
+							Logger.log("File " + path + " not found");
 						}
 					}
+
 					br.close();
 				} catch (IOException e) {
 					Logger.log("Error while reading " + f.getAbsolutePath());

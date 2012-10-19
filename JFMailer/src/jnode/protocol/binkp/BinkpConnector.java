@@ -2,8 +2,12 @@ package jnode.protocol.binkp;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -47,7 +51,8 @@ public class BinkpConnector implements ProtocolConnector {
 	private List<Frame> frames;
 	private int connectionState;
 	private Message currentMessage;
-	private ByteArrayOutputStream currentOutputStream;
+	private OutputStream currentOutputStream;
+	private File currentTempFile;
 	private long currentMessageTimestamp;
 	private int currentMessageBytesLeft;
 	private boolean useCram = false;
@@ -382,8 +387,18 @@ public class BinkpConnector implements ProtocolConnector {
 						currentMessageTimestamp = Long.valueOf(m.group(3));
 						currentMessageBytesLeft = (int) currentMessage
 								.getMessageLength();
-						currentOutputStream = new ByteArrayOutputStream(
-								currentMessageBytesLeft);
+						try {
+							currentTempFile = File.createTempFile("receive",
+									"jnode");
+							currentOutputStream = new FileOutputStream(
+									currentTempFile);
+							Logger.log("Receiving to tempfile "
+									+ currentTempFile.getAbsolutePath());
+						} catch (IOException e) {
+							currentTempFile = null;
+							currentOutputStream = new ByteArrayOutputStream(
+									currentMessageBytesLeft);
+						}
 						recvfile = true;
 						Logger.log(String.format("Receiving: %s (%d)",
 								currentMessage.getMessageName(),
@@ -422,11 +437,18 @@ public class BinkpConnector implements ProtocolConnector {
 							currentMessageBytesLeft = 0;
 						}
 						if (currentMessageBytesLeft == 0) {
-							currentMessage
-									.setInputStream(new ByteArrayInputStream(
-											currentOutputStream.toByteArray()));
+							InputStream iz;
 							currentOutputStream.close();
+							if (currentTempFile != null) {
+								iz = new FileInputStream(currentTempFile);
+								currentTempFile.delete();
+							} else {
+								ByteArrayOutputStream bos = (ByteArrayOutputStream) currentOutputStream;
+								iz = new ByteArrayInputStream(bos.toByteArray());
+							}
 							currentOutputStream = null;
+							currentTempFile = null;
+							currentMessage.setInputStream(iz);
 							Frame m_got = new BinkpFrame(BinkpCommand.M_GOT,
 									String.format("%s %d %d",
 											currentMessage.getMessageName(),

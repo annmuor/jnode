@@ -7,7 +7,7 @@
     <string name="title_activity_main">jFMailer</string>
     <string name="title_activity_settings">Settings</string>
     <string name="poll_button_name">Make poll</string>
-    <string name="main_header">JFMailer/0.2 binkp/1.1</string>
+    <string name="main_header">JFMailer/0.3 binkp/1.1</string>
     <string name="settings_header">Configuration</string>
     <string name="settings_head_local">Local Settings</string>
     <string name="settings_sysop">Sysop:</string>
@@ -25,7 +25,7 @@
     <string name="remoteho_hint">f999.n999.z2.binkp.net</string>
     <string name="remotepo_hint">24554</string>
     <string name="remotepw_hint">Secr3tP4ssW0rD</string>
-    <string name="about">JFMailer 0.1/Android\n
+    <string name="about">JFMailer 0.3/Android\n
         &#169; Ivan Agarkov, 2012\n
         This is a part of jNode project\n
         Contacts:\n

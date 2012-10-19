@@ -7,6 +7,8 @@ import jnode.jfmailer.log.Logger;
 import jnode.jfmailer.thread.Poll;
 
 import jnode.protocol.io.exception.ProtocolException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
@@ -37,6 +39,11 @@ public class Main extends Activity {
 		settings = (Button) findViewById(R.id.settings);
 		poll.setOnClickListener(new OnClickListener() {
 			public void onClick(View arg0) {
+				if (!isOnline()) {
+					Logger.log("Please, connect to Internet first!");
+					log.setText(Logger.getLog());
+					return;
+				}
 				try {
 					initPerms();
 					new Poll().start();
@@ -77,6 +84,15 @@ public class Main extends Activity {
 			break;
 		}
 		return true;
+	}
+
+	private boolean isOnline() {
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnected()) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
