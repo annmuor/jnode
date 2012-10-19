@@ -454,8 +454,11 @@ public class FtnTosser {
 					.getFilemailAwaitingDAO().getAnd("link_id", "=", link);
 			for (FilemailAwaiting awmail : filemail) {
 				Filemail mail = awmail.getMail();
-				Filearea area = mail.getFilearea();
 				toRemove.add(mail);
+				if(mail == null) {
+					continue;
+				}
+				Filearea area = mail.getFilearea();
 				File f = new File(mail.getFilepath());
 
 				if (!f.canRead()) {
