@@ -1,8 +1,36 @@
 <resources>
 
     <string name="app_name">JFMailer</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="menu_about">About JFMailer</string>
+    <string name="menu_exit">Exit</string>
     <string name="title_activity_main">jFMailer</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="poll_button_name">Make poll</string>
+    <string name="main_header">JFMailer/0.2 binkp/1.1</string>
+    <string name="settings_header">Configuration</string>
+    <string name="settings_head_local">Local Settings</string>
+    <string name="settings_sysop">Sysop:</string>
+    <string name="settings_location">Location:</string>
+    <string name="settings_local">FTN Addr:</string>
+    <string name="settings_head_remote">Remote Settings</string>
+    <string name="settings_remote">FTN Addr:</string>
+    <string name="settings_remoteho">Host:</string>
+    <string name="settings_remotepo">Port:</string>
+    <string name="settings_remotepw">Password:</string>
+    <string name="sysop_hint">John Smith</string>
+    <string name="location_hint">Europe</string>
+    <string name="local_hint">2:999/999.99</string>
+    <string name="remote_hint">2:999/999</string>
+    <string name="remoteho_hint">f999.n999.z2.binkp.net</string>
+    <string name="remotepo_hint">24554</string>
+    <string name="remotepw_hint">Secr3tP4ssW0rD</string>
+    <string name="about">JFMailer 0.1/Android\n
+        &#169; Ivan Agarkov, 2012\n
+        This is a part of jNode project\n
+        Contacts:\n
+        - 2:5020/848 or 2:5020/849\n
+        - ivan.agarkov@gmail.com\n\n
+        Touch to close\n</string>
 
 </resources>

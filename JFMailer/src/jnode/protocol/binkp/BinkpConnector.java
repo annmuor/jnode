@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.ftn.types.FtnAddress;
+import jnode.jfmailer.conf.Configuration;
+import jnode.jfmailer.log.Logger;
 import jnode.protocol.io.Connector;
 import jnode.protocol.io.Frame;
 import jnode.protocol.io.Message;
@@ -35,7 +37,6 @@ public class BinkpConnector implements ProtocolConnector {
 	private static final int STATE_TRANSFER = 8;
 	private static final int STATE_END = 16;
 	private static final int STATE_ERR = 32;
-
 	private boolean reob;
 	private boolean leob;
 	private boolean binkp1;
@@ -79,18 +80,24 @@ public class BinkpConnector implements ProtocolConnector {
 	}
 
 	private void greet() {
-		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "SYS Android User"));
-		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "ZYZ Android"));
-		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "LOC Android"));
-		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "NDL 115200,TCP,BINKP"));
-		frames.add(new BinkpFrame(BinkpCommand.M_NUL,
-				"VER jFMailer/Android binkp/1.1"));
+		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "SYS "
+				+ Configuration.INSTANSE.getSysop()));
+		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "ZYZ "
+				+ Configuration.INSTANSE.getSystem()));
+		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "LOC "
+				+ Configuration.INSTANSE.getLocation()));
+		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "NDL "
+				+ Configuration.INSTANSE.getNDL()));
+		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "VER "
+				+ Configuration.INSTANSE.getVersion() + " binkp/1.1"));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "TIME "
 				+ format.format(new Date())));
-		frames.add(new BinkpFrame(BinkpCommand.M_ADR, "2:5020/848.9999@fidonet"));
+		frames.add(new BinkpFrame(BinkpCommand.M_ADR, Configuration.INSTANSE
+				.getLocal().toString()));
 	}
 
 	private void error(String err) {
+		Logger.log("Error: " + err);
 		frames.add(new BinkpFrame(BinkpCommand.M_ERR, err));
 		connectionState = STATE_ERR;
 	}
@@ -102,6 +109,8 @@ public class BinkpConnector implements ProtocolConnector {
 	public void initOutgoing(Connector connector) {
 		this.connector = connector;
 		incoming = false;
+		link = Configuration.INSTANSE.getRemote();
+		password = Configuration.INSTANSE.getPassword();
 		greet();
 	}
 
@@ -198,7 +207,7 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 
 		if (connectionState < STATE_TRANSFER && !frame.isCommand()) {
-			error("Unknown frame");
+			error("Unknown frame" + frame.toString());
 			return;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_ERR)) {
@@ -206,7 +215,7 @@ public class BinkpConnector implements ProtocolConnector {
 			return;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_BSY)) {
-			// logger.l3("Remote is busy");
+			Logger.log("Remote is busy: " + frame.getArg());
 			connectionState = STATE_END;
 			return;
 		}
@@ -215,7 +224,7 @@ public class BinkpConnector implements ProtocolConnector {
 		 */
 		if (connectionState == STATE_WAITADDR) {
 			if (frame.getCommand().equals(BinkpCommand.M_NUL)) {
-				// logger.l4(frame.getArg());
+				Logger.log(frame.getArg());
 				String args[] = frame.getArg().split(" ");
 				if (args[0].equals("OPT")) {
 					for (int i = 1; i < args.length; i++) {
@@ -228,28 +237,27 @@ public class BinkpConnector implements ProtocolConnector {
 									useCram = true;
 									cramText = md.group(2);
 									cramAlgo = md.group(1);
-									// logger.l4("Remote requires MD-mode ("
-									// + algo + ")");
+									Logger.log("Remote requires MD-mode ("
+											+ algo + ")");
 									break;
 								} catch (NoSuchAlgorithmException e) {
 								}
 							}
 							if (!useCram) {
-								// logger.l4("Remote requires MD-mode for unknown algo");
+								Logger.log("Remote requires MD-mode for unknown algo");
 							}
 						}
 					}
 				} else if (args[0].equals("VER")) {
 					if (frame.getArg().matches("^.* binkp/1\\.1$")) {
 						binkp1 = true;
-						// logger.l4("Protocol version 1.1");
+						Logger.log("Protocol version 1.1");
 					} else {
 						binkp1 = false;
-						// logger.l4("Protocol version 1.0");
+						Logger.log("Protocol version 1.0");
 					}
 				}
 			} else if (frame.getCommand().equals(BinkpCommand.M_ADR)) {
-				// logger.l4(frame.getArg());
 				boolean authorized = false;
 				if (frame.getArg() != null) {
 					Pattern ftn = Pattern
@@ -259,36 +267,23 @@ public class BinkpConnector implements ProtocolConnector {
 					Matcher m = ftn.matcher(frame.getArg());
 					while (m.find()) {
 						String sFtn = m.group(2);
-						this.link = new FtnAddress(sFtn);
-						if (link != null) {
-							authorized = true;
-							secure = true;
-							break;
+						try {
+							this.link = new FtnAddress(sFtn);
+							if (link != null
+									&& Configuration.INSTANSE.getRemote()
+											.equals(link)) {
+								authorized = true;
+								secure = true;
+								break;
+							}
+						} catch (NumberFormatException e) {
+							continue;
 						}
 					}
-					// if (!authorized) {
-					// m = ftn.matcher(frame.getArg());
-					// while (m.find()) {
-					// try {
-					// FtnAddress address = new FtnAddress(m.group(2));
-					// FtnNdlAddress node = NodelistScanner
-					// .getInstance().isExists(address);
-					// if (node != null) {
-					// authorized = true;
-					// secure = false;
-					// this.link = new Link();
-					// link.setLinkAddress(address.toString());
-					// break;
-					// }
-					//
-					// } catch (NumberFormatException e) {
-					// }
-					// }
-					// }
 
 					if (authorized) {
-						password = (secure) ? ("12345" != null) ? "12345" : "-"
-								: "-";
+						password = (secure) ? (password != null) ? password
+								: "-" : "-";
 						if (!incoming) {
 							frames.add(new BinkpFrame(BinkpCommand.M_PWD,
 									getPassword()));
@@ -308,18 +303,19 @@ public class BinkpConnector implements ProtocolConnector {
 			 */
 		} else if (connectionState == STATE_WAITOK) {
 			if (frame.getCommand().equals(BinkpCommand.M_OK)) {
-				if (!password.equals("-")) {
-					// logger.l4("(C) Secure session ("
-					// + ((useCram) ? "cram" : "plain") + ")");
+				if (frame.getArg().equals("secure")) {
+					Logger.log("(C) Secure session ("
+							+ ((useCram) ? "cram" : "plain") + ")");
 				} else {
-					// logger.l4("(C) Unsecure session");
+					Logger.log("(C) Unsecure session");
+					secure = false;
 				}
-				connector.setLink(link);
+				connector.getMessages();
 				connectionState = STATE_TRANSFER;
 			} else if (frame.getCommand().equals(BinkpCommand.M_NUL)) {
-				// logger.l5(frame.getArg());
+				Logger.log(frame.getArg());
 			} else {
-				error("Unknown frame ok");
+				Logger.log("M_WAITOK: Unknown frame " + frame.toString());
 			}
 			/**
 			 * Ждем пароля
@@ -346,22 +342,22 @@ public class BinkpConnector implements ProtocolConnector {
 					frames.add(new BinkpFrame(BinkpCommand.M_OK, (password
 							.equals("-")) ? "insecure" : "secure"));
 					if (!password.equals("-")) {
-						// logger.l4("(S) Secure session ("
-						// + ((useCram) ? "cram" : "plain") + ")");
+						Logger.log("(S) Secure session ("
+								+ ((useCram) ? "cram" : "plain") + ")");
 					} else {
-						// logger.l4("(S) Unsecure session");
+						Logger.log("(S) Unsecure session");
 					}
 					if (secure) {
-						connector.setLink(link);
+						connector.getMessages();
 					}
 					connectionState = STATE_TRANSFER;
 				} else {
 					error("Bad pwd");
 				}
 			} else if (frame.getCommand().equals(BinkpCommand.M_NUL)) {
-//				logger.l5(frame.getArg());
+				Logger.log(frame.getArg());
 			} else {
-//				logger.l5("(OK) Unknown frame " + frame.toString());
+				Logger.log("M_WAITPWD: Unknown frame " + frame.toString());
 			}
 			/**
 			 * Ждем файлов
@@ -381,17 +377,17 @@ public class BinkpConnector implements ProtocolConnector {
 					}
 					m = p[0].matcher(arg);
 					if (m.matches()) {
-						currentMessage = new Message(m.group(1),  Integer.valueOf(
-								m.group(2)));
-						currentMessageTimestamp =  Long.valueOf(m.group(3));
+						currentMessage = new Message(m.group(1),
+								Integer.valueOf(m.group(2)));
+						currentMessageTimestamp = Long.valueOf(m.group(3));
 						currentMessageBytesLeft = (int) currentMessage
 								.getMessageLength();
 						currentOutputStream = new ByteArrayOutputStream(
 								currentMessageBytesLeft);
 						recvfile = true;
-						// logger.l3(String.format("Receiving file: %s (%d)",
-						// currentMessage.getMessageName(),
-						// currentMessage.getMessageLength()));
+						Logger.log(String.format("Receiving: %s (%d)",
+								currentMessage.getMessageName(),
+								currentMessage.getMessageLength()));
 						return;
 					}
 				} else if (frame.getCommand().equals(BinkpCommand.M_EOB)) {
@@ -401,16 +397,16 @@ public class BinkpConnector implements ProtocolConnector {
 					Pattern p = Pattern.compile("^(\\S+) (\\d+) (\\d+)$");
 					Matcher m = p.matcher(frame.getArg());
 					if (m.matches()) {
-//						String messageName = m.group(1);
+						String messageName = m.group(1);
 						int len = Integer.valueOf(m.group(2));
-//						logger.l3(String.format("Sent file: %s (%d)",
-//								messageName, len));
+						Logger.log(String.format("Sent file: %s (%d)",
+								messageName, len));
 						totalout += len;
 						sendfile = false;
 						send = true;
 					}
 				} else {
-//					logger.l4("(TRANSFER) Unknown frame " + frame.toString());
+					Logger.log("(TRANSFER) Unknown frame " + frame.toString());
 				}
 			} else {
 				if (recvfile) {
@@ -441,14 +437,14 @@ public class BinkpConnector implements ProtocolConnector {
 											currentMessage.getMessageName(),
 											currentMessage.getMessageLength(),
 											currentMessageTimestamp));
-//							logger.l3(String.format("Received file: %s (%d)",
-//									currentMessage.getMessageName(),
-//									currentMessage.getMessageLength()));
+							Logger.log(String.format("Received file: %s (%d)",
+									currentMessage.getMessageName(),
+									currentMessage.getMessageLength()));
 							currentMessage.setSecure(secure);
 							if (connector.onReceived(currentMessage) == 0) {
 								frames.add(m_got);
 							} else {
-//								logger.l4("Tossing failed, sending m_skip");
+								Logger.log("Receiving failed, sending M_SKIP");
 								frames.add(m_skip);
 							}
 							totalin += currentMessage.getMessageLength();
@@ -464,18 +460,15 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 	}
 
-
 	public Frame[] getFrames() {
 		Frame[] frames = this.frames.toArray(new Frame[0]);
 		this.frames.clear();
 		return frames;
 	}
 
-
 	public boolean canSend() {
 		return connectionState == STATE_TRANSFER && !(leob || sendfile);
 	}
-
 
 	public boolean closed() {
 		if (reob && leob && connectionState == STATE_TRANSFER) {
@@ -485,8 +478,8 @@ public class BinkpConnector implements ProtocolConnector {
 				recv = false;
 				send = false;
 				if (secure) {
-//					logger.l4("Restarting transfer");
-					connector.setLink(link);
+					Logger.log("Restarting transfer");
+					connector.getMessages();
 				}
 			} else {
 				connectionState = STATE_END;
@@ -494,21 +487,20 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 		if (connectionState == STATE_ERR) {
 			if (link != null) {
-//				logger.l3(String.format("Done with errors, Sb/Rb: %d/%d (%s)",
-//						totalout, totalin, link.getLinkAddress()));
+				Logger.log(String.format("Done with errors, Sb/Rb: %d/%d (%s)",
+						totalout, totalin, link.toString()));
 			} else {
-//				logger.l3("Done with errors");
+				Logger.log("Done with errors");
 			}
 			return true;
 		} else if (connectionState == STATE_END) {
-//			logger.l3(String.format("Done, Sb/Rb: %d/%d (%s)", totalout,
-//					totalin, link.getLinkAddress()));
+			Logger.log(String.format("Done, Sb/Rb: %d/%d (%s)", totalout,
+					totalin, link.toString()));
 
 			return true;
 		}
 		return false;
 	}
-
 
 	public void eob() {
 		if (!sendfile) {
@@ -517,14 +509,13 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 	}
 
-
 	public void send(Message message) {
 		sendfile = true;
 		frames.add(new BinkpFrame(BinkpCommand.M_FILE, String.format(
 				"%s %d %d 0", message.getMessageName(),
 				message.getMessageLength(), System.currentTimeMillis() / 1000)));
-//		logger.l3(String.format("Sending file: %s (%d)",
-//				message.getMessageName(), message.getMessageLength()));
+		Logger.log(String.format("Sending file: %s (%d)",
+				message.getMessageName(), message.getMessageLength()));
 		try {
 			int avalible;
 			while ((avalible = message.getInputStream().available()) > 0) {
@@ -538,7 +529,7 @@ public class BinkpConnector implements ProtocolConnector {
 				frames.add(new BinkpFrame(buf));
 			}
 		} catch (IOException e) {
-//			logger.l1("Send error", e);
+			Logger.log("Send error");
 		}
 	}
 
