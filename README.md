@@ -9,7 +9,8 @@ Features of the current version:
 - multithreading
 - netmail routing and tracking
 - robots
-- simple AreaFix (`+echo`, `-echo`, `%rescan`, `%list`, `%help`)
-
+- fileareas support
+- simple AreaFix (`+echo`, `-echo`, `%rescan`, `%list`, `%query`, `%help`)
+- simple FileFix (`+fecho`, `-fecho`, `%list`, `%query`, `%help`)
 jNode uses the [ORMLite](http://ormlite.com) library for SQL database access, thus supporting DB2, Derby, H2, hSQL, mySQL, Netezza, Oracle, PostgreSQL, SQLite, MS SQL Server.
 
