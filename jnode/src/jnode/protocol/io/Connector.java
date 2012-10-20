@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jnode.dto.Link;
+import jnode.event.ConnectionEndEvent;
+import jnode.event.Notifier;
 import jnode.ftn.tosser.FtnTosser;
+import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.protocol.io.exception.ProtocolException;
 
@@ -130,6 +133,17 @@ public class Connector {
 				break;
 			}
 		}
+		ConnectionEndEvent event;
+		if (link == null) {
+			event = new ConnectionEndEvent(connector.getIncoming(),
+					connector.getSuccess());
+		} else {
+			event = new ConnectionEndEvent(
+					new FtnAddress(link.getLinkAddress()),
+					connector.getIncoming(), connector.getSuccess(),
+					connector.getBytesReceived(), connector.getBytesSent());
+		}
+		Notifier.INSTANSE.notify(event);
 		messages = new ArrayList<Message>();
 		index = 0;
 	}
@@ -138,6 +152,7 @@ public class Connector {
 		if (link == null) {
 			throw new ProtocolException("Link can not be null");
 		}
+		this.link = link;
 		connector.reset();
 		connector.initOutgoing(this);
 		try {

@@ -7,21 +7,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import jnode.dto.Echoarea;
-import jnode.event.IEvent;
-import jnode.event.IEventHandler;
-import jnode.event.NewEchoareaEvent;
-import jnode.event.NewFileareaEvent;
-import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.main.Main;
+import jnode.stat.ConnectionStat;
 import jnode.stat.EchoareaStat;
 import jnode.stat.FileareaStat;
 import jnode.stat.IStatPoster;
 
-public class StatPoster extends TimerTask implements IEventHandler {
+public class StatPoster extends TimerTask {
 	private static final IStatPoster[] posters = new IStatPoster[] {
-			new EchoareaStat(), new FileareaStat() };
+			new EchoareaStat(), new FileareaStat(), new ConnectionStat() };
 	private static final Logger logger = Logger.getLogger(StatPoster.class);
 
 	public StatPoster() {
@@ -34,8 +30,6 @@ public class StatPoster extends TimerTask implements IEventHandler {
 		Date date = calendar.getTime();
 		logger.l3("First stat will run at " + date + " and every 24h after");
 		new Timer().schedule(this, date, 24 * 3600 * 1000);
-		Notifier.INSTANSE.register(NewEchoareaEvent.class, this);
-		Notifier.INSTANSE.register(NewFileareaEvent.class, this);
 	}
 
 	@Override
@@ -52,23 +46,4 @@ public class StatPoster extends TimerTask implements IEventHandler {
 
 	}
 
-	@Override
-	public void handle(IEvent event) {
-		if (event instanceof NewEchoareaEvent) {
-			if (Main.isStatisticEnable()) {
-				Echoarea area = FtnTools
-						.getAreaByName(Main.getTechArea(), null);
-				FtnTools.writeEchomail(area, "New echoarea created",
-						event.getEvent());
-			}
-		} else if (event instanceof NewFileareaEvent) {
-			if (Main.isStatisticEnable()) {
-				Echoarea area = FtnTools
-						.getAreaByName(Main.getTechArea(), null);
-				FtnTools.writeEchomail(area, "New filearea created",
-						event.getEvent());
-			}
-		}
-
-	}
 }

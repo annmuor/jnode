@@ -4,9 +4,20 @@ import java.util.Date;
 
 import com.j256.ormlite.dao.GenericRawResults;
 
+import jnode.dto.Echoarea;
+import jnode.event.IEvent;
+import jnode.event.IEventHandler;
+import jnode.event.NewEchoareaEvent;
+import jnode.event.Notifier;
+import jnode.ftn.FtnTools;
+import jnode.main.Main;
 import jnode.orm.ORMManager;
 
-public class EchoareaStat implements IStatPoster {
+public class EchoareaStat implements IStatPoster, IEventHandler {
+	
+	public EchoareaStat() {
+		Notifier.INSTANSE.register(NewEchoareaEvent.class, this);
+	}
 
 	@Override
 	public String getSubject() {
@@ -63,5 +74,18 @@ public class EchoareaStat implements IStatPoster {
 		}
 		result.append('\n');
 		return result.toString();
+	}
+
+	@Override
+	public void handle(IEvent event) {
+		if (event instanceof NewEchoareaEvent) {
+			if (Main.isStatisticEnable()) {
+				Echoarea area = FtnTools
+						.getAreaByName(Main.getTechArea(), null);
+				FtnTools.writeEchomail(area, "New echoarea created",
+						event.getEvent());
+			}
+		}
+
 	}
 }

@@ -27,4 +27,12 @@ public interface ProtocolConnector {
 
 	public void eob();
 
+	public boolean getIncoming();
+
+	public boolean getSuccess();
+
+	public int getBytesReceived();
+
+	public int getBytesSent();
+
 }

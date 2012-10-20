@@ -649,4 +649,24 @@ public class BinkpConnector implements ProtocolConnector {
 		}
 		return ret;
 	}
+
+	@Override
+	public boolean getIncoming() {
+		return incoming;
+	}
+
+	@Override
+	public boolean getSuccess() {
+		return connectionState == STATE_ERR ? false : true;
+	}
+
+	@Override
+	public int getBytesReceived() {
+		return totalin;
+	}
+
+	@Override
+	public int getBytesSent() {
+		return totalout;
+	}
 }

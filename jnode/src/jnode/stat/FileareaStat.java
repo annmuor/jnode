@@ -2,10 +2,20 @@ package jnode.stat;
 
 import java.util.Date;
 
+import jnode.dto.Echoarea;
 import jnode.dto.Filemail;
+import jnode.event.IEvent;
+import jnode.event.IEventHandler;
+import jnode.event.NewFileareaEvent;
+import jnode.event.Notifier;
+import jnode.ftn.FtnTools;
+import jnode.main.Main;
 import jnode.orm.ORMManager;
 
-public class FileareaStat implements IStatPoster {
+public class FileareaStat implements IStatPoster, IEventHandler {
+	public FileareaStat() {
+		Notifier.INSTANSE.register(NewFileareaEvent.class, this);
+	}
 
 	@Override
 	public String getSubject() {
@@ -27,6 +37,19 @@ public class FileareaStat implements IStatPoster {
 			b.append("  " + m.getFilename() + " - " + m.getFiledesc() + "\n");
 		}
 		return b.toString();
+	}
+
+	@Override
+	public void handle(IEvent event) {
+		if (event instanceof NewFileareaEvent) {
+			if (Main.isStatisticEnable()) {
+				Echoarea area = FtnTools
+						.getAreaByName(Main.getTechArea(), null);
+				FtnTools.writeEchomail(area, "New filearea created",
+						event.getEvent());
+			}
+		}
+
 	}
 
 }
