@@ -39,6 +39,15 @@ public final class Logger {
 		}
 	}
 
+	private String th2s(Throwable e) {
+		StringBuilder th = new StringBuilder();
+		for (StackTraceElement el : e.getStackTrace()) {
+			th.append(el.toString());
+			th.append('\n');
+		}
+		return th.toString();
+	}
+
 	public void l5(String log) {
 		log(LOG_L5, log);
 	}
@@ -61,27 +70,27 @@ public final class Logger {
 
 	public void l5(String log, Throwable e) {
 		log(LOG_L5, log);
-		log(LOG_L2, e.toString());
+		log(LOG_L2, th2s(e));
 	}
 
 	public void l4(String log, Throwable e) {
 		log(LOG_L4, log);
-		log(LOG_L2, e.toString());
+		log(LOG_L2, th2s(e));
 	}
 
 	public void l3(String log, Throwable e) {
 		log(LOG_L3, log);
-		log(LOG_L2, e.toString());
+		log(LOG_L2, th2s(e));
 	}
 
 	public void l2(String log, Throwable e) {
 		log(LOG_L2, log);
-		log(LOG_L2, e.toString());
+		log(LOG_L2, th2s(e));
 	}
 
 	public void l1(String log, Throwable e) {
 		log(LOG_L1, log);
-		log(LOG_L2, e.toString());
+		log(LOG_L2, th2s(e));
 	}
 
 }

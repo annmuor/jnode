@@ -60,60 +60,68 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 	}
 
 	public void handle(IEvent event) {
-		if (event instanceof ConnectionEndEvent) {
-			ConnectionEndEvent evt = (ConnectionEndEvent) event;
-			ConnectionStatDataElement current = null;
-			for (ConnectionStatDataElement element : elements) {
-				if (evt.getAddress() == null) {
-					if (element.link == null) {
-						current = element;
-					}
-				} else if (element.link != null) {
-					if (element.link.equals(evt.getAddress())) {
-						current = element;
-					}
-				}
-			}
-			if (current == null) {
-				current = new ConnectionStatDataElement();
-				current.link = evt.getAddress();
-				elements.add(current);
-			}
-			if (evt.isIncoming()) {
-				if (evt.isSuccess()) {
-					current.incomingOk++;
-				} else {
-					current.incomingFailed++;
-				}
-			} else {
-				if (evt.isSuccess()) {
-					current.outgoingOk++;
-				} else {
-					current.outgoingFailed++;
-				}
-			}
-			current.bytesReceived += evt.getBytesReceived();
-			current.bytesSended += evt.getBytesSended();
-			try {
-				ObjectOutputStream oos = new ObjectOutputStream(
-						new FileOutputStream(statPath));
-				for (ConnectionStatDataElement element : elements) {
-					oos.writeObject(element);
-				}
-				oos.close();
-			} catch (IOException e) {
+		synchronized (ConnectionStat.class) {
 
+			if (event instanceof ConnectionEndEvent) {
+				ConnectionEndEvent evt = (ConnectionEndEvent) event;
+				ConnectionStatDataElement current = null;
+				for (ConnectionStatDataElement element : elements) {
+					if (evt.getAddress() == null) {
+						if (element.link == null) {
+							current = element;
+						}
+					} else if (element.link != null) {
+						if (element.link.equals(evt.getAddress())) {
+							current = element;
+						}
+					}
+				}
+				if (current == null) {
+					current = new ConnectionStatDataElement();
+					current.link = evt.getAddress();
+					elements.add(current);
+				}
+				if (evt.isIncoming()) {
+					if (evt.isSuccess()) {
+						current.incomingOk++;
+					} else {
+						current.incomingFailed++;
+					}
+				} else {
+					if (evt.isSuccess()) {
+						current.outgoingOk++;
+					} else {
+						current.outgoingFailed++;
+					}
+				}
+				current.bytesReceived += evt.getBytesReceived();
+				current.bytesSended += evt.getBytesSended();
+				try {
+					ObjectOutputStream oos = new ObjectOutputStream(
+							new FileOutputStream(statPath));
+					for (ConnectionStatDataElement element : elements) {
+						oos.writeObject(element);
+					}
+					oos.close();
+				} catch (IOException e) {
+
+				}
 			}
 		}
 	}
 
 	@Override
 	public String getSubject() {
-		return "Dayly connection stat";
+		return "Daily connection stat";
 	}
 
 	@Override
 	public String getText() {
+		List<ConnectionStatDataElement> elements;
+		synchronized (ConnectionStat.class) {
+			elements = this.elements;
+			this.elements = new ArrayList<ConnectionStatDataElement>();
+		}
 		StringBuilder sb = new StringBuilder();
 		Collections.sort(elements, new Comparator<ConnectionStatDataElement>() {
 
@@ -225,7 +233,6 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 			sb.append('-');
 		}
 		sb.append('\n');
-		new File(statPath).delete();
 		return sb.toString();
 	}
 
@@ -240,6 +247,6 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 						: 1048576.0f
 						: 1024.0f
 						: 1.0f);
-		return String.format(format, byts, type);
+		return String.format(format, byts, type).replace(',', '.');
 	}
 }

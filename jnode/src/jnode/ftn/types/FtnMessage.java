@@ -251,6 +251,7 @@ public class FtnMessage {
 						.compile("^\001(INTL|FMPT|TOPT) (.*)$");
 				Pattern origin = Pattern.compile("^ \\* Origin: ([\\S\\t ]*)$");
 				Pattern msgid = Pattern.compile("^\001MSGID: (.*)$");
+				Pattern tzutc = Pattern.compile("^\001TZUTC: (\\d+)$");
 				StringBuilder seenby = new StringBuilder();
 				StringBuilder path = new StringBuilder();
 				for (String line : lines) {
@@ -274,6 +275,12 @@ public class FtnMessage {
 						if (m.matches()) {
 							this.msgid = m.group(1).toUpperCase();
 						}
+						m = tzutc.matcher(line);
+						// TODO
+						// if(m.matches()) {
+						// Calendar.getInstance(new TimeZ)
+						// }
+
 						if (isNetmail) {
 							m = netmail.matcher(line);
 							if (m.matches()) {

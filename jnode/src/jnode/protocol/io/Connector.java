@@ -63,6 +63,7 @@ public class Connector {
 	private void doSocket(Socket clientSocket) {
 		InputStream is = null;
 		OutputStream os = null;
+		boolean success = true;
 		long lastactive = System.currentTimeMillis();
 		try {
 			is = clientSocket.getInputStream();
@@ -123,7 +124,8 @@ public class Connector {
 				break;
 			}
 			if (System.currentTimeMillis() - lastactive > 60000) {
-				logger.l3("Connection timed out");
+				logger.l3("Connection(1) timed out");
+				success = false;
 				try {
 					if (clientSocket != null) {
 						clientSocket.close();
@@ -135,12 +137,12 @@ public class Connector {
 		}
 		ConnectionEndEvent event;
 		if (link == null) {
-			event = new ConnectionEndEvent(connector.getIncoming(),
-					connector.getSuccess());
+			event = new ConnectionEndEvent(connector.getIncoming(), success
+					&& connector.getSuccess());
 		} else {
 			event = new ConnectionEndEvent(
 					new FtnAddress(link.getLinkAddress()),
-					connector.getIncoming(), connector.getSuccess(),
+					connector.getIncoming(), success && connector.getSuccess(),
 					connector.getBytesReceived(), connector.getBytesSent());
 		}
 		Notifier.INSTANSE.notify(event);
@@ -163,11 +165,18 @@ public class Connector {
 			doSocket(clientSocket);
 			tosser.end();
 		} catch (UnknownHostException e) {
+			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
+					.getLinkAddress()), false, false, 0, 0));
 			throw new ProtocolException("Unknown host: "
 					+ link.getProtocolHost());
 		} catch (SocketTimeoutException e) {
+			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
+					.getLinkAddress()), false, false, 0, 0));
 			throw new ProtocolException("Connection timeout");
+
 		} catch (IOException e) {
+			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
+					.getLinkAddress()), false, false, 0, 0));
 			throw new ProtocolException(e.getLocalizedMessage());
 		} finally {
 			try {
