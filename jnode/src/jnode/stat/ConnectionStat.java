@@ -122,6 +122,12 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 			elements = this.elements;
 			this.elements = new ArrayList<ConnectionStatDataElement>();
 		}
+		int iOkT = 0;
+		int iFaT = 0;
+		int oOkT = 0;
+		int oFaT = 0;
+		int bsT = 0;
+		int brT = 0;
 		StringBuilder sb = new StringBuilder();
 		Collections.sort(elements, new Comparator<ConnectionStatDataElement>() {
 
@@ -186,12 +192,68 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 		for (ConnectionStatDataElement element : elements) {
 			String linkName = (element.link != null) ? element.link.toString()
 					: "Unknown";
+			iOkT += element.incomingOk;
+			iFaT += element.incomingFailed;
+			oOkT += element.outgoingOk;
+			oFaT += element.outgoingFailed;
+			bsT += element.bytesSended;
+			brT += element.bytesReceived;
+
 			String iOk = String.valueOf(element.incomingOk);
 			String iFa = String.valueOf(element.incomingFailed);
 			String oOk = String.valueOf(element.outgoingOk);
 			String oFa = String.valueOf(element.outgoingFailed);
 			String recv = b2s(element.bytesReceived);
 			String sent = b2s(element.bytesSended);
+			sb.append("|");
+			sb.append(linkName);
+			for (int i = linkName.length(); i < 19; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(iOk);
+			for (int i = iOk.length(); i < 5; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(iFa);
+			for (int i = iFa.length(); i < 5; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(oOk);
+			for (int i = oOk.length(); i < 5; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(oFa);
+			for (int i = oFa.length(); i < 5; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(recv);
+			for (int i = recv.length(); i < 9; i++) {
+				sb.append(' ');
+			}
+			sb.append("|");
+			sb.append(sent);
+			for (int i = sent.length(); i < 9; i++) {
+				sb.append(' ');
+			}
+			sb.append("|\n");
+		}
+		for (int i = 0; i < 65; i++) {
+			sb.append('-');
+		}
+		sb.append('\n');
+		{
+			String linkName = "Summary";
+			String iOk = String.valueOf(iOkT);
+			String iFa = String.valueOf(iFaT);
+			String oOk = String.valueOf(oOkT);
+			String oFa = String.valueOf(oFaT);
+			String recv = b2s(brT);
+			String sent = b2s(bsT);
 			sb.append("|");
 			sb.append(linkName);
 			for (int i = linkName.length(); i < 19; i++) {

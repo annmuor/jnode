@@ -59,7 +59,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.4";
+		private final String version = "jNode/0.5.4a";
 
 		public String getSysop() {
 			return sysop;
@@ -244,7 +244,11 @@ public class Main {
 
 		@Override
 		public void run() {
-			TosserQueue.INSTANSE.toss();
+			try {
+				TosserQueue.INSTANSE.toss();
+			} catch (RuntimeException e) {
+				logger.l1("Error while tossing", e);
+			}
 		}
 
 	}

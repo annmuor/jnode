@@ -35,36 +35,36 @@ public class FtnTIC {
 		areaDesc = "-- Description Missing --";
 		size = 0L;
 		while ((line = reader.readLine()) != null) {
-			if (line.toLowerCase().startsWith("file")) {
+			if (line.matches("^[Ff][Ii][Ll][Ee]:? .*$")) {
 				file = line.replaceFirst("[Ff][Ii][Ll][Ee]:? ", "");
-			} else if (line.toLowerCase().startsWith("area")) {
+			} else if (line.matches("^[Aa][Rr][Ee][Aa]:? .*$")) {
 				area = line.replaceFirst("[Aa][Rr][Ee][Aa]:? ", "");
-			} else if (line.toLowerCase().startsWith("desc")) {
+			} else if (line.matches("^[Dd][Ee][Ss][Cc]:? .*$")) {
 				desc = line.replaceFirst("[Dd][Ee][Ss][Cc]:? ", "");
-			} else if (line.toLowerCase().startsWith("areadesc")) {
+			} else if (line.matches("^[Aa][Rr][Ee][Aa][Dd][Ee][Ss][Cc]:? .*$")) {
 				areaDesc = line.replaceFirst(
 						"[Aa][Rr][Ee][Aa][Dd][Ee][Ss][Cc]:? ", "");
-			} else if (line.toLowerCase().startsWith("pw")) {
+			} else if (line.matches("^[Pp][Ww]:? .*$")) {
 				password = line.replaceFirst("[Pp][Ww]:? ", "");
-			} else if (line.toLowerCase().startsWith("from")) {
+			} else if (line.matches("^[Ff][Rr][Oo][Mm]:? .*$")) {
 				from = new FtnAddress(line.replaceFirst("[Ff][Rr][Oo][Mm]:? ",
 						""));
-			} else if (line.toLowerCase().startsWith("to")) {
+			} else if (line.matches("^[Tt][Oo]:? .*$")) {
 				to = new FtnAddress(line.replaceFirst("[Tt][Oo]:? ", ""));
-			} else if (line.toLowerCase().startsWith("origin")) {
+			} else if (line.matches("^[Oo][Rr][Ii][Gg][Ii][Nn]:? .*$")) {
 				origin = new FtnAddress(line.replaceFirst(
 						"[Oo][Rr][Ii][Gg][Ii][Nn]:? ", ""));
-			} else if (line.toLowerCase().startsWith("size")) {
+			} else if (line.matches("^[Ss][Ii][Zz][Ee]:? .*$")) {
 				try {
 					size = Long.valueOf(line.replaceFirst(
 							"[Ss][Ii][Zz][Ee]:? ", ""));
 				} catch (NumberFormatException e) {
 					size = 0L;
 				}
-			} else if (line.toLowerCase().startsWith("path")) {
+			} else if (line.matches("^[Pp][Aa][Tt][Hh]:? .*$")) {
 				_path.append(line);
 				_path.append("\r\n");
-			} else if (line.toLowerCase().startsWith("seenby")) {
+			} else if (line.matches("^[Ss][Ee][Ee][Nn][Bb][Yy]:? .*$")) {
 				seenby.add(new FtnAddress(line.replaceFirst(
 						"[Ss][Ee][Ee][Nn][Bb][Yy]:? ", "")));
 			}

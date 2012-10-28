@@ -240,8 +240,8 @@ public class FtnTosser {
 				if (!Main.isFileechoEnable()) {
 					continue;
 				}
+				logger.l3("Proccessing " + file.getName());
 				try {
-					logger.l3("Proccessing " + file.getName());
 					FileInputStream fis = new FileInputStream(file);
 					FtnTIC tic = new FtnTIC();
 					tic.unpack(fis);
@@ -255,11 +255,12 @@ public class FtnTosser {
 
 					while (!attach.exists()) {
 						if ((ninetoa && ztonull) || underll) {
-							logger.l2("All possible files exists. Please delete something before continue");
+							break;
 						} else {
 							char[] array = filename.toCharArray();
 							char c = array[array.length - 1];
-							if (c >= '0' || c <= '8' || c >= 'a' || c <= 'y') {
+							if ((c >= '0' && c <= '8')
+									|| (c >= 'a' && c <= 'y')) {
 								c++;
 							} else if (c == '9') {
 								c = 'a';

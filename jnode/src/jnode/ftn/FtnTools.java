@@ -520,10 +520,11 @@ public final class FtnTools {
 			while (f.exists()) {
 				if ((ninetoa && ztonull) || underll) {
 					logger.l2("All possible files exists. Please delete something before continue");
+					break;
 				} else {
 					char[] array = filename.toCharArray();
 					char c = array[array.length - 1];
-					if (c >= '0' || c <= '8' || c >= 'a' || c <= 'y') {
+					if (( c >= '0' && c <= '8') || ( c >= 'a' && c <= 'y')) {
 						c++;
 					} else if (c == '9') {
 						c = 'a';
@@ -537,7 +538,7 @@ public final class FtnTools {
 					}
 					array[array.length - 1] = c;
 					filename = new String(array);
-					f = new File(filename);
+					f = new File(Main.getInbound() + File.separator + filename);
 				}
 			}
 			FileOutputStream fos = new FileOutputStream(f);
