@@ -504,7 +504,7 @@ public final class FtnTools {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
 			FtnPkt pkt = new FtnPkt();
-			pkt.unpack(message.getInputStream());
+			pkt.unpack(message.getInputStream(), false);
 			fos.write(pkt.pack());
 			FtnMessage m;
 			while ((m = pkt.getNextMessage()) != null) {
@@ -512,8 +512,8 @@ public final class FtnTools {
 			}
 			fos.write(pkt.finalz());
 			fos.close();
-		}
-		if (filename.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
+		} else if (filename
+				.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
 			ZipInputStream zis = new ZipInputStream(message.getInputStream());
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null) {
