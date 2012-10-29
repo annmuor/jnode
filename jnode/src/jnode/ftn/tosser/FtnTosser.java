@@ -144,7 +144,7 @@ public class FtnTosser {
 
 		for (Subscription sub : ORMManager.INSTANSE.getSubscriptionDAO()
 				.getAnd("echoarea_id", "=", area)) {
-			if (!sub.getLink().getId().equals(link.getId())) {
+			if (link == null || !sub.getLink().getId().equals(link.getId())) {
 				ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
 						new EchomailAwaiting(sub.getLink(), mail));
 				pollLinks.add(sub.getLink());
@@ -175,36 +175,12 @@ public class FtnTosser {
 		}
 
 		try {
-			FtnPkt[] pkts = FtnTools.unpack(message);
-			for (FtnPkt pkt : pkts) {
-				if (message.isSecure()) {
-					if (!FtnTools.getOptionBooleanDefFalse(link,
-							LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
-						if (!link.getPaketPassword().equalsIgnoreCase(
-								pkt.getPassword())) {
-							logger.l2("Pkt password mismatch - package moved to inbound");
-							FtnTools.moveToBad(pkt);
-							continue;
-						}
-					}
-				}
-				for (FtnMessage ftnm : pkt.getMessages()) {
-					if (message.isSecure()) {
-						if (FtnTools.checkRobot(ftnm)) {
-							continue;
-						}
-					}
-					if (ftnm.isNetmail()) {
-						tossNetmail(ftnm, message.isSecure());
-					} else {
-						tossEchomail(ftnm, link, message.isSecure());
-					}
-				}
-
-			}
-		} catch (Exception e) {
-			logger.l2("Unpack error " + message.getMessageName(), e);
-			e.printStackTrace();
+			FtnTools.unpack(message);
+			tossInbound();
+		} catch (IOException e) {
+			logger.l1(
+					"Exception file tossing message "
+							+ message.getMessageName(), e);
 			return 1;
 		}
 		return 0;
@@ -221,19 +197,51 @@ public class FtnTosser {
 				try {
 					Message m = new Message(file);
 					logger.l4("Tossing file " + file.getAbsolutePath());
-					FtnPkt[] pkts = FtnTools.unpack(m);
-					for (FtnPkt pkt : pkts) {
-						for (FtnMessage ftnm : pkt.getMessages()) {
-							if (ftnm.isNetmail()) {
-								tossNetmail(ftnm, true);
-							} else {
-								tossEchomail(ftnm, null, true);
-							}
+					FtnMessage ftnm;
+					FtnPkt pkt = new FtnPkt();
+					pkt.unpack(m.getInputStream());
+					while ((ftnm = pkt.getNextMessage()) != null) {
+						if (ftnm.isNetmail()) {
+							tossNetmail(ftnm, true);
+						} else {
+							tossEchomail(ftnm, null, true);
 						}
 					}
 					file.delete();
 				} catch (Exception e) {
-					logger.l3("Tossing failed " + file.getAbsolutePath());
+					logger.l3("Tossing failed " + file.getAbsolutePath(), e);
+				}
+			} else if (file.getName().matches("(s|u)inb\\d*.pkt")) {
+				try {
+					Message m = new Message(file);
+					logger.l4("Tossing file " + file.getAbsolutePath());
+					FtnPkt pkt = new FtnPkt();
+					pkt.unpack(m.getInputStream());
+					Link link = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
+							"ftn_address", "=", pkt.getFromAddr().toString());
+					boolean secure = file.getName().charAt(0) == 's';
+					if (secure) {
+						if (!FtnTools.getOptionBooleanDefFalse(link,
+								LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
+							if (!link.getPaketPassword().equalsIgnoreCase(
+									pkt.getPassword())) {
+								logger.l2("Pkt password mismatch - package moved to inbound");
+								FtnTools.moveToBad(pkt);
+								continue;
+							}
+						}
+					}
+					FtnMessage ftnm;
+					while ((ftnm = pkt.getNextMessage()) != null) {
+						if (ftnm.isNetmail()) {
+							tossNetmail(ftnm, secure);
+						} else {
+							tossEchomail(ftnm, link, secure);
+						}
+					}
+					file.delete();
+				} catch (Exception e) {
+					logger.l3("Tossing failed " + file.getAbsolutePath(), e);
 				}
 			} else if (file.getName().toLowerCase()
 					.matches("^[a-z0-9]{8}\\.tic$")) {

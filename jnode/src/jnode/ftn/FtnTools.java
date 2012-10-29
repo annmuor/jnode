@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -497,20 +498,40 @@ public final class FtnTools {
 	 * @param message
 	 * @return
 	 */
-	public static FtnPkt[] unpack(Message message) throws IOException {
-		ArrayList<FtnPkt> unzipped = new ArrayList<FtnPkt>();
+	public static void unpack(Message message) throws IOException {
 		String filename = message.getMessageName().toLowerCase();
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
+			File out = createInboundFile(message.isSecure());
+			FileOutputStream fos = new FileOutputStream(out);
 			FtnPkt pkt = new FtnPkt();
 			pkt.unpack(message.getInputStream());
-			unzipped.add(pkt);
-		} else if (filename.matches("^[a-f0-9]{8}\\.[a-z0-9]{3}$")) {
-			ZipInputStream zis = new ZipInputStream(message.getInputStream());
-			while (zis.getNextEntry() != null) {
-				FtnPkt pkt = new FtnPkt();
-				pkt.unpack(zis, false);
-				unzipped.add(pkt);
+			fos.write(pkt.pack());
+			FtnMessage m;
+			while ((m = pkt.getNextMessage()) != null) {
+				fos.write(m.pack());
 			}
+			fos.write(pkt.finalz());
+			fos.close();
+		}
+		if (filename.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
+			ZipInputStream zis = new ZipInputStream(message.getInputStream());
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null) {
+				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
+					File out = createInboundFile(message.isSecure());
+					FileOutputStream fos = new FileOutputStream(out);
+					FtnPkt pkt = new FtnPkt();
+					pkt.unpack(zis, false);
+					fos.write(pkt.pack());
+					FtnMessage m;
+					while ((m = pkt.getNextMessage()) != null) {
+						fos.write(m.pack());
+					}
+					fos.write(pkt.finalz());
+					fos.close();
+				}
+			}
+			zis.close();
 		} else if (message.isSecure()) {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
 			File f = new File(Main.getInbound() + File.separator + filename);
@@ -524,7 +545,7 @@ public final class FtnTools {
 				} else {
 					char[] array = filename.toCharArray();
 					char c = array[array.length - 1];
-					if (( c >= '0' && c <= '8') || ( c >= 'a' && c <= 'y')) {
+					if ((c >= '0' && c <= '8') || (c >= 'a' && c <= 'y')) {
 						c++;
 					} else if (c == '9') {
 						c = 'a';
@@ -553,7 +574,6 @@ public final class FtnTools {
 		} else {
 			logger.l2("File rejected via unsecure " + filename);
 		}
-		return unzipped.toArray(new FtnPkt[0]);
 	}
 
 	/**
@@ -788,6 +808,98 @@ public final class FtnTools {
 
 	}
 
+	private static File createOutboundFile(Link link) {
+		String template = "out_" + link.getId() + ".%d";
+		int i = 0;
+		File f = new File(Main.getInbound() + File.separator
+				+ String.format(template, i));
+		while (f.exists()) {
+			i++;
+			f = new File(Main.getInbound() + File.separator
+					+ String.format(template, i));
+		}
+		return f;
+	}
+
+	private static File createInboundFile(boolean secure) {
+		String template = ((secure) ? "s" : "u") + "inb%d.pkt";
+		int i = 0;
+		File f = new File(Main.getInbound() + File.separator
+				+ String.format(template, i));
+		while (f.exists()) {
+			i++;
+			f = new File(Main.getInbound() + File.separator
+					+ String.format(template, i));
+		}
+		return f;
+	}
+
+	private static File createZipFile(FtnPkt header, Link link,
+			List<FtnMessage> messages) throws IOException {
+		File np = createOutboundFile(link);
+		FileOutputStream out = new FileOutputStream(np);
+		ZipOutputStream zos = new ZipOutputStream(out);
+		zos.setMethod(ZipOutputStream.DEFLATED);
+		ZipEntry ze = new ZipEntry(String.format("%s.pkt", generate8d()));
+		ze.setMethod(ZipEntry.DEFLATED);
+		CRC32 crc32 = new CRC32();
+		zos.putNextEntry(ze);
+		int len = 0;
+		byte[] data = header.pack();
+		len += data.length;
+		crc32.update(data);
+		zos.write(data);
+		for (FtnMessage m : messages) {
+			data = m.pack();
+			len += data.length;
+			crc32.update(data);
+			zos.write(data);
+		}
+		data = header.finalz();
+		len += data.length;
+		crc32.update(data);
+		zos.write(data);
+		ze.setSize(len);
+		ze.setCrc(crc32.getValue());
+		zos.close();
+		out.close();
+		return np;
+	}
+
+	/**
+	 * Эхобандл
+	 * 
+	 * @return
+	 */
+	private static String generateEchoBundle() {
+		String suffix = "";
+		switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+		case Calendar.MONDAY:
+			suffix = "mo";
+			break;
+		case Calendar.TUESDAY:
+			suffix = "tu";
+			break;
+		case Calendar.WEDNESDAY:
+			suffix = "we";
+			break;
+		case Calendar.THURSDAY:
+			suffix = "th";
+			break;
+		case Calendar.FRIDAY:
+			suffix = "fr";
+			break;
+		case Calendar.SATURDAY:
+			suffix = "sa";
+			break;
+		case Calendar.SUNDAY:
+			suffix = "su";
+			break;
+		}
+		int d = (int) (Math.random() * 9);
+		return generate8d() + "." + suffix + d;
+	}
+
 	/**
 	 * Паковка сообщений
 	 * 
@@ -797,65 +909,103 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static List<Message> pack(List<FtnMessage> messages, Link link) {
-		byte[] data;
-		List<Message> packed = new ArrayList<Message>();
-		FtnAddress to = new FtnAddress(link.getLinkAddress());
-		String password = link.getPaketPassword();
-		FtnPkt nopack = new FtnPkt(Main.info.getAddress(), to, password,
-				new Date());
-		FtnPkt pack = new FtnPkt(Main.info.getAddress(), to, password,
-				new Date());
 		boolean packNetmail = getOptionBooleanDefFalse(link,
 				LinkOption.BOOLEAN_PACK_NETMAIL);
 		boolean packEchomail = getOptionBooleanDefTrue(link,
 				LinkOption.BOOLEAN_PACK_ECHOMAIL);
+
+		List<Message> ret = new ArrayList<Message>();
+		List<FtnMessage> packedEchomail = new ArrayList<FtnMessage>();
+		List<FtnMessage> unpackedEchomail = new ArrayList<FtnMessage>();
+		List<FtnMessage> packedNetmail = new ArrayList<FtnMessage>();
+		List<FtnMessage> unpackedNetmail = new ArrayList<FtnMessage>();
+		FtnAddress to = new FtnAddress(link.getLinkAddress());
+		String password = link.getPaketPassword();
+		FtnPkt header = new FtnPkt(Main.info.getAddress(), to, password,
+				new Date());
+
 		for (FtnMessage message : messages) {
 			if (message.isNetmail()) {
 				if (packNetmail) {
-					pack.getMessages().add(message);
+					packedNetmail.add(message);
 				} else {
-					nopack.getMessages().add(message);
+					unpackedNetmail.add(message);
 				}
 			} else {
 				if (packEchomail) {
-					pack.getMessages().add(message);
+					packedEchomail.add(message);
 				} else {
-					nopack.getMessages().add(message);
+					unpackedEchomail.add(message);
 				}
 			}
 		}
-		if (nopack.getMessages().size() > 0) {
-			data = nopack.pack();
-			Message net = new Message(String.format("%s.pkt", generate8d()),
-					data.length);
-			net.setInputStream(new ByteArrayInputStream(data));
-			packed.add(net);
-		}
-		if (pack.getMessages().size() > 0) {
-			data = pack.pack();
 
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ZipOutputStream zos = new ZipOutputStream(out);
-			zos.setMethod(ZipOutputStream.DEFLATED);
-			ZipEntry ze = new ZipEntry(String.format("%s.pkt", generate8d()));
-			ze.setMethod(ZipEntry.DEFLATED);
-			ze.setSize(data.length);
-			CRC32 crc32 = new CRC32();
-			crc32.update(data);
-			ze.setCrc(crc32.getValue());
+		if (!packedNetmail.isEmpty()) {
+
 			try {
-				zos.putNextEntry(ze);
-				zos.write(data);
-				zos.close();
-			} catch (IOException e) {
+				Message m = new Message(createZipFile(header, link,
+						packedNetmail));
+				m.setMessageName(generateEchoBundle());
+				ret.add(m);
+			} catch (Exception e) {
+				logger.l1(
+						"Error while writing netmail to link #" + link.getId(),
+						e);
 			}
-			byte[] zip = out.toByteArray();
-			Message message = new Message(
-					String.format("%s.fr0", generate8d()), zip.length);
-			message.setInputStream(new ByteArrayInputStream(zip));
-			packed.add(message);
+
 		}
-		return packed;
+		if (!packedEchomail.isEmpty()) {
+			try {
+				Message m = new Message(createZipFile(header, link,
+						packedEchomail));
+				m.setMessageName(generateEchoBundle());
+				ret.add(m);
+			} catch (Exception e) {
+				logger.l1(
+						"Error while writing echomail to link #" + link.getId(),
+						e);
+			}
+		}
+		if (!unpackedNetmail.isEmpty()) {
+			try {
+				File out = createOutboundFile(link);
+				FileOutputStream fos = new FileOutputStream(out);
+				fos.write(header.pack());
+				for (FtnMessage m : unpackedNetmail) {
+					fos.write(m.pack());
+				}
+				fos.write(header.finalz());
+				fos.close();
+				Message m = new Message(out);
+				m.setMessageName(generate8d() + ".pkt");
+				ret.add(m);
+			} catch (Exception e) {
+				logger.l1(
+						"Error while writing netmail to link #" + link.getId(),
+						e);
+			}
+		}
+		if (!unpackedEchomail.isEmpty()) {
+			try {
+				File out = createOutboundFile(link);
+				FileOutputStream fos = new FileOutputStream(out);
+				fos.write(header.pack());
+				for (FtnMessage m : unpackedEchomail) {
+					fos.write(m.pack());
+				}
+				fos.write(header.finalz());
+				fos.close();
+				Message m = new Message(out);
+				m.setMessageName(generate8d() + ".pkt");
+				ret.add(m);
+			} catch (Exception e) {
+				logger.l1(
+						"Error while writing netmail to link #" + link.getId(),
+						e);
+			}
+		}
+
+		return ret;
 	}
 
 	/**

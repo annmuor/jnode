@@ -1,6 +1,7 @@
 package jnode.main;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.Hashtable;
 import java.util.Timer;
@@ -59,7 +60,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.4a";
+		private final String version = "jNode/0.5.5beta6";
 
 		public String getSysop() {
 			return sysop;
@@ -101,8 +102,7 @@ public class Main {
 	 * @return
 	 */
 	public static String getInbound() {
-		return getProperty(Settings.BINKD_INBOUND.cfgline,
-				System.getProperty("java.io.tmpdir"));
+		return getProperty(Settings.BINKD_INBOUND.cfgline, null);
 	}
 
 	/**
@@ -217,7 +217,19 @@ public class Main {
 				logger.l3("Falling to default log.level: " + loglevel);
 			}
 			Logger.Loglevel = loglevel;
-
+			if (getInbound() == null) {
+				logger.l1("Inbound is not set - exiting");
+				System.exit(-1);
+			} else if ((!new File(getInbound()).exists())) {
+				logger.l1("Inbound not exists - exiting");
+				System.exit(-1);
+			} else if (!new File(getInbound()).isDirectory()) {
+				logger.l1("Inbound not a directory - exiting");
+				System.exit(-1);
+			} else if (!new File(getInbound()).canWrite()) {
+				logger.l1("Inbound not writeable - exiting");
+				System.exit(-1);
+			}
 			logger.l1(Main.info.version + " starting");
 			if (settings.get(Settings.BINKD_SERVER.cfgline) != null) {
 				Thread server = new Server(

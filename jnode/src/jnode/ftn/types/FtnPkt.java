@@ -5,12 +5,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import jnode.ftn.FtnTools;
@@ -25,8 +24,9 @@ public class FtnPkt {
 	private FtnAddress fromAddr;
 	private FtnAddress toAddr;
 	private String password;
-	private List<FtnMessage> messages;
 	private Date date;
+	private InputStream is;
+	private boolean close;
 	private static DateFormat format = new SimpleDateFormat(
 			"yyyy MM dd HH mm ss", Locale.US);
 
@@ -51,21 +51,15 @@ public class FtnPkt {
 	}
 
 	public FtnPkt() {
-		messages = new ArrayList<FtnMessage>();
 	}
 
 	public FtnPkt(FtnAddress fromAddr, FtnAddress toAddr, String password,
 			Date date) {
 		super();
-		messages = new ArrayList<FtnMessage>();
 		this.fromAddr = fromAddr;
 		this.toAddr = toAddr;
 		this.password = password;
 		this.date = date;
-	}
-
-	public List<FtnMessage> getMessages() {
-		return messages;
 	}
 
 	public byte[] pack() {
@@ -103,13 +97,6 @@ public class FtnPkt {
 			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));
 			os.writeShort(FtnTools.revShort(toAddr.getPoint()));
 			os.write(new byte[] { 0, 0, 0, 0 });
-			if (messages != null) {
-				for (FtnMessage message : messages) {
-					byte[] msg = message.pack();
-					os.write(msg);
-				}
-			}
-			os.write(new byte[] { 0, 0 });
 			os.close();
 		} catch (IOException e) {
 			//
@@ -117,11 +104,64 @@ public class FtnPkt {
 		return bos.toByteArray();
 	}
 
+	public void write(OutputStream fos) {
+		DataOutputStream os = new DataOutputStream(fos);
+		try {
+			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
+			os.writeShort(FtnTools.revShort(toAddr.getNode()));
+			String date = format.format(this.date); // here
+			{
+				int n = 0;
+				for (String d : date.split(" ")) {
+					short s = new Short(d);
+					if (n == 1) {
+						s--;
+					}
+					os.writeShort(FtnTools.revShort(s));
+					n++;
+				}
+			}
+			os.write(new byte[] { 0, 0, 2, 0 });
+			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
+			os.writeShort(FtnTools.revShort(toAddr.getNet()));
+			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.4
+			os.write(FtnTools.substr(password, 8));
+			for (int i = password.length(); i < 8; i++) {
+				os.write(0);
+			}
+			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
+			os.writeShort(FtnTools.revShort(toAddr.getZone()));
+			os.write(new byte[] { 0, 0, 0, 1, 19, 4, 1, 0 });// prodcode 19FF
+																// ver 0.4
+			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
+			os.writeShort(FtnTools.revShort(toAddr.getZone()));
+			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));
+			os.writeShort(FtnTools.revShort(toAddr.getPoint()));
+			os.write(new byte[] { 0, 0, 0, 0 });
+		} catch (IOException e) {
+			//
+		}
+	}
+
+	public void finalz(OutputStream fos) {
+		try {
+			fos.write(new byte[] { 0, 0 });
+			fos.close();
+		} catch (IOException e) {
+		}
+	}
+
+	public byte[] finalz() {
+		return new byte[] { 0, 0 };
+	}
+
 	public void unpack(InputStream iz) {
 		unpack(iz, true);
 	}
 
 	public void unpack(InputStream iz, boolean close) {
+		this.is = iz;
+		this.close = close;
 		DataInputStream is = new DataInputStream(iz);
 		fromAddr = new FtnAddress();
 		toAddr = new FtnAddress();
@@ -163,20 +203,24 @@ public class FtnPkt {
 			fromAddr.setPoint(FtnTools.revShort(is.readShort()));
 			toAddr.setPoint(FtnTools.revShort(is.readShort()));
 			is.skip(4);
-			try {
-				while (true) {
-					FtnMessage mess = new FtnMessage();
-					mess.unpack(iz);
-					messages.add(mess);
-				}
-
-			} catch (LastMessageException e) {
-				if (close) {
-					iz.close();
-				}
-			}
 		} catch (IOException e) {
 
+		}
+	}
+
+	public FtnMessage getNextMessage() {
+		try {
+			FtnMessage mess = new FtnMessage();
+			mess.unpack(is);
+			return mess;
+		} catch (LastMessageException e) {
+			if (close) {
+				try {
+					is.close();
+				} catch (IOException ignore) {
+				}
+			}
+			return null;
 		}
 	}
 

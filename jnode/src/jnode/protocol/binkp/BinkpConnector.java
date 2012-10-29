@@ -71,8 +71,10 @@ public class BinkpConnector implements ProtocolConnector {
 	private int totalin;
 	private int totalout;
 	private boolean secure;
+	private List<Message> sent;
 
 	public void reset() {
+		sent = new ArrayList<Message>();
 		frames = new ArrayList<Frame>();
 		useCram = false;
 		connector = null;
@@ -442,6 +444,13 @@ public class BinkpConnector implements ProtocolConnector {
 						totalout += len;
 						sendfile = false;
 						send = true;
+						// delete
+						for (Message mess : sent) {
+							if (mess.getMessageName().equals(messageName)) {
+								mess.delete();
+								break;
+							}
+						}
 					}
 				} else {
 					logger.l4("(TRANSFER) Unknown frame " + frame.toString());
@@ -560,6 +569,7 @@ public class BinkpConnector implements ProtocolConnector {
 
 	@Override
 	public void send(Message message) {
+		sent.add(message);
 		sendfile = true;
 		frames.add(new BinkpFrame(BinkpCommand.M_FILE, String.format(
 				"%s %d %d 0", message.getMessageName(),

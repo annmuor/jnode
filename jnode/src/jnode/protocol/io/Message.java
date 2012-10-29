@@ -14,8 +14,11 @@ public class Message {
 	private String messageName;
 	private InputStream inputStream;
 	private boolean secure = true;
+	private File file;
+
 	public Message(File file) throws Exception {
 		super();
+		this.file = file;
 		messageName = file.getName();
 		messageLength = file.length();
 		inputStream = new FileInputStream(file);
@@ -25,6 +28,12 @@ public class Message {
 		super();
 		this.messageName = name;
 		this.messageLength = len;
+	}
+
+	public void delete() {
+		if (file != null) {
+			file.delete();
+		}
 	}
 
 	public long getMessageLength() {
