@@ -231,7 +231,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static String writeSeenBy(List<Ftn2D> seenby) {
-		logger.l1("WriteSeenBy: " + seenby);
+		logger.l5("WriteSeenBy: " + seenby);
 		StringBuilder ret = new StringBuilder();
 		Collections.sort(seenby, new Ftn2DComparator());
 		int net = 0;
@@ -302,7 +302,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static String writePath(List<Ftn2D> path) {
-		logger.l1("WritePath: " + path);
+		logger.l5("WritePath: " + path);
 		StringBuilder ret = new StringBuilder();
 		int net = 0;
 		int linelen = 0;
