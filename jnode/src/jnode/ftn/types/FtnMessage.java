@@ -223,7 +223,7 @@ public class FtnMessage {
 		}
 
 	}
-
+	
 	public void unpack(InputStream iz) throws LastMessageException {
 		DataInputStream is = new DataInputStream(iz);
 		fromAddr = new FtnAddress();

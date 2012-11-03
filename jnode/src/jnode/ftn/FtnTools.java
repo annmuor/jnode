@@ -231,6 +231,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static String writeSeenBy(List<Ftn2D> seenby) {
+		logger.l1("WriteSeenBy: " + seenby);
 		StringBuilder ret = new StringBuilder();
 		Collections.sort(seenby, new Ftn2DComparator());
 		int net = 0;
@@ -256,6 +257,9 @@ public final class FtnTools {
 				ret.append(app);
 				linelen += app.length();
 			}
+		}
+		if (ret.length() == 0) {
+			return "";
 		}
 		if (ret.charAt(ret.length() - 1) != '\n') {
 			ret.append('\n');
@@ -298,6 +302,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static String writePath(List<Ftn2D> path) {
+		logger.l1("WritePath: " + path);
 		StringBuilder ret = new StringBuilder();
 		int net = 0;
 		int linelen = 0;
@@ -322,6 +327,9 @@ public final class FtnTools {
 				ret.append(app);
 				linelen += app.length();
 			}
+		}
+		if (ret.length() == 0) {
+			return "";
 		}
 		if (ret.charAt(ret.length() - 1) != '\n') {
 			ret.append('\n');
@@ -503,14 +511,19 @@ public final class FtnTools {
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
-			FtnPkt pkt = new FtnPkt();
-			pkt.unpack(message.getInputStream(), false);
-			fos.write(pkt.pack());
-			FtnMessage m;
-			while ((m = pkt.getNextMessage()) != null) {
-				fos.write(m.pack());
+			InputStream is = message.getInputStream();
+			int len = 0;
+			while ((len = is.available()) > 0) {
+				byte[] buf;
+				if (len > 1024) {
+					buf = new byte[1024];
+				} else {
+					buf = new byte[len];
+				}
+				is.read(buf);
+				fos.write(buf);
 			}
-			fos.write(pkt.finalz());
+			is.close();
 			fos.close();
 		} else if (filename
 				.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
@@ -520,14 +533,17 @@ public final class FtnTools {
 				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
 					File out = createInboundFile(message.isSecure());
 					FileOutputStream fos = new FileOutputStream(out);
-					FtnPkt pkt = new FtnPkt();
-					pkt.unpack(zis, false);
-					fos.write(pkt.pack());
-					FtnMessage m;
-					while ((m = pkt.getNextMessage()) != null) {
-						fos.write(m.pack());
+					int len = 0;
+					while ((len = zis.available()) > 0) {
+						byte[] buf;
+						if (len > 1024) {
+							buf = new byte[1024];
+						} else {
+							buf = new byte[len];
+						}
+						zis.read(buf);
+						fos.write(buf);
 					}
-					fos.write(pkt.finalz());
 					fos.close();
 				}
 			}
