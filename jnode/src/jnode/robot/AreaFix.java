@@ -106,13 +106,13 @@ public class AreaFix implements IRobot {
 	 * @return
 	 */
 	private String help() {
-		return "Avalible commands:\n" + "%HELP - this message\n"
-				+ "%LIST - list of avalible areas\n"
+		return "Available commands:\n" + "%HELP - this message\n"
+				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
 				+ "+echo.area - subscribe echo.area\n"
-				+ "-echo.area - unsibscribe echo.area"
+				+ "-echo.area - unsibscribe echo.area\n"
 				+ "+echo.area /r=N - subscribe and rescan N messages\n"
-				+ "%RESCAN echo.area - rescan N messages";
+				+ "%RESCAN echo.area N - rescan N messages";
 
 	}
 
