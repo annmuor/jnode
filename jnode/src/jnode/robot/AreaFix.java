@@ -179,8 +179,8 @@ public class AreaFix implements IRobot {
 		GenericRawResults<String[]> echoes = ORMManager.INSTANSE
 				.getEchoareaDAO()
 				.getRaw(String
-						.format("SELECT a.name,a.description FROM subscription s"
-								+ " RIGHT JOIN echoarea a on (a.id=s.echoarea_id)"
+						.format("SELECT a.name, a.description from echoarea a"
+								+ " LEFT JOIN subscription s on (a.id=s.echoarea_id)"
 								+ " WHERE s.link_id=%d ORDER BY a.name",
 								link.getId()));
 		for (String[] echo : echoes.getResults()) {
