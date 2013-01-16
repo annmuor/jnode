@@ -61,7 +61,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.5beta6";
+		private final String version = "jNode/0.5.5beta7";
 
 		public String getSysop() {
 			return sysop;
