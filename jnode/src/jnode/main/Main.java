@@ -61,7 +61,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.5beta7";
+		private final String version = "jNode/0.5.5beta8";
 
 		public String getSysop() {
 			return sysop;
@@ -100,7 +100,7 @@ public class Main {
 	/**
 	 * Папочка для складывания входящих файликов
 	 * 
-	 * @return
+	 * @return папочку для складывания входящих файлов
 	 */
 	public static String getInbound() {
 		return getProperty(Settings.BINKD_INBOUND.cfgline, null);
@@ -109,7 +109,7 @@ public class Main {
 	/**
 	 * Папочка для поиска нодлиста
 	 * 
-	 * @return
+	 * @return папочку для поиска нодлиста
 	 */
 	public static String getNodelistPath() {
 		return getProperty(Settings.NODELIST_PATH.cfgline, "NODELIST");
@@ -121,11 +121,8 @@ public class Main {
 
 	public static boolean isFileechoEnable() {
 		String idx = settings.get(Settings.FILEECHO_ENABLE.cfgline);
-		if (idx == null) {
-			return false;
-		}
-		return true;
-	}
+        return idx != null;
+    }
 
 	public static String getFileechoPath() {
 		return getProperty(Settings.FILEECHO_PATH.cfgline, getInbound());
@@ -138,11 +135,8 @@ public class Main {
 
 	public static boolean isStatisticEnable() {
 		String idx = settings.get(Settings.STAT_ENABLE.cfgline);
-		if (idx == null) {
-			return false;
-		}
-		return true;
-	}
+        return idx != null;
+    }
 
 	public static boolean isJscriptEnable() {
 		return settings.get(Settings.JSCRIPT_ENABLE.cfgline) != null;
@@ -240,7 +234,6 @@ public class Main {
 				Thread server = new Server(
 						settings.get(Settings.BINKD_BIND.cfgline), port);
 				server.start();
-				server = null;
 			}
 			if (settings.get(Settings.BINKD_CLIENT.cfgline) != null) {
 				logger.l4("Started client ( period " + period + " seconds )");
