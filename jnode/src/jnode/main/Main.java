@@ -141,44 +141,53 @@ public class Main {
 	public static boolean isJscriptEnable() {
 		return settings.get(Settings.JSCRIPT_ENABLE.cfgline) != null;
 	}
-	
-	public Main(String configFile) {
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(configFile));
-			String line;
-			Pattern config = Pattern
-					.compile("^(\\S+)\\s*=?\\s*([^\r\n]+)[\r\n]*$");
-			while ((line = br.readLine()) != null) {
-				if (!line.startsWith("#")) {
-					Matcher m = config.matcher(line);
-					if (m.matches()) {
-						settings.put(m.group(1), m.group(2));
-					}
-				}
-			}
-			br.close();
-			info.sysop = settings.get(Settings.INFO_SYSOP.cfgline);
-			info.location = settings.get(Settings.INFO_LOCATION.cfgline);
-			info.stationName = settings.get(Settings.INFO_STATIONNAME.cfgline);
-			info.NDL = settings.get(Settings.INFO_NDL.cfgline);
-			String addressline = settings.get(Settings.INFO_ADDRESS.cfgline);
-			if (info.sysop == null || info.location == null
-					|| info.stationName == null || info.NDL == null
-					|| addressline == null) {
-				throw new Exception("You MUST send info.* in config");
-			}
-			try {
-				info.address = new FtnAddress(addressline);
-			} catch (NumberFormatException e) {
-				throw new Exception(addressline + " is not valid FTN-address");
-			}
-		} catch (Exception e) {
-			logger.l1("Configuration check failed, exiting", e);
-			System.exit(-1);
-		}
-	}
 
-	public static void main(String[] args) {
+    Main() {
+
+    }
+
+    public Main(String configFile) {
+        this();
+        try {
+            readConfig(configFile);
+        } catch (Exception e) {
+            logger.l1("Configuration check failed, exiting", e);
+            System.exit(-1);
+        }
+    }
+
+    void readConfig(String configFile) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(configFile));
+        String line;
+        Pattern config = Pattern
+                .compile("^(\\S+)\\s*=?\\s*([^\r\n]+)[\r\n]*$");
+        while ((line = br.readLine()) != null) {
+            if (!line.startsWith("#")) {
+                Matcher m = config.matcher(line);
+                if (m.matches()) {
+                    settings.put(m.group(1), m.group(2));
+                }
+            }
+        }
+        br.close();
+        info.sysop = settings.get(Settings.INFO_SYSOP.cfgline);
+        info.location = settings.get(Settings.INFO_LOCATION.cfgline);
+        info.stationName = settings.get(Settings.INFO_STATIONNAME.cfgline);
+        info.NDL = settings.get(Settings.INFO_NDL.cfgline);
+        String addressline = settings.get(Settings.INFO_ADDRESS.cfgline);
+        if (info.sysop == null || info.location == null
+                || info.stationName == null || info.NDL == null
+                || addressline == null) {
+            throw new Exception("You MUST send info.* in config");
+        }
+        try {
+            info.address = new FtnAddress(addressline);
+        } catch (NumberFormatException e) {
+            throw new Exception(addressline + " is not valid FTN-address");
+        }
+    }
+
+    public static void main(String[] args) {
 		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
 		if (args.length == 0) {
 			System.out.println("Usage: $0 <config-file>");
