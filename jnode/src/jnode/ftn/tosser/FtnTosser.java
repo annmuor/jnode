@@ -372,15 +372,16 @@ public class FtnTosser {
 								16));
 						address.setNode(Integer.parseInt(
 								loname.substring(4, 8), 16));
+						Link l = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
+								"ftn_address", "=", address.toString());
+						if (l != null) {
+							poll.add(l);
+						}
 					} catch (NumberFormatException e) {
 						logger.l3("?LO file " + loname + " is invalid");
-						file.delete();
 					}
-					Link l = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
-							"ftn_address", "=", address.toString());
-					if (l != null) {
-						poll.add(l);
-					}
+					file.delete();
+
 				}
 			}
 			for (Link l : poll) {
