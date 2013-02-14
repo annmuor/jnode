@@ -16,7 +16,6 @@ import jnode.main.threads.PollQueue;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
 import jnode.main.threads.TosserQueue;
-//import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
 import jnode.stat.threads.StatPoster;
 
@@ -61,7 +60,7 @@ public class Main {
 		private String stationName;
 		private FtnAddress address;
 		private String NDL;
-		private final String version = "jNode/0.5.5beta8";
+		private final String version = "jNode/0.5.6beta1";
 
 		public String getSysop() {
 			return sysop;

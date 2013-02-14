@@ -51,9 +51,17 @@ public class FileFix implements IRobot {
 					"Sorry, AreaFix is off for you");
 			return;
 		}
-		if (!link.getPaketPassword().equals(fmsg.getSubject())) {
-			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
-			return;
+		{
+			String password = FtnTools.getOptionString(link,
+					LinkOption.STRING_FILEFIX_PWD);
+			if ("".equals(password)) {
+				password = link.getPaketPassword();
+
+			}
+			if (password.equals(fmsg.getSubject())) {
+				FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
+				return;
+			}
 		}
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
@@ -108,8 +116,8 @@ public class FileFix implements IRobot {
 	private String list(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Legend: * - subscribed\n\n========== List of fileareas ==========\n");
-		 String[] groups = FtnTools.getOptionStringArray(link,
-		 LinkOption.SARRAY_LINK_GROUPS);
+		String[] groups = FtnTools.getOptionStringArray(link,
+				LinkOption.SARRAY_LINK_GROUPS);
 		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO()
 				.getOrderAnd("name", true);
 		for (Filearea area : areas) {

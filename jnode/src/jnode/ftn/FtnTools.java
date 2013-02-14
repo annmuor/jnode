@@ -887,7 +887,7 @@ public final class FtnTools {
 	 * 
 	 * @return
 	 */
-	private static String generateEchoBundle() {
+	public static String generateEchoBundle() {
 		String suffix = "";
 		switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
 		case Calendar.MONDAY:

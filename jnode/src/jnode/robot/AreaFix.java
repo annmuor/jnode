@@ -51,9 +51,17 @@ public class AreaFix implements IRobot {
 					"Sorry, AreaFix is off for you");
 			return;
 		}
-		if (!link.getPaketPassword().equals(fmsg.getSubject())) {
-			FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
-			return;
+		{
+			String password = FtnTools.getOptionString(link,
+					LinkOption.STRING_AREAFIX_PWD);
+			if ("".equals(password)) {
+				password = link.getPaketPassword();
+
+			}
+			if (password.equals(fmsg.getSubject())) {
+				FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
+				return;
+			}
 		}
 
 		StringBuilder reply = new StringBuilder();

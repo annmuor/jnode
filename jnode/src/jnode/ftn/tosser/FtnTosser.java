@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
+import java.util.zip.ZipFile;
 
 import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
@@ -176,7 +177,7 @@ public class FtnTosser {
 
 		try {
 			FtnTools.unpack(message);
-			tossInbound();
+			tossInboundDirectory();
 		} catch (IOException e) {
 			logger.l1(
 					"Exception file tossing message "
@@ -187,14 +188,15 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Разбор входящих файлов
+	 * Разбор файлов в папке inbound
 	 */
-	public void tossInbound() {
+	public void tossInboundDirectory() {
 		synchronized (FtnTosser.class) {
 			Set<Link> poll = new HashSet<Link>();
 			File inbound = new File(Main.getInbound());
 			for (File file : inbound.listFiles()) {
-				if (file.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
+				String loname = file.getName().toLowerCase();
+				if (loname.matches("^[a-f0-9]{8}\\.pkt$")) {
 					try {
 						Message m = new Message(file);
 						logger.l4("Tossing file " + file.getAbsolutePath());
@@ -212,7 +214,7 @@ public class FtnTosser {
 					} catch (Exception e) {
 						logger.l3("Tossing failed " + file.getAbsolutePath(), e);
 					}
-				} else if (file.getName().matches("(s|u)inb\\d*.pkt")) {
+				} else if (loname.matches("(s|u)inb\\d*.pkt")) {
 					try {
 						Message m = new Message(file);
 						logger.l4("Tossing file " + file.getAbsolutePath());
@@ -221,7 +223,7 @@ public class FtnTosser {
 						Link link = ORMManager.INSTANSE.getLinkDAO()
 								.getFirstAnd("ftn_address", "=",
 										pkt.getFromAddr().toString());
-						boolean secure = file.getName().charAt(0) == 's';
+						boolean secure = loname.charAt(0) == 's';
 						if (secure) {
 							if (!FtnTools.getOptionBooleanDefFalse(link,
 									LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
@@ -245,8 +247,7 @@ public class FtnTosser {
 					} catch (Exception e) {
 						logger.l3("Tossing failed " + file.getAbsolutePath(), e);
 					}
-				} else if (file.getName().toLowerCase()
-						.matches("^[a-z0-9]{8}\\.tic$")) {
+				} else if (loname.matches("^[a-z0-9]{8}\\.tic$")) {
 					if (!Main.isFileechoEnable()) {
 						continue;
 					}
@@ -346,7 +347,11 @@ public class FtnTosser {
 								ORMManager.INSTANSE.getFilemailAwaitingDAO()
 										.save(new FilemailAwaiting(sub
 												.getLink(), mail));
-								poll.add(sub.getLink());
+								if (FtnTools.getOptionBooleanDefFalse(
+										sub.getLink(),
+										LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+									poll.add(sub.getLink());
+								}
 							}
 						} else {
 							logger.l3("File " + tic.getFile()
@@ -359,18 +364,28 @@ public class FtnTosser {
 								"Error while processing tic " + file.getName(),
 								e);
 					}
-				} else if (file.getName().toLowerCase()
-						.matches("^[0-9a-f]\\..?lo$")) {
-					// TODO: make poll
-
-				}
-				for (Link l : poll) {
-					if (FtnTools.getOptionBooleanDefFalse(l,
-							LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
-						PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
-								.getById(l.getId()));
+				} else if (loname.matches("^[0-9a-f]{8}\\..?lo$")) {
+					FtnAddress address = Main.info.getAddress();
+					address.setPoint(0);
+					try {
+						address.setNet(Integer.parseInt(loname.substring(0, 4),
+								16));
+						address.setNode(Integer.parseInt(
+								loname.substring(4, 8), 16));
+					} catch (NumberFormatException e) {
+						logger.l3("?LO file " + loname + " is invalid");
+						file.delete();
+					}
+					Link l = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
+							"ftn_address", "=", address.toString());
+					if (l != null) {
+						poll.add(l);
 					}
 				}
+			}
+			for (Link l : poll) {
+				PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
+						.getById(l.getId()));
 			}
 		}
 	}
@@ -578,7 +593,35 @@ public class FtnTosser {
 			}
 		}
 		if (!messages.isEmpty()) {
-			ret.addAll(FtnTools.pack(messages, link));
+			FtnTools.pack(messages, link);
+		}
+		// scan inbound
+		synchronized (FtnTosser.class) {
+			File inbound = new File(Main.getInbound());
+			for (File file : inbound.listFiles()) {
+				String loname = file.getName().toLowerCase();
+				if (loname.matches("^out_" + link.getId() + "\\..*$")) {
+					boolean packed = true;
+					try {
+						new ZipFile(file).close();
+					} catch (Exception e) {
+						packed = false;
+					}
+					try {
+						Message m = new Message(file);
+						if (packed) {
+							m.setMessageName(FtnTools.generateEchoBundle());
+						} else {
+							m.setMessageName(FtnTools.generate8d() + ".pkt");
+						}
+						ret.add(m);
+					} catch (Exception e) {
+						// ignore
+					}
+
+				}
+			}
+
 		}
 		for (FtnTIC tic : tics) {
 			try {

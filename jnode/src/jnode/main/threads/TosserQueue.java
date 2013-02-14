@@ -6,7 +6,7 @@ public enum TosserQueue {
 	INSTANSE;
 	public void toss() {
 		FtnTosser tosser = new FtnTosser();
-		tosser.tossInbound();
+		tosser.tossInboundDirectory();
 		tosser.end();
 	}
 }

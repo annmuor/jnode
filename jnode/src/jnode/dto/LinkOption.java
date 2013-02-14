@@ -25,6 +25,8 @@ public class LinkOption {
 	public static final String BOOLEAN_FILEFIX = "FileFix";
 	public static final String LONG_LINK_LEVEL = "Level";
 	public static final String SARRAY_LINK_GROUPS = "Groups";
+	public static final String STRING_AREAFIX_PWD = "AreaFixPwd";
+	public static final String STRING_FILEFIX_PWD = "FileFixPwd";
 
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
