@@ -365,7 +365,7 @@ public class FtnTosser {
 								e);
 					}
 				} else if (loname.matches("^[0-9a-f]{8}\\..?lo$")) {
-					FtnAddress address = Main.info.getAddress();
+					FtnAddress address = Main.info.getAddress().clone();
 					address.setPoint(0);
 					try {
 						address.setNet(Integer.parseInt(loname.substring(0, 4),
