@@ -58,7 +58,7 @@ public class AreaFix implements IRobot {
 				password = link.getPaketPassword();
 
 			}
-			if (password.equals(fmsg.getSubject())) {
+			if (!password.equals(fmsg.getSubject())) {
 				FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
 				return;
 			}
