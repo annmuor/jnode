@@ -1,13 +1,21 @@
 package jnode.jscript;
 
-public interface IJscriptHelper {
-	public interface Version {
-		int getMajor();
+public abstract class IJscriptHelper {
+	public abstract class Version {
+		public abstract int getMajor();
 
-		int getMinor();
+		public abstract int getMinor();
+
+		@Override
+		public String toString() {
+			return String.format("v.%d.%d", getMajor(), getMinor());
+		}
 	}
 
-	Version getVersion();
+	public abstract Version getVersion();
 
-	void writeFileToEchoarea(String echoArea, String subject, String filename);
+	public String toString() {
+		return String.format("%s %s", getClass().getSimpleName(), getVersion()
+				.toString());
+	}
 }

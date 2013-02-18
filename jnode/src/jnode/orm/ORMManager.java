@@ -29,6 +29,7 @@ public enum ORMManager {
 	private GenericDAO<Subscription> subscriptionDAO;
 	private GenericDAO<Jscript> jscriptDAO;
 	private GenericDAO<Schedule> scheduleDAO;
+	private GenericDAO<ScriptHelper> scriptHelperDAO;
 
 	public void start() throws Exception {
 		dupeDAO = new GenericDAO<Dupe>() {
@@ -150,6 +151,13 @@ public enum ORMManager {
 				return Schedule.class;
 			}
 		};
+		scriptHelperDAO = new GenericDAO<ScriptHelper>() {
+
+			@Override
+			protected Class<?> getType() {
+				return ScriptHelper.class;
+			}
+		};
 
 	}
 
@@ -219,6 +227,10 @@ public enum ORMManager {
 
 	public GenericDAO<Schedule> getScheduleDAO() {
 		return scheduleDAO;
+	}
+
+	public GenericDAO<ScriptHelper> getScriptHelperDAO() {
+		return scriptHelperDAO;
 	}
 
 }
