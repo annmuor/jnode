@@ -34,7 +34,8 @@ public class JscriptExecutor implements Runnable {
 
 	public JscriptExecutor() {
 		Calendar calendar = Calendar.getInstance(Locale.US);
-		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)+1);
+		calendar.set(Calendar.DAY_OF_YEAR,
+				calendar.get(Calendar.DAY_OF_YEAR) + 1);
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 1);
 		calendar.set(Calendar.SECOND, 0);
@@ -47,8 +48,8 @@ public class JscriptExecutor implements Runnable {
 
 		logger.l3("First jscriptExecutor will run at " + showDate
 				+ " and every 24h after");
-		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(this, 10000L,
-				MILLISEC_IN_DAY, TimeUnit.MILLISECONDS);
+		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(this,
+				initialDelay, MILLISEC_IN_DAY, TimeUnit.MILLISECONDS);
 	}
 
 	@SuppressWarnings("unchecked")
