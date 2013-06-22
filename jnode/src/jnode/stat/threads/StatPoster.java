@@ -25,25 +25,27 @@ public class StatPoster extends TimerTask {
 		calendar.set(Calendar.DAY_OF_YEAR,
 				calendar.get(Calendar.DAY_OF_YEAR) + 1);
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.MINUTE, 00);
 		calendar.set(Calendar.SECOND, 0);
 		Date date = calendar.getTime();
-		logger.l3("First stat will run at " + date + " and every 24h after");
-		new Timer().schedule(this, date, 24 * 3600 * 1000);
+		long delay = date.getTime() - new Date().getTime();
+		logger.l3("First stat after " + (delay / 1000)
+				+ " seconds and every 24h after");
+		new Timer().schedule(this, delay, 24 * 3600 * 1000);
 	}
 
 	@Override
 	public void run() {
 		if (Main.isStatisticEnable()) {
+			logger.l1("StatPoster activated");
 			Echoarea area = FtnTools.getAreaByName(Main.getTechArea(), null);
 			for (IStatPoster poster : posters) {
 				FtnTools.writeEchomail(area, poster.getSubject(),
 						poster.getText());
-				logger.l4("Posted stat from robot "
+				logger.l3("Posted stat from robot "
 						+ poster.getClass().getCanonicalName());
 			}
 		}
-
 	}
 
 }
