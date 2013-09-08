@@ -9,10 +9,12 @@ import jnode.event.IEventHandler;
 import jnode.event.NewFileareaEvent;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
-import jnode.main.Main;
 import jnode.orm.ORMManager;
+import jnode.stat.threads.StatPoster;
 
 public class FileareaStat implements IStatPoster, IEventHandler {
+	private StatPoster poster;
+
 	public FileareaStat() {
 		Notifier.INSTANSE.register(NewFileareaEvent.class, this);
 	}
@@ -42,13 +44,17 @@ public class FileareaStat implements IStatPoster, IEventHandler {
 	@Override
 	public void handle(IEvent event) {
 		if (event instanceof NewFileareaEvent) {
-			if (Main.isStatisticEnable()) {
-				Echoarea area = FtnTools
-						.getAreaByName(Main.getTechArea(), null);
-				FtnTools.writeEchomail(area, "New filearea created",
-						event.getEvent());
-			}
+			Echoarea area = FtnTools.getAreaByName(poster.getTechEchoarea(),
+					null);
+			FtnTools.writeEchomail(area, "New filearea created",
+					event.getEvent());
 		}
+
+	}
+
+	@Override
+	public void init(StatPoster poster) {
+		this.poster = poster;
 
 	}
 

@@ -19,7 +19,7 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import jnode.logger.Logger;
-import jnode.main.Main;
+import jnode.main.MainHandler;
 
 /**
  * Вот такое вот дао :)
@@ -29,16 +29,19 @@ import jnode.main.Main;
  * @param <T>
  */
 public abstract class GenericDAO<T> {
+	private final static String JDBC_URL = "jdbc.url";
+	private final static String JDBC_USER = "jdbc.user";
+	private final static String JDBC_PASS = "jdbc.pass";
 	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
 	private static ConnectionSource source;
 	private Logger logger = Logger.getLogger(getType());
 
 	protected GenericDAO() throws Exception {
 		if (source == null) {
-			source = new JdbcConnectionSource(Main.getProperty(
-					Main.Settings.JDBC_URL.getCfgline(), ""), Main.getProperty(
-					Main.Settings.JDBC_USER.getCfgline(), ""),
-					Main.getProperty(Main.Settings.JDBC_PASS.getCfgline(), ""));
+			source = new JdbcConnectionSource(MainHandler.getCurrentInstance()
+					.getProperty(JDBC_URL, ""), MainHandler
+					.getCurrentInstance().getProperty(JDBC_USER, ""),
+					MainHandler.getCurrentInstance().getProperty(JDBC_PASS, ""));
 		}
 		if (daoMap == null) {
 			daoMap = new HashMap<Class<?>, Dao<?, ?>>();

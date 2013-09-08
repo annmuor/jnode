@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 import jnode.dto.Link;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
-import jnode.main.Main;
+import jnode.main.MainHandler;
+import jnode.main.SystemInfo;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
@@ -94,19 +95,36 @@ public class BinkpConnector implements ProtocolConnector {
 
 	private void greet() {
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "SYS "
-				+ Main.info.getStationName()));
+				+ getInfo().getStationName()));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "ZYZ "
-				+ Main.info.getSysop()));
+				+ getInfo().getSysop()));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "LOC "
-				+ Main.info.getLocation()));
+				+ getInfo().getLocation()));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "NDL "
-				+ Main.info.getNDL()));
+				+ getInfo().getNDL()));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "VER "
-				+ Main.info.getVersion() + " binkp/1.1"));
+				+ MainHandler.getVersion() + " binkp/1.1"));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "TIME "
 				+ format.format(new Date())));
-		frames.add(new BinkpFrame(BinkpCommand.M_ADR, Main.info.getAddress()
-				.toString() + "@fidonet"));
+		frames.add(new BinkpFrame(BinkpCommand.M_ADR, getOwnAddressList()));
+	}
+
+	private String getOwnAddressList() {
+		StringBuilder sb = new StringBuilder();
+		int idx = 0;
+		for (FtnAddress own : getInfo().getAddressList()) {
+			if (idx > 0) {
+				sb.append(" ");
+			}
+			sb.append(own.toString());
+			sb.append("@fidonet");
+			idx++;
+		}
+		return sb.toString();
+	}
+
+	private SystemInfo getInfo() {
+		return MainHandler.getCurrentInstance().getInfo();
 	}
 
 	private void error(String err) {

@@ -32,5 +32,6 @@
 		<module>jnode-core</module>
 		<module>jnode-rss</module>
 		<module>jnode-xmpp</module>
+		<module>jnode-dumb-module</module>
 	</modules>
 </project>

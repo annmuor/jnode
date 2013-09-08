@@ -18,11 +18,11 @@ import jnode.event.IEventHandler;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
-import jnode.main.Main;
+import jnode.stat.threads.StatPoster;
 
 public class ConnectionStat implements IStatPoster, IEventHandler {
 	private List<ConnectionStatDataElement> elements;
-	private final String statPath = Main.getInbound() + File.separator
+	private final String statPath = FtnTools.getInbound() + File.separator
 			+ "connstat.bin";
 
 	static class ConnectionStatDataElement implements Serializable {
@@ -310,5 +310,11 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 						: 1024.0f
 						: 1.0f);
 		return String.format(format, byts, type).replace(',', '.');
+	}
+
+	@Override
+	public void init(StatPoster poster) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -10,11 +10,12 @@ import jnode.event.IEventHandler;
 import jnode.event.NewEchoareaEvent;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
-import jnode.main.Main;
 import jnode.orm.ORMManager;
+import jnode.stat.threads.StatPoster;
 
 public class EchoareaStat implements IStatPoster, IEventHandler {
-	
+	private StatPoster poster;
+
 	public EchoareaStat() {
 		Notifier.INSTANSE.register(NewEchoareaEvent.class, this);
 	}
@@ -79,13 +80,18 @@ public class EchoareaStat implements IStatPoster, IEventHandler {
 	@Override
 	public void handle(IEvent event) {
 		if (event instanceof NewEchoareaEvent) {
-			if (Main.isStatisticEnable()) {
-				Echoarea area = FtnTools
-						.getAreaByName(Main.getTechArea(), null);
-				FtnTools.writeEchomail(area, "New echoarea created",
-						event.getEvent());
-			}
+			Echoarea area = FtnTools.getAreaByName(poster.getTechEchoarea(),
+					null);
+			FtnTools.writeEchomail(area, "New echoarea created",
+					event.getEvent());
+
 		}
+
+	}
+
+	@Override
+	public void init(StatPoster poster) {
+		this.poster = poster;
 
 	}
 }

@@ -45,7 +45,7 @@ import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
 import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
-import jnode.main.Main;
+import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
@@ -61,11 +61,12 @@ import jnode.robot.IRobot;
  * 
  */
 public final class FtnTools {
+	private static final String BINKP_INBOUND = "binkp.inbound";
 	private final static String SEEN_BY = "SEEN-BY:";
 	private final static String PATH = "\001PATH:";
 	public static Charset cp866 = Charset.forName("CP866");
 	private final static String ROUTE_VIA = "\001Via %s "
-			+ Main.info.getVersion() + " %s";
+			+ MainHandler.getVersion() + " %s";
 	public final static DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
@@ -494,7 +495,8 @@ public final class FtnTools {
 		if (text.charAt(text.length() - 1) != '\n') {
 			text.append('\n');
 		}
-		text.append(String.format(ROUTE_VIA, Main.info.getAddress().toString(),
+		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
+				.getInfo().getAddressList().toString(),
 				format.format(new Date())));
 		message.setText(text.toString());
 		return message;
@@ -550,7 +552,7 @@ public final class FtnTools {
 			zis.close();
 		} else if (message.isSecure()) {
 			filename = filename.replaceAll("^[\\./\\\\]+", "_");
-			File f = new File(Main.getInbound() + File.separator + filename);
+			File f = new File(getInbound() + File.separator + filename);
 			boolean ninetoa = false;
 			boolean ztonull = false;
 			boolean underll = false;
@@ -575,7 +577,7 @@ public final class FtnTools {
 					}
 					array[array.length - 1] = c;
 					filename = new String(array);
-					f = new File(Main.getInbound() + File.separator + filename);
+					f = new File(getInbound() + File.separator + filename);
 				}
 			}
 			FileOutputStream fos = new FileOutputStream(f);
@@ -711,7 +713,9 @@ public final class FtnTools {
 		boolean isRobot = false;
 		String robotname = "";
 		if (message.isNetmail()) {
-			if (message.getToAddr().equals(Main.info.getAddress())) {
+			if (MainHandler.getCurrentInstance().getInfo().getAddressList()
+					.contains(message.getToAddr())) {
+				// if (message.getToAddr().equals(Main.info.getAddress())) {
 				try {
 					Robot robot = ORMManager.INSTANSE.getRobotDAO().getById(
 							message.getToName().toLowerCase());
@@ -748,8 +752,8 @@ public final class FtnTools {
 		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
 		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", routeTo.toString());
-		// не наш пойнт
-		if (!routeTo.isPointOf(Main.info.getAddress())) {
+		// check our point
+		if (!isOurPoint(routeTo)) {
 			routeTo.setPoint(0);
 			routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
 					"ftn_address", "=", routeTo.toString());
@@ -768,6 +772,19 @@ public final class FtnTools {
 		return routeVia;
 	}
 
+	public static boolean isOurPoint(FtnAddress routeTo) {
+		boolean ourPoint = false;
+		for (FtnAddress testAddress : MainHandler.getCurrentInstance()
+				.getInfo().getAddressList()) {
+			if (routeTo.isPointOf(testAddress)) {
+				ourPoint = true;
+			}
+		}
+		return ourPoint;
+	}
+	
+	
+
 	/**
 	 * Пишем ответ на нетмейл
 	 * 
@@ -777,10 +794,11 @@ public final class FtnTools {
 	 * @throws SQLException
 	 */
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
-
+		FtnAddress from = getPrimaryFtnAddress();
 		Netmail netmail = new Netmail();
-		netmail.setFromFTN(Main.info.getAddress().toString());
-		netmail.setFromName(Main.info.getStationName());
+		netmail.setFromFTN(from.toString());
+		netmail.setFromName(MainHandler.getCurrentInstance().getInfo()
+				.getStationName());
 		netmail.setToFTN(fmsg.getFromAddr().toString());
 		netmail.setToName(fmsg.getFromName());
 		netmail.setSubject(subject);
@@ -788,9 +806,9 @@ public final class FtnTools {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String
 				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
-						fmsg.getMsgid(), Main.info.getAddress().toString(),
-						generate8d(), Main.info.getVersion(),
-						Main.info.getVersion(), netmail.getToName()));
+						fmsg.getMsgid(), from.toString(), generate8d(),
+						MainHandler.getVersion(), MainHandler.getVersion(),
+						netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
@@ -804,10 +822,10 @@ public final class FtnTools {
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
 		sb.append("========== Original message ==========\n\n--- "
-				+ Main.info.getVersion() + "\n");
+				+ MainHandler.getVersion() + "\n");
 		netmail.setText(sb.toString());
 		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(new FtnAddress(Main.info.getAddress().toString()));
+		ret.setFromAddr(new FtnAddress(from.toString()));
 		ret.setToAddr(fmsg.getFromAddr());
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
@@ -827,11 +845,11 @@ public final class FtnTools {
 	private static File createOutboundFile(Link link) {
 		String template = "out_" + link.getId() + ".%d";
 		int i = 0;
-		File f = new File(Main.getInbound() + File.separator
+		File f = new File(getInbound() + File.separator
 				+ String.format(template, i));
 		while (f.exists()) {
 			i++;
-			f = new File(Main.getInbound() + File.separator
+			f = new File(getInbound() + File.separator
 					+ String.format(template, i));
 		}
 		return f;
@@ -840,14 +858,19 @@ public final class FtnTools {
 	private static File createInboundFile(boolean secure) {
 		String template = ((secure) ? "s" : "u") + "inb%d.pkt";
 		int i = 0;
-		File f = new File(Main.getInbound() + File.separator
+		File f = new File(getInbound() + File.separator
 				+ String.format(template, i));
 		while (f.exists()) {
 			i++;
-			f = new File(Main.getInbound() + File.separator
+			f = new File(getInbound() + File.separator
 					+ String.format(template, i));
 		}
 		return f;
+	}
+
+	public static String getInbound() {
+		return MainHandler.getCurrentInstance().getProperty(BINKP_INBOUND,
+				System.getProperty("file.tmp"));
 	}
 
 	private static File createZipFile(FtnPkt header, Link link,
@@ -937,7 +960,7 @@ public final class FtnTools {
 		List<FtnMessage> unpackedNetmail = new ArrayList<FtnMessage>();
 		FtnAddress to = new FtnAddress(link.getLinkAddress());
 		String password = link.getPaketPassword();
-		FtnPkt header = new FtnPkt(Main.info.getAddress(), to, password,
+		FtnPkt header = new FtnPkt(getPrimaryFtnAddress(), to, password,
 				new Date());
 
 		for (FtnMessage message : messages) {
@@ -1167,12 +1190,11 @@ public final class FtnTools {
 	 * @param secure
 	 * @return
 	 */
-	public static boolean isNetmailMustBeDropped(FtnMessage netmail,
-			boolean secure) {
+	public static boolean validateNetmail(FtnMessage netmail, boolean secure) {
 		boolean validFrom = false;
 		boolean validTo = false;
 		// к нам на узел
-		if (netmail.getToAddr().isPointOf(Main.info.getAddress())) {
+		if (isOurPoint(netmail.getToAddr())) {
 			validTo = true;
 		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", netmail.getToAddr().toString()) != null) {
@@ -1210,7 +1232,7 @@ public final class FtnTools {
 			}
 		}
 
-		if (netmail.getFromAddr().isPointOf(Main.info.getAddress())) {
+		if (isOurPoint(netmail.getFromAddr())) {
 			validFrom = true;
 		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", netmail.getFromAddr().toString()) != null) {
@@ -1233,8 +1255,9 @@ public final class FtnTools {
 
 	public static void writeEchomail(Echoarea area, String subject, String text) {
 		Echomail mail = new Echomail();
-		mail.setFromFTN(Main.info.getAddress().toString());
-		mail.setFromName(Main.info.getStationName());
+		mail.setFromFTN(getPrimaryFtnAddress().toString());
+		mail.setFromName(MainHandler.getCurrentInstance().getInfo()
+				.getStationName());
 		mail.setArea(area);
 		mail.setDate(new Date());
 		mail.setPath("");
@@ -1243,13 +1266,15 @@ public final class FtnTools {
 		mail.setSubject(subject);
 		StringBuilder b = new StringBuilder();
 		b.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n", Main.info
-						.getAddress().toString(), FtnTools.generate8d(),
-				Main.info.getVersion(), Main.info.getVersion()));
+				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
+				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
+				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
-		b.append("\n--- " + Main.info.getStationName() + "\n");
-		b.append(" * Origin: " + Main.info.getVersion() + " ("
-				+ Main.info.getAddress().toString() + ")\n");
+		b.append("\n--- "
+				+ MainHandler.getCurrentInstance().getInfo().getStationName()
+				+ "\n");
+		b.append(" * Origin: " + MainHandler.getVersion() + " ("
+				+ getPrimaryFtnAddress().toString() + ")\n");
 		mail.setText(b.toString());
 		ORMManager.INSTANSE.getEchomailDAO().save(mail);
 		for (Subscription s : ORMManager.INSTANSE.getSubscriptionDAO().getAnd(
@@ -1257,5 +1282,10 @@ public final class FtnTools {
 			ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
 					new EchomailAwaiting(s.getLink(), mail));
 		}
+	}
+
+	public static FtnAddress getPrimaryFtnAddress() {
+		return MainHandler.getCurrentInstance().getInfo().getAddressList()
+				.get(0);
 	}
 }

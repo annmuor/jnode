@@ -17,7 +17,7 @@ import javax.script.SimpleBindings;
 import jnode.dto.Schedule;
 import jnode.dto.ScriptHelper;
 import jnode.logger.Logger;
-import jnode.main.Main;
+import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
 
 /**
@@ -27,7 +27,7 @@ import jnode.orm.ORMManager;
  * 
  */
 public class JscriptExecutor implements Runnable {
-
+	private static final String JSCRIPT_ENABLE = "jscript.enable";
 	private static final long MILLISEC_IN_DAY = 86400000L;
 	private static final Logger logger = Logger
 			.getLogger(JscriptExecutor.class);
@@ -85,7 +85,8 @@ public class JscriptExecutor implements Runnable {
 
 	@Override
 	public void run() {
-		if (!Main.isJscriptEnable()) {
+		if (!MainHandler.getCurrentInstance().getBooleanProperty(
+				JSCRIPT_ENABLE, true)) {
 			return;
 		}
 

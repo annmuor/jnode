@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jnode.main.Main;
+import jnode.main.MainHandler;
 
 /**
  * 
@@ -27,7 +27,7 @@ public class FtnAddress implements Serializable {
 			if (m.group(1) != null && m.group(1).length() > 0) {
 				zone = new Integer(m.group(1));
 			} else {
-				zone = Main.info.getAddress().zone;
+				zone = MainHandler.getCurrentInstance().getInfo().getZone();
 			}
 			net = new Integer(m.group(2));
 			node = new Integer(m.group(3));
@@ -42,7 +42,7 @@ public class FtnAddress implements Serializable {
 	}
 
 	public FtnAddress() {
-		zone = Main.info.getAddress().zone;
+		zone = MainHandler.getCurrentInstance().getInfo().getZone();
 		net = 0;
 		node = 0;
 		point = 0;

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
-import jnode.main.Main;
+import jnode.main.MainHandler;
 import jnode.ndl.FtnNdlAddress.Status;
 
 /**
@@ -25,6 +25,8 @@ import jnode.ndl.FtnNdlAddress.Status;
  * 
  */
 public class NodelistScanner {
+	private static final String NODELIST_PATH = "nodelist.path";
+	private static final String NODELIST_INDEX = "nodelist.index";
 	private static final NodelistScanner self = new NodelistScanner();
 	private static final Logger logger = Logger
 			.getLogger(NodelistScanner.class);
@@ -35,8 +37,8 @@ public class NodelistScanner {
 
 	private boolean createNdlIndexFile() {
 		boolean ok = false;
-		File ndl = new File(Main.getNodelistPath());
-		File idx = new File(Main.getNodelistIdx());
+		File ndl = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_PATH, "NODELIST"));
+		File idx = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_INDEX, "NODELIST.idx"));
 		List<FtnNdlAddress> address = new ArrayList<FtnNdlAddress>();
 		try {
 			FileInputStream fis = new FileInputStream(ndl);
@@ -96,8 +98,7 @@ public class NodelistScanner {
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(idx));
 			oos.writeObject(index);
-			logger.l4("Создан индекс нодлиста: " + address.size()
-					+ " адресов");
+			logger.l4("Создан индекс нодлиста: " + address.size() + " адресов");
 			oos.close();
 			ok = true;
 		} catch (IOException e) {
@@ -110,10 +111,10 @@ public class NodelistScanner {
 
 	private NodelistIndex createNdlIndex() {
 		NodelistIndex index = null;
-		File idx = new File(Main.getNodelistIdx());
+		File idx = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_INDEX, "NODELIST.idx"));
 		long timestamp = 0L;
 		{
-			File ndl = new File(Main.getNodelistPath());
+			File ndl = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_PATH, "NODELIST"));
 			if (ndl.exists()) {
 				timestamp = ndl.lastModified();
 			}
