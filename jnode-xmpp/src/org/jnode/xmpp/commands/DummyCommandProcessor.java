@@ -9,7 +9,7 @@ package org.jnode.xmpp.commands;
 public class DummyCommandProcessor implements CommandProcessor {
 
 	@Override
-	public String proccess(String command) {
+	public String process(String command) {
 		return "Not realized yet";
 	}
 
