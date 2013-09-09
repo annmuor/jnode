@@ -38,6 +38,7 @@ public class StatPoster extends TimerTask {
 								.newInstance();
 						instance.init(this);
 						this.posters.add(instance);
+						logger.l2("Poster " + poster + " started");
 					} catch (RuntimeException e) {
 						logger.l1("Unable to load poster " + poster, e);
 					} catch (Exception e) {

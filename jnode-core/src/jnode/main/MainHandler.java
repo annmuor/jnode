@@ -48,7 +48,7 @@ public class MainHandler {
 	}
 
 	public static String getVersion() {
-		return "";
+		return "jNode 0.6-SNAPSHOT";
 	}
 
 }
