@@ -313,8 +313,8 @@ public class FtnTosser {
 										+ generateTic()));
 								continue;
 							}
-							Filearea area = getFileareaByName(tic
-									.getArea().toLowerCase(), source);
+							Filearea area = getFileareaByName(tic.getArea()
+									.toLowerCase(), source);
 							if (area == null) {
 								logger.l3("Filearea " + tic.getArea()
 										+ " is not avalible for "
@@ -352,8 +352,7 @@ public class FtnTosser {
 								ORMManager.INSTANSE.getFilemailAwaitingDAO()
 										.save(new FilemailAwaiting(sub
 												.getLink(), mail));
-								if (getOptionBooleanDefFalse(
-										sub.getLink(),
+								if (getOptionBooleanDefFalse(sub.getLink(),
 										LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
 									poll.add(sub.getLink());
 								}
@@ -417,8 +416,7 @@ public class FtnTosser {
 		}
 
 		for (Link l : pollLinks) {
-			if (getOptionBooleanDefFalse(l,
-					LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
+			if (getOptionBooleanDefFalse(l, LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
 				PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
 						.getById(l.getId()));
 			}
@@ -434,9 +432,7 @@ public class FtnTosser {
 	 */
 	public static List<Message> getMessagesForLink(Link link) {
 		FtnAddress link_address = new FtnAddress(link.getLinkAddress());
-		FtnAddress our_address = getPrimaryFtnAddress();
 		Ftn2D link2d = new Ftn2D(link_address.getNet(), link_address.getNode());
-		Ftn2D our2d = new Ftn2D(our_address.getNet(), our_address.getNode());
 		List<FtnMessage> messages = new ArrayList<FtnMessage>();
 		List<File> attachedFiles = new ArrayList<File>();
 		List<FtnTIC> tics = new ArrayList<FtnTIC>();
@@ -480,19 +476,21 @@ public class FtnTosser {
 				Echomail mail = ema.getMail();
 				Echoarea area = mail.getArea();
 				toRemove.add(mail);
-				Set<Ftn2D> seenby = new HashSet<Ftn2D>(read2D(mail
-						.getSeenBy()));
+				Set<Ftn2D> seenby = new HashSet<Ftn2D>(read2D(mail.getSeenBy()));
 				if (seenby.contains(link2d) && link_address.getPoint() == 0) {
 					logger.l5(link2d + " is in seenby for " + link_address);
 					continue;
 				}
 				List<Ftn2D> path = read2D(mail.getPath());
-				seenby.add(our2d);
-				seenby.add(link2d);
-
-				if (!path.contains(our2d)) {
-					path.add(our2d);
+				for (FtnAddress address : MainHandler.getCurrentInstance()
+						.getInfo().getAddressList()) {
+					Ftn2D me = new Ftn2D(address.getNet(), address.getNode());
+					seenby.add(me);
+					if (!path.contains(me)) {
+						path.add(me);
+					}
 				}
+				seenby.add(link2d);
 
 				List<Subscription> ssubs = ORMManager.INSTANSE
 						.getSubscriptionDAO().getAnd("echoarea_id", "=", area);
@@ -509,7 +507,7 @@ public class FtnTosser {
 				message.setArea(area.getName().toUpperCase());
 				message.setFromName(mail.getFromName());
 				message.setToName(mail.getToName());
-				message.setFromAddr(our_address);
+				message.setFromAddr(getPrimaryFtnAddress());
 				message.setToAddr(link_address);
 				message.setDate(mail.getDate());
 				message.setSubject(mail.getSubject());
@@ -577,10 +575,13 @@ public class FtnTosser {
 				tic.setSize(f.length());
 				tic.setDesc(mail.getFiledesc());
 				tic.setPassword(link.getPaketPassword());
-				tic.setFrom(our_address);
+				tic.setFrom(getPrimaryFtnAddress());
 				tic.setTo(link_address);
 				tic.setOrigin(new FtnAddress(mail.getOrigin()));
-				seenby.add(our_address);
+				for (FtnAddress address : MainHandler.getCurrentInstance()
+						.getInfo().getAddressList()) {
+					seenby.add(address);
+				}
 				for (FileSubscription sub : ORMManager.INSTANSE
 						.getFileSubscriptionDAO().getAnd("filearea_id", "=",
 								area)) {
@@ -637,8 +638,7 @@ public class FtnTosser {
 		for (FtnTIC tic : tics) {
 			try {
 				byte[] data = tic.pack();
-				Message message = new Message(generateTic(),
-						data.length);
+				Message message = new Message(generateTic(), data.length);
 				message.setInputStream(new ByteArrayInputStream(data));
 				ret.add(message);
 

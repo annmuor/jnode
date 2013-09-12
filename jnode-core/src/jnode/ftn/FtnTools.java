@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -782,8 +783,6 @@ public final class FtnTools {
 		}
 		return ourPoint;
 	}
-	
-	
 
 	/**
 	 * Пишем ответ на нетмейл
@@ -982,10 +981,17 @@ public final class FtnTools {
 		if (!packedNetmail.isEmpty()) {
 
 			try {
-				Message m = new Message(createZipFile(header, link,
-						packedNetmail));
-				m.setMessageName(generateEchoBundle());
-				ret.add(m);
+				for (FtnMessage net : packedNetmail) {
+					FtnAddress from = (MainHandler.getCurrentInstance()
+							.getInfo().getAddressList().contains(net
+							.getFromAddr())) ? net.getFromAddr()
+							: getPrimaryFtnAddress();
+					FtnPkt head = new FtnPkt(from, to, password, new Date());
+					Message m = new Message(createZipFile(head, link,
+							Arrays.asList(net)));
+					m.setMessageName(generateEchoBundle());
+					ret.add(m);
+				}
 			} catch (Exception e) {
 				logger.l1(
 						"Error while writing netmail to link #" + link.getId(),
@@ -1007,17 +1013,22 @@ public final class FtnTools {
 		}
 		if (!unpackedNetmail.isEmpty()) {
 			try {
-				File out = createOutboundFile(link);
-				FileOutputStream fos = new FileOutputStream(out);
-				fos.write(header.pack());
-				for (FtnMessage m : unpackedNetmail) {
-					fos.write(m.pack());
+				for (FtnMessage net : unpackedNetmail) {
+					FtnAddress from = (MainHandler.getCurrentInstance()
+							.getInfo().getAddressList().contains(net
+							.getFromAddr())) ? net.getFromAddr()
+							: getPrimaryFtnAddress();
+					FtnPkt head = new FtnPkt(from, to, password, new Date());
+					File out = createOutboundFile(link);
+					FileOutputStream fos = new FileOutputStream(out);
+					fos.write(head.pack());
+					fos.write(net.pack());
+					fos.write(head.finalz());
+					fos.close();
+					Message m = new Message(out);
+					m.setMessageName(generate8d() + ".pkt");
+					ret.add(m);
 				}
-				fos.write(header.finalz());
-				fos.close();
-				Message m = new Message(out);
-				m.setMessageName(generate8d() + ".pkt");
-				ret.add(m);
 			} catch (Exception e) {
 				logger.l1(
 						"Error while writing netmail to link #" + link.getId(),
