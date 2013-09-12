@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.jnode.xmpp.commands.CommandProcessor;
 import org.jnode.xmpp.commands.DummyCommandProcessor;
 import org.jnode.xmpp.commands.HelpCommandProcessor;
+import org.jnode.xmpp.commands.ListCommandProcessor;
 import org.jnode.xmpp.commands.QuitCommandProcessor;
 
 /**
@@ -21,9 +22,9 @@ public class ControlTools {
 		// TODO: реализовать
 		table.put("HELP", new HelpCommandProcessor());
 		table.put("QUIT", new QuitCommandProcessor());
+		table.put("LIST", new ListCommandProcessor());
 		table.put("NEW", new DummyCommandProcessor());
 		table.put("REMOVE", new DummyCommandProcessor());
-		table.put("LIST", new DummyCommandProcessor());
 		table.put("EDIT", new DummyCommandProcessor());
 		return table;
 	}

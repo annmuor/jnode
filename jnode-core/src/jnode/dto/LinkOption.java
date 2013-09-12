@@ -1,5 +1,7 @@
 package jnode.dto;
 
+import java.util.HashMap;
+
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -12,21 +14,62 @@ import com.j256.ormlite.table.DatabaseTable;
  */
 @DatabaseTable(tableName = "linkoptions")
 public class LinkOption {
-	public static final String BOOLEAN_IGNORE_PKTPWD = "IgnorePktPwd";
-	public static final String BOOLEAN_PACK_NETMAIL = "PackNetmail";
-	public static final String BOOLEAN_PACK_ECHOMAIL = "PackEchomail";
-	public static final String BOOLEAN_CRASH_NETMAIL = "CrashNetmail";
-	public static final String BOOLEAN_CRASH_ECHOMAIL = "CrashEchomail";
-	public static final String BOOLEAN_CRASH_FILEMAIL = "CrashFilemail";
-	public static final String BOOLEAN_AUTOCREATE_AREA = "AreaAutoCreate";
-	public static final String BOOLEAN_AUTOCREATE_FILE = "FileAutoCreate";
-	public static final String BOOLEAN_POLL_BY_TIMEOT = "PollByTimeout";
-	public static final String BOOLEAN_AREAFIX = "AreaFix";
-	public static final String BOOLEAN_FILEFIX = "FileFix";
-	public static final String LONG_LINK_LEVEL = "Level";
-	public static final String SARRAY_LINK_GROUPS = "Groups";
-	public static final String STRING_AREAFIX_PWD = "AreaFixPwd";
-	public static final String STRING_FILEFIX_PWD = "FileFixPwd";
+	public static final String BOOLEAN_IGNORE_PKTPWD = "ignorepktpwd";
+	public static final String BOOLEAN_PACK_NETMAIL = "packnetmail";
+	public static final String BOOLEAN_PACK_ECHOMAIL = "packechomail";
+	public static final String BOOLEAN_CRASH_NETMAIL = "crashnetmail";
+	public static final String BOOLEAN_CRASH_ECHOMAIL = "crashechomail";
+	public static final String BOOLEAN_CRASH_FILEMAIL = "crashfilemail";
+	public static final String BOOLEAN_AUTOCREATE_AREA = "areaautocreate";
+	public static final String BOOLEAN_AUTOCREATE_FILE = "fileautocreate";
+	public static final String BOOLEAN_POLL_BY_TIMEOT = "pollbytimeout";
+	public static final String BOOLEAN_AREAFIX = "areafix";
+	public static final String BOOLEAN_FILEFIX = "filefix";
+	public static final String LONG_LINK_LEVEL = "level";
+	public static final String SARRAY_LINK_GROUPS = "groups";
+	public static final String STRING_AREAFIX_PWD = "areafixpwd";
+	public static final String STRING_FILEFIX_PWD = "filefixpwd";
+	private static final HashMap<String, String> options = generateOptionsMap();
+
+	/**
+	 * Короткие названия
+	 * 
+	 * @return
+	 */
+	private static final HashMap<String, String> generateOptionsMap() {
+		HashMap<String, String> options = new HashMap<String, String>();
+		options.put("ignorepktpwd", "-nopwd");
+		options.put("packnetmail", "-netpack");
+		options.put("packechomail", "-echpack");
+		options.put("crashnetmail", "-netcrash");
+		options.put("crashechomail", "-echcrash");
+		options.put("crashfilemail", "-fchcrash");
+		options.put("areaautocreate", "-aacreate");
+		options.put("fileautocreate", "-facreate");
+		options.put("pollbytimeout", "-poll");
+		options.put("areafix", "-afix");
+		options.put("filefix", "-ffix");
+		options.put("level", "-lvl");
+		options.put("groups", "-grps");
+		options.put("areafixpwd", "-afixpwd");
+		options.put("filefixpwd", "-ffixpwd");
+		return options;
+	}
+
+	public static final String getOptByName(String name) {
+		return options.get(name);
+	}
+
+	public static final String getNameByOpt(String opt) {
+		String ret = null;
+		for (String k : options.keySet()) {
+			if (options.get(k).equalsIgnoreCase(opt)) {
+				ret = k;
+				break;
+			}
+		}
+		return ret;
+	}
 
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
