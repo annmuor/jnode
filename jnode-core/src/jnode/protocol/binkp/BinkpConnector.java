@@ -243,7 +243,7 @@ public class BinkpConnector implements ProtocolConnector {
 			return;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_ERR)) {
-			error(new String(frame.getData()));
+			error("remote told: " + new String(frame.getData()));
 			return;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_BSY)) {

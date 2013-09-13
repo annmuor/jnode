@@ -1109,7 +1109,7 @@ public final class FtnTools {
 	 */
 	public static Echoarea getAreaByName(String name, Link link) {
 		Echoarea ret = null;
-		name = name.toLowerCase();
+		name = name.toLowerCase().replace("'", "\\'");
 		ret = ORMManager.INSTANSE.getEchoareaDAO().getFirstAnd("name", "=",
 				name);
 		if (ret == null) {
