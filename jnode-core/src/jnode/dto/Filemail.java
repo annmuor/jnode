@@ -12,9 +12,9 @@ public class Filemail {
 	private Long id;
 	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "filearea_id")
 	private Filearea filearea;
-	@DatabaseField
+	@DatabaseField(dataType = DataType.LONG_STRING)
 	private String filename;
-	@DatabaseField
+	@DatabaseField(dataType = DataType.LONG_STRING)
 	private String filedesc;
 	@DatabaseField
 	private String filepath;

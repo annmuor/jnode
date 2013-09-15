@@ -1,8 +1,10 @@
 package jnode.ftn.tosser;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,10 +25,15 @@ import jnode.dto.FileSubscription;
 import jnode.dto.Filearea;
 import jnode.dto.Filemail;
 import jnode.dto.FilemailAwaiting;
+import jnode.dto.FileForLink;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
 import jnode.dto.Subscription;
+import jnode.event.NewEchomailEvent;
+import jnode.event.NewFilemailEvent;
+import jnode.event.NewNetmailEvent;
+import jnode.event.Notifier;
 import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
@@ -88,6 +95,7 @@ public class FtnTosser {
 			dbnm.setText(netmail.getText());
 			dbnm.setAttr(netmail.getAttribute());
 			ORMManager.INSTANSE.getNetmailDAO().save(dbnm);
+			Notifier.INSTANSE.notify(new NewNetmailEvent(dbnm));
 			Integer n = tossed.get("netmail");
 			tossed.put("netmail", (n == null) ? 1 : n + 1);
 			if (routeVia == null) {
@@ -144,7 +152,6 @@ public class FtnTosser {
 		mail.setSeenBy(write2D(echomail.getSeenby(), true));
 		mail.setPath(write2D(echomail.getPath(), false));
 		ORMManager.INSTANSE.getEchomailDAO().save(mail);
-
 		for (Subscription sub : ORMManager.INSTANSE.getSubscriptionDAO()
 				.getAnd("echoarea_id", "=", area)) {
 			if (link == null || !sub.getLink().getId().equals(link.getId())) {
@@ -153,7 +160,7 @@ public class FtnTosser {
 				pollLinks.add(sub.getLink());
 			}
 		}
-
+		Notifier.INSTANSE.notify(new NewEchomailEvent(mail));
 		{
 			Dupe dupe = new Dupe();
 			dupe.setEchoarea(area);
@@ -357,6 +364,7 @@ public class FtnTosser {
 									poll.add(sub.getLink());
 								}
 							}
+							Notifier.INSTANSE.notify(new NewFilemailEvent(mail));
 						} else {
 							logger.l3("File " + tic.getFile()
 									+ " not found in inbound, waiting");
@@ -379,6 +387,31 @@ public class FtnTosser {
 						Link l = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
 								"ftn_address", "=", address.toString());
 						if (l != null) {
+							try {
+								BufferedReader br = new BufferedReader(
+										new FileReader(file));
+								while (br.ready()) {
+									String name = br.readLine();
+									if (name != null) {
+										File f = new File(name);
+										if (f.exists() && f.canRead()) {
+											FileForLink ffl = new FileForLink();
+											ffl.setLink(l);
+											ffl.setFilename(name);
+											ORMManager.INSTANSE
+													.getFileForLinkDAO().save(
+															ffl);
+										} else {
+											logger.l2("File from ?lo not exists: "
+													+ name);
+										}
+									}
+								}
+								br.close();
+							} catch (Exception e) {
+								logger.l2("Unable to read .?lo for files list",
+										e);
+							}
 							poll.add(l);
 						}
 					} catch (NumberFormatException e) {
@@ -602,6 +635,22 @@ public class FtnTosser {
 			if (!toRemove.isEmpty()) {
 				ORMManager.INSTANSE.getFilemailAwaitingDAO().delete("link_id",
 						"=", link, "filemail_id", "in", toRemove);
+			}
+		}
+		// files for link
+		{
+			List<FileForLink> ffls = ORMManager.INSTANSE.getFileForLinkDAO()
+					.getAnd("link_id", "eq", link);
+			for (FileForLink ffl : ffls) {
+				try {
+					File file = new File(ffl.getFilename());
+					Message m = new Message(file.getName(), file.length());
+					m.setInputStream(new FileInputStream(file));
+					ORMManager.INSTANSE.getFileForLinkDAO().delete("link_id",
+							"=", link, "filename", "=", ffl.getFilename());
+					ret.add(m);
+				} catch (Exception ignore) {
+				}
 			}
 		}
 		if (!messages.isEmpty()) {
