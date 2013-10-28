@@ -17,12 +17,12 @@ public final class SystemInfo {
 	private static final String INFO_NDL = "info.ndl";
 	private static final String INFO_ADDRESS = "info.address";
 	private static final String INFO_DEFAULT_ZONE = "info.zone";
-	private String sysop;
-	private String location;
-	private String stationName;
-	private List<FtnAddress> addressList;
-	private Integer zone;
-	private String NDL;
+	private final String sysop;
+	private final String location;
+	private final String stationName;
+	private final List<FtnAddress> addressList;
+	private final Integer zone;
+	private final String NDL;
 
 	public SystemInfo(MainHandler handler) {
 		sysop = handler.getProperty(INFO_SYSOP, "Nobody");
