@@ -8,6 +8,7 @@
 	</parent>
 	<artifactId>jnode-dumb-module</artifactId>
 	<version>1.0</version>
+    <name>jnode-dumb-module</name>
 	<description>Dumb module</description>
 	<dependencies>
 		<dependency>
@@ -19,18 +20,5 @@
 	</dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<compilerArguments>
-						<verbose />
-					</compilerArguments>
-				</configuration>
-			</plugin>
-		</plugins>
 	</build>
 </project>
