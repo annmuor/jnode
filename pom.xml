@@ -56,5 +56,6 @@
 		<module>jnode-rss</module>
 		<module>jnode-xmpp</module>
 		<module>jnode-dumb-module</module>
+		<module>jnode-assembly</module>
 	</modules>
 </project>
