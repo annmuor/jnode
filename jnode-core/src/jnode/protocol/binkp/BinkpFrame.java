@@ -76,10 +76,35 @@ public class BinkpFrame implements Frame {
 		return (frame != null) ? frame.array() : new byte[0];
 	}
 
+    private String displayFrame(){
+        byte[] d = getBytes();
+        StringBuilder sb = new StringBuilder();
+        sb.append("length = ");
+        sb.append(d.length);
+        sb.append(", ");
+        sb.append(DisplayByteArrayHelper.bytesToHex(d, 10));
+        return sb.toString();
+    }
+
 	@Override
 	public String toString() {
-		return "[ " + ((isCommand) ? command.toString() + " " + arg : " DATA ")
+		return "[ " + ((isCommand) ? command.toString() + " " + arg : displayFrame())
 				+ " ]";
 	}
 
+
+    // http://stackoverflow.com/questions/9655181/convert-from-byte-array-to-hex-string-in-java
+    private static class DisplayByteArrayHelper{
+        private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+        private static String bytesToHex(byte[] bytes, int limit) {
+            final char[] hexChars = new char[bytes.length * 2];
+            int v;
+            for ( int j = 0; (j < bytes.length) && (j < limit); j++ ) {
+                v = bytes[j] & 0xFF;
+                hexChars[j * 2] = hexArray[v >>> 4];
+                hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+            }
+            return new String(hexChars);
+        }
+    }
 }
