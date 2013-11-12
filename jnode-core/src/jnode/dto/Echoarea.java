@@ -15,7 +15,7 @@ public class Echoarea {
 	private Long id;
 	@DatabaseField(columnName = "name", canBeNull = false, uniqueIndex = true)
 	private String name;
-	@DatabaseField(columnName = "description", dataType = DataType.LONG_STRING)
+	@DatabaseField(columnName = "description", dataType = DataType.STRING, width = 1000)
 	private String description;
 	@DatabaseField(columnName = "wlevel", canBeNull = false, defaultValue = "0")
 	private Long writelevel;

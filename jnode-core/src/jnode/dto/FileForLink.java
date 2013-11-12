@@ -8,7 +8,7 @@ import com.j256.ormlite.table.DatabaseTable;
 public class FileForLink {
 	@DatabaseField(foreign = true, columnName = "link_id", uniqueIndexName = "idnameidx")
 	private Link link;
-	@DatabaseField(uniqueIndexName = "idnameidx", dataType = DataType.STRING)
+	@DatabaseField(uniqueIndexName = "idnameidx", dataType = DataType.STRING, width = 2000)
 	private String filename;
 
 	public Link getLink() {
