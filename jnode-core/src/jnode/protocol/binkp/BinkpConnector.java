@@ -205,9 +205,7 @@ public class BinkpConnector implements ProtocolConnector {
 							in.read(data);
 							if (data[data.length - 1] == 0) { // null at the end
 								byte[] datawonull = new byte[data.length - 1];
-								for (int i = 0; i < data.length - 1; i++) {
-									datawonull[i] = data[i];
-								}
+                                System.arraycopy(data, 0, datawonull, 0, data.length - 1);
 								arg = new String(datawonull);
 							} else {
 								arg = new String(data);
@@ -688,7 +686,7 @@ public class BinkpConnector implements ProtocolConnector {
 
 	@Override
 	public boolean getSuccess() {
-		return connectionState == STATE_ERR ? false : true;
+		return connectionState != STATE_ERR;
 	}
 
 	@Override

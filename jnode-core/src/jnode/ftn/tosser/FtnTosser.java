@@ -56,9 +56,9 @@ public class FtnTosser {
 	private static final String FILEECHO_ENABLE = "fileecho.enable";
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
-	private Map<String, Integer> tossed = new HashMap<String, Integer>();
-	private Map<String, Integer> bad = new HashMap<String, Integer>();
-	private Set<Link> pollLinks = new HashSet<Link>();
+	private final Map<String, Integer> tossed = new HashMap<String, Integer>();
+	private final Map<String, Integer> bad = new HashMap<String, Integer>();
+	private final Set<Link> pollLinks = new HashSet<Link>();
 
 	/**
 	 * Разбор нетмейла
@@ -72,7 +72,7 @@ public class FtnTosser {
 				return;
 			}
 		}
-		boolean drop = validateNetmail(netmail, secure);
+		boolean drop = validateNetmail(netmail);
 
 		if (drop) {
 			Integer n = bad.get("netmail");
@@ -587,7 +587,7 @@ public class FtnTosser {
 				try {
 					CRC32 crc32 = new CRC32();
 					FileInputStream fis = new FileInputStream(f);
-					int len = 0;
+					int len;
 					do {
 						byte buf[];
 						len = fis.available();
@@ -629,7 +629,7 @@ public class FtnTosser {
 				tic.setSeenby(sb);
 				tic.setPath(mail.getPath() + "Path " + getPrimaryFtnAddress()
 						+ " " + System.currentTimeMillis() / 1000 + " "
-						+ format.format(new Date()) + " "
+						+ FORMAT.format(new Date()) + " "
 						+ MainHandler.getVersion() + "\r\n");
 				tic.setRealpath(mail.getFilepath());
 				tics.add(tic);

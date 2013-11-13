@@ -301,7 +301,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 	}
 
 	private String b2s(int bytes) {
-		String format = new String("%4.2f %s");
+		String format = "%4.2f %s";
 		String type = (bytes > 1024) ? (bytes > 1048576) ? (bytes > 1073741824) ? "Gb"
 				: "Mb"
 				: "Kb"

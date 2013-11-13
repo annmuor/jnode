@@ -16,7 +16,7 @@ public final class Logger {
 	public static final int LOG_L1 = 1;
 	public static int Loglevel = LOG_L5;
 
-	private String className;
+	private final String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"HH:mm:ss");
 	private static final String LOG_FORMAT = "%s [%08d] %s %s";

@@ -12,7 +12,7 @@ import java.util.Properties;
  */
 public class MainHandler {
 
-	private Properties config;
+	private final Properties config;
 	private static MainHandler instance = null;
 	private SystemInfo info;
 
@@ -32,11 +32,11 @@ public class MainHandler {
 	}
 
 	public boolean getBooleanProperty(String property, boolean def) {
-		return new Boolean(getProperty(property, new Boolean(def).toString()));
+		return Boolean.valueOf(getProperty(property, Boolean.valueOf(def).toString()));
 	}
 
 	public int getIntegerProperty(String property, int def) {
-		return new Integer(getProperty(property, new Integer(def).toString()));
+		return new Integer(getProperty(property, Integer.toString(def)));
 	}
 
 	public static MainHandler getCurrentInstance() {

@@ -15,7 +15,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "schedules")
 public class Schedule {
 	public static enum Type {
-		DAILY, WEEKLY, MONTHLY, ANNUALLY;
+		DAILY, WEEKLY, MONTHLY, ANNUALLY
 	}
 
 	@DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")

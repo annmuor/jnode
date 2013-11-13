@@ -50,7 +50,7 @@ public class StatPoster extends TimerTask {
 			calendar.set(Calendar.DAY_OF_YEAR,
 					calendar.get(Calendar.DAY_OF_YEAR) + 1);
 			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 00);
+			calendar.set(Calendar.MINUTE, 0);
 			calendar.set(Calendar.SECOND, 0);
 			Date date = calendar.getTime();
 			long delay = date.getTime() - new Date().getTime();

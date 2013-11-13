@@ -36,7 +36,7 @@ public class LinkOption {
 	 * 
 	 * @return
 	 */
-	private static final HashMap<String, String> generateOptionsMap() {
+	private static HashMap<String, String> generateOptionsMap() {
 		HashMap<String, String> options = new HashMap<String, String>();
 		options.put("ignorepktpwd", "-nopwd");
 		options.put("packnetmail", "-netpack");
@@ -56,11 +56,11 @@ public class LinkOption {
 		return options;
 	}
 
-	public static final String getOptByName(String name) {
+	public static String getOptByName(String name) {
 		return options.get(name);
 	}
 
-	public static final String getNameByOpt(String opt) {
+	public static String getNameByOpt(String opt) {
 		String ret = null;
 		for (String k : options.keySet()) {
 			if (options.get(k).equalsIgnoreCase(opt)) {

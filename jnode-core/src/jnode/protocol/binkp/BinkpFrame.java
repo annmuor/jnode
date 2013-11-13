@@ -10,9 +10,9 @@ import jnode.protocol.io.Frame;
  * 
  */
 public class BinkpFrame implements Frame {
-	private boolean isCommand; // if false - is a file
+	private final boolean isCommand; // if false - is a file
 	private BinkpCommand command;
-	private byte[] data;
+	private final byte[] data;
 	private ByteBuffer frame;
 	private String arg;
 

@@ -3,7 +3,7 @@ package jnode.event;
 import jnode.dto.Filemail;
 
 public class NewFilemailEvent implements IEvent {
-	private Filemail filemail;
+	private final Filemail filemail;
 
 	@Override
 	public String getEvent() {

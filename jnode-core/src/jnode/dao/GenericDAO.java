@@ -34,7 +34,7 @@ public abstract class GenericDAO<T> {
 	private final static String JDBC_PASS = "jdbc.pass";
 	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
 	private static ConnectionSource source;
-	private Logger logger = Logger.getLogger(getType());
+	private final Logger logger = Logger.getLogger(getType());
 
 	protected GenericDAO() throws Exception {
 		if (source == null) {

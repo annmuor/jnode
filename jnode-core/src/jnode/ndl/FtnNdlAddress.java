@@ -4,7 +4,7 @@ import jnode.ftn.types.FtnAddress;
 
 public class FtnNdlAddress extends FtnAddress {
 	public static enum Status {
-		HOLD, DOWN, HUB, HOST, PVT, NORMAL;
+		HOLD, DOWN, HUB, HOST, PVT, NORMAL
 	}
 
 	private static final long serialVersionUID = 1L;

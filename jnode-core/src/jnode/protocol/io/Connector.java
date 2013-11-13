@@ -26,12 +26,12 @@ import jnode.protocol.io.exception.ProtocolException;
  */
 public class Connector {
 	private Socket clientSocket;
-	private ProtocolConnector connector;
+	private final ProtocolConnector connector;
 	private List<Message> messages;
 	private Link link;
 	private int index = 0;
 	private static final Logger logger = Logger.getLogger(Connector.class);
-	private FtnTosser tosser = new FtnTosser();
+	private final FtnTosser tosser = new FtnTosser();
 
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
@@ -61,8 +61,8 @@ public class Connector {
 	}
 
 	private void doSocket(Socket clientSocket) {
-		InputStream is = null;
-		OutputStream os = null;
+		InputStream is;
+		OutputStream os;
 		boolean success = true;
 		long lastactive = System.currentTimeMillis();
 		try {

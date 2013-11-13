@@ -3,7 +3,7 @@ package jnode.event;
 import jnode.dto.Echomail;
 
 public class NewEchomailEvent implements IEvent {
-	private Echomail echomail;
+	private final Echomail echomail;
 
 	public NewEchomailEvent(Echomail echomail) {
 		super();

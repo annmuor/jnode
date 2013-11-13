@@ -56,7 +56,7 @@ public class FtnMessage {
 	private boolean isNetmail;
 	private String msgid;
 
-	private static DateFormat format = new SimpleDateFormat(
+	private static final DateFormat FORMAT = new SimpleDateFormat(
 			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
@@ -180,7 +180,7 @@ public class FtnMessage {
 				os.write(new byte[] { 0, 0 });
 			}
 			os.write(new byte[] { 0, 0 });
-			os.write(FtnTools.substr(format.format(date), 19));
+			os.write(FtnTools.substr(FORMAT.format(date), 19));
 			os.write(0);
 			os.write(FtnTools.substr(toName, 35));
 			os.write(0);
@@ -206,7 +206,7 @@ public class FtnMessage {
 				sb.append(FtnTools.writePath(path));
 			}
 			os.write(sb.toString().replaceAll("\n", "\r")
-					.getBytes(FtnTools.cp866));
+					.getBytes(FtnTools.CP_866));
 			os.write(0);
 			os.close();
 		} catch (IOException e) {
@@ -238,7 +238,7 @@ public class FtnMessage {
 				toAddr.setNet(FtnTools.revShort(is.readShort()));
 				attribute = FtnTools.revShort(is.readShort());
 				is.skip(2);
-				date = format.parse(FtnTools.readUntillNull(is));
+				date = FORMAT.parse(FtnTools.readUntillNull(is));
 				toName = FtnTools.readUntillNull(is);
 				fromName = FtnTools.readUntillNull(is);
 				subject = FtnTools.readUntillNull(is);

@@ -63,12 +63,12 @@ import jnode.robot.IRobot;
  */
 public final class FtnTools {
 	private static final String BINKP_INBOUND = "binkp.inbound";
-	private final static String SEEN_BY = "SEEN-BY:";
-	private final static String PATH = "\001PATH:";
-	public static Charset cp866 = Charset.forName("CP866");
-	private final static String ROUTE_VIA = "\001Via %s "
+	private static final String SEEN_BY = "SEEN-BY:";
+	private static final String PATH = "\001PATH:";
+	public static final Charset CP_866 = Charset.forName("CP866");
+	private static final String ROUTE_VIA = "\001Via %s "
 			+ MainHandler.getVersion() + " %s";
-	public final static DateFormat format = new SimpleDateFormat(
+	public static final DateFormat FORMAT = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
@@ -170,7 +170,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static byte[] substr(String s, int len) {
-		byte[] bytes = s.getBytes(cp866);
+		byte[] bytes = s.getBytes(CP_866);
 
 		if (bytes.length > len) {
 			return ByteBuffer.wrap(bytes, 0, len).array();
@@ -195,7 +195,7 @@ public final class FtnTools {
 		} catch (IOException e) {
 			//
 		}
-		return new String(bos.toByteArray(), cp866);
+		return new String(bos.toByteArray(), CP_866);
 	}
 
 	/**
@@ -497,8 +497,8 @@ public final class FtnTools {
 			text.append('\n');
 		}
 		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
-				.getInfo().getAddressList().toString(),
-				format.format(new Date())));
+                .getInfo().getAddressList().toString(),
+                FORMAT.format(new Date())));
 		message.setText(text.toString());
 		return message;
 	}
@@ -515,7 +515,7 @@ public final class FtnTools {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
 			InputStream is = message.getInputStream();
-			int len = 0;
+			int len;
 			while ((len = is.available()) > 0) {
 				byte[] buf;
 				if (len > 1024) {
@@ -536,7 +536,7 @@ public final class FtnTools {
 				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
 					File out = createInboundFile(message.isSecure());
 					FileOutputStream fos = new FileOutputStream(out);
-					int len = 0;
+					int len;
 					while ((len = zis.available()) > 0) {
 						byte[] buf;
 						if (len > 1024) {
@@ -749,7 +749,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Link getRouting(FtnMessage message) {
-		Link routeVia = null;
+		Link routeVia;
 		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
 		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", routeTo.toString());
@@ -1109,7 +1109,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Echoarea getAreaByName(String name, Link link) {
-		Echoarea ret = null;
+		Echoarea ret;
 		name = name.toLowerCase().replace("'", "\\'");
 		ret = ORMManager.INSTANSE.getEchoareaDAO().getFirstAnd("name", "=",
 				name);
@@ -1152,7 +1152,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Filearea getFileareaByName(String name, Link link) {
-		Filearea ret = null;
+		Filearea ret;
 		name = name.toLowerCase();
 		ret = ORMManager.INSTANSE.getFileareaDAO().getFirstAnd("name", "=",
 				name);
@@ -1198,11 +1198,11 @@ public final class FtnTools {
 	/**
 	 * Проверка на дроп нетмейла
 	 * 
-	 * @param netmail
-	 * @param secure
-	 * @return
+	 *
+     * @param netmail
+     * @return
 	 */
-	public static boolean validateNetmail(FtnMessage netmail, boolean secure) {
+	public static boolean validateNetmail(FtnMessage netmail) {
 		boolean validFrom = false;
 		boolean validTo = false;
 		// к нам на узел

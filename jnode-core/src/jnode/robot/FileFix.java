@@ -35,7 +35,7 @@ public class FileFix implements IRobot {
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
-		Link link = null;
+		Link link;
 		{
 			List<Link> links = ORMManager.INSTANSE.getLinkDAO().getAnd(
 					"ftn_address", "=", fmsg.getFromAddr().toString());
