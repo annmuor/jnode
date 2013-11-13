@@ -182,7 +182,7 @@ public class BinkpConnector implements ProtocolConnector {
 	/**
 	 * Получаем фрейм из потока
 	 * 
-	 * @param is
+	 * @param in
 	 * @return
 	 */
 	private BinkpFrame recv(InputStream in) {

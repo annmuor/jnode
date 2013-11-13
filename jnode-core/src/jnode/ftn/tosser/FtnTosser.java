@@ -645,8 +645,7 @@ public class FtnTosser {
 			for (FileForLink ffl : ffls) {
 				try {
 					File file = new File(ffl.getFilename());
-					Message m = new Message(file.getName(), file.length());
-					m.setInputStream(new FileInputStream(file));
+					Message m = new Message(file);
 					ORMManager.INSTANSE.getFileForLinkDAO().delete("link_id",
 							"=", link, "filename", "=", ffl.getFilename());
 					ret.add(m);
