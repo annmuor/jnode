@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -176,10 +177,10 @@ public class FtnTosser {
 
 	/**
 	 * Получаем сообщения из бандлов
-	 * 
-	 * @param connector
-	 */
-	public int tossIncoming(Message message, Link link) {
+	 *
+     * @param message сообщение
+     */
+	public int tossIncoming(Message message) {
 		if (message == null) {
 			return 0;
 		}
@@ -649,7 +650,8 @@ public class FtnTosser {
 					ORMManager.INSTANSE.getFileForLinkDAO().delete("link_id",
 							"=", link, "filename", "=", ffl.getFilename());
 					ret.add(m);
-				} catch (Exception ignore) {
+				} catch (Exception ex) {
+                     logger.l1(MessageFormat.format("Exception during get file {0} for link {1}", ffl, link), ex);
 				}
 			}
 		}

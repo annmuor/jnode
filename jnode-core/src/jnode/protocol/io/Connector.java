@@ -56,7 +56,7 @@ public class Connector {
 	}
 
 	public int onReceived(final Message message) {
-		return tosser.tossIncoming(message, link);
+		return tosser.tossIncoming(message);
 
 	}
 
