@@ -97,9 +97,16 @@ public class BinkpFrame implements Frame {
     private static class DisplayByteArrayHelper{
         private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
         private static String bytesToHex(byte[] bytes, int limit) {
-            final char[] hexChars = new char[bytes.length * 2];
+
+            int realLen = Math.min(bytes.length, limit);
+
+            if (realLen <= 0){
+                return "";
+            }
+
+            final char[] hexChars = new char[realLen * 2];
             int v;
-            for ( int j = 0; (j < bytes.length) && (j < limit); j++ ) {
+            for ( int j = 0; j < realLen; ++j ) {
                 v = bytes[j] & 0xFF;
                 hexChars[j * 2] = hexArray[v >>> 4];
                 hexChars[j * 2 + 1] = hexArray[v & 0x0F];
