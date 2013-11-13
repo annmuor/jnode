@@ -26,7 +26,7 @@ public enum PollQueue {
 
 	public void poll() {
 		if (queue.size() > 0) {
-			logger.l4("PollQueue contains" + queue.size()
+			logger.l4("PollQueue contains " + queue.size()
 					+ " nodes, making poll");
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
 			queue = new HashSet<Link>();
