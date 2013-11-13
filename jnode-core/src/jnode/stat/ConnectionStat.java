@@ -18,9 +18,11 @@ import jnode.event.IEventHandler;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
+import jnode.logger.Logger;
 import jnode.stat.threads.StatPoster;
 
 public class ConnectionStat implements IStatPoster, IEventHandler {
+    private static final Logger logger = Logger.getLogger(ConnectionStat.class);
 	private List<ConnectionStatDataElement> elements;
 	private final String statPath = FtnTools.getInbound() + File.separator
 			+ "connstat.bin";
@@ -52,9 +54,9 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 				}
 				ois.close();
 			} catch (IOException e) {
-
+                logger.l2("fail load data", e);
 			} catch (ClassNotFoundException e) {
-
+                logger.l2("fail load data", e);
 			}
 		}
 	}
@@ -104,7 +106,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 					}
 					oos.close();
 				} catch (IOException e) {
-
+                    logger.l2("fail load data", e);
 				}
 			}
 		}

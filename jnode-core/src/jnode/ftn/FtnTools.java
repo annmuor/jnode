@@ -353,7 +353,7 @@ public final class FtnTools {
 				ret.add(new Ftn2D(Integer.valueOf(part[0]), Integer
 						.valueOf(part[1])));
 			} catch (RuntimeException e) {
-
+               logger.l2("fail read2D", e);
 			}
 		}
 		return ret;
@@ -371,7 +371,7 @@ public final class FtnTools {
 			try {
 				ret.add(new FtnAddress(l2d));
 			} catch (RuntimeException e) {
-
+               logger.l2("fail read4D");
 			}
 		}
 		return ret;
@@ -1071,6 +1071,7 @@ public final class FtnTools {
 		try {
 			unpack(message);
 		} catch (IOException e) {
+            logger.l2("fail move to bad", e);
 		}
 	}
 

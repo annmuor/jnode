@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
+import jnode.logger.Logger;
 
 /**
  * 
@@ -21,6 +22,7 @@ import jnode.ftn.exception.LastMessageException;
  * 
  */
 public class FtnPkt {
+    private static final Logger logger = Logger.getLogger(FtnMessage.class);
 	private FtnAddress fromAddr;
 	private FtnAddress toAddr;
 	private String password;
@@ -148,6 +150,7 @@ public class FtnPkt {
 			fos.write(new byte[] { 0, 0 });
 			fos.close();
 		} catch (IOException e) {
+            logger.l2("fail finalz", e);
 		}
 	}
 
@@ -204,7 +207,7 @@ public class FtnPkt {
 			toAddr.setPoint(FtnTools.revShort(is.readShort()));
 			is.skip(4);
 		} catch (IOException e) {
-
+            logger.l2("fail unpack", e);
 		}
 	}
 

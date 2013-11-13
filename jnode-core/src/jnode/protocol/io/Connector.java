@@ -84,7 +84,8 @@ public class Connector {
 					connector.avalible(is);
 					lastactive = System.currentTimeMillis();
 				}
-			} catch (IOException ignore) {
+			} catch (IOException ex) {
+                logger.l2("Exception during doSocket", ex);
 			}
 
 			Frame[] frames = connector.getFrames();
@@ -120,6 +121,7 @@ public class Connector {
 						clientSocket.close();
 					}
 				} catch (IOException e) {
+                    logger.l2("fail close socket", e);
 				}
 				break;
 			}
@@ -184,6 +186,7 @@ public class Connector {
 					clientSocket.close();
 				}
 			} catch (IOException e) {
+                logger.l2("fail close socket", e);
 			}
 		}
 	}

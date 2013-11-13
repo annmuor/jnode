@@ -602,6 +602,7 @@ public class FtnTosser {
 					tic.setCrc32(crc32.getValue());
 					fis.close();
 				} catch (IOException e) {
+                    logger.l2("fail process tic", e);
 				}
 				tic.setArea(area.getName().toUpperCase());
 				tic.setAreaDesc(area.getDescription());

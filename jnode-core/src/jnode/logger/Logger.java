@@ -51,6 +51,7 @@ public final class Logger {
 		try {
 			bos.close();
 		} catch (IOException e1) {
+            return "[LOGGING INTERNAL ERROR]" + bos.toString();
 		}
 		return bos.toString();
 	}

@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
+import jnode.logger.Logger;
 
 /**
  * 
@@ -25,6 +26,7 @@ import jnode.ftn.exception.LastMessageException;
  * 
  */
 public class FtnMessage {
+    private static final Logger logger = Logger.getLogger(FtnMessage.class);
 	public static final int ATTR_PVT = 1;
 	public static final int ATTR_CRASH = 2;
 	public static final int ATTR_RECD = 4;
@@ -219,7 +221,7 @@ public class FtnMessage {
 			unpack(is);
 			is.close();
 		} catch (IOException e) {
-
+             logger.l2("fail unpack", e);
 		}
 
 	}
