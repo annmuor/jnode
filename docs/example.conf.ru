@@ -40,6 +40,7 @@ fileecho.enable = 1
 fileecho.path = /var/spool/jnode/files
 # Раскомментируйте, чтобы включить постинг статистики
 #stat.enable = 1
+#stat.posters = jnode.stat.ConnectionStat,jnode.stat.EchoareaStat,jnode.stat.FileareaStat
 # Эхоконференция, в которую пишут постеры статистики
 stat.area = jnode.local.stat
 # Раскомментируйте, чтобы включить запуск пользовательских скриптов по расписанию

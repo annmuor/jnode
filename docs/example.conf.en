@@ -41,6 +41,7 @@ fileecho.enable = 1
 fileecho.path = /var/spool/jnode/files
 # Uncomment to enable posting statistics
 #stat.enable = 1
+#stat.posters = jnode.stat.ConnectionStat,jnode.stat.EchoareaStat,jnode.stat.FileareaStat
 # Echoarea in which posters write statistics
 stat.area = jnode.local.stat
 # Uncomment to enable user scripts running on schedule
