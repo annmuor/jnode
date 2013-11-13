@@ -226,6 +226,7 @@ public class BinkpConnector implements ProtocolConnector {
 			}
 		} catch (IOException e) {
 			logger.l2("Frame receiving error", e);
+            return null;
 		}
 		return ret;
 	}
@@ -273,6 +274,7 @@ public class BinkpConnector implements ProtocolConnector {
 											+ algo + ")");
 									break;
 								} catch (NoSuchAlgorithmException e) {
+                                    logger.l2("fail algo ", e);
 								}
 							}
 							if (!useCram) {
@@ -324,6 +326,7 @@ public class BinkpConnector implements ProtocolConnector {
 								}
 
 							} catch (NumberFormatException e) {
+                                logger.l2("fail parse address ", e);
 							}
 						}
 					}
