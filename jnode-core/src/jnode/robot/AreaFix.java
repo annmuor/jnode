@@ -297,7 +297,7 @@ public class AreaFix implements IRobot {
 					sb.append(" is not subscribed");
 				} else {
 					List<Echomail> mails = ORMManager.INSTANSE.getEchomailDAO()
-							.getOrderLimitAnd(num, "id", false, "echoarea_id",
+							.getOrderLimitAnd(num, "id", true, "echoarea_id",
 									"=", earea);
 					for (Echomail mail : mails) {
 						ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
