@@ -35,8 +35,12 @@ public final class Logger {
 		this.className = className;
 	}
 
-	private void log(int _type, String log) {
-		if (Loglevel >= _type) {
+    private boolean isNeedLog(int type){
+        return Loglevel >= type;
+    }
+
+	private void log(int type, String log) {
+		if (isNeedLog(type)) {
 			System.out.println(String.format(LOG_FORMAT, DATE_FORMAT
 					.format(new Date()), Thread.currentThread().getId(),
 					className, log));
@@ -56,7 +60,27 @@ public final class Logger {
 		return bos.toString();
 	}
 
-	public void l5(String log) {
+    public boolean isNeedLog5() {
+        return isNeedLog(LOG_L5);
+    }
+
+    public boolean isNeedLog4() {
+        return isNeedLog(LOG_L4);
+    }
+
+    public boolean isNeedLog3() {
+        return isNeedLog(LOG_L3);
+    }
+
+    public boolean isNeedLog2() {
+        return isNeedLog(LOG_L2);
+    }
+
+    public boolean isNeedLog1() {
+        return isNeedLog(LOG_L1);
+    }
+
+    public void l5(String log) {
 		log(LOG_L5, log);
 	}
 

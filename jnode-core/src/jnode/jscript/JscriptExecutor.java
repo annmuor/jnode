@@ -1,18 +1,11 @@
 package jnode.jscript;
 
 import java.text.MessageFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.script.Bindings;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
+import javax.script.*;
 
 import jnode.dto.Schedule;
 import jnode.dto.ScriptHelper;
@@ -35,11 +28,11 @@ public class JscriptExecutor implements Runnable {
 	public JscriptExecutor() {
 		Calendar calendar = Calendar.getInstance(Locale.US);
 		calendar.set(Calendar.DAY_OF_YEAR,
-				calendar.get(Calendar.DAY_OF_YEAR) + 1);
+				calendar.get(Calendar.DAY_OF_YEAR));
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 1);
 		calendar.set(Calendar.SECOND, 0);
-		Date showDate = calendar.getTime();
+		Date showDate = new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
 		Calendar now = Calendar.getInstance(Locale.US);
 		long initialDelay = calendar.getTimeInMillis() - now.getTimeInMillis();
 		if (initialDelay < 0) {
@@ -95,11 +88,11 @@ public class JscriptExecutor implements Runnable {
 		Calendar now = Calendar.getInstance(Locale.US);
 		List<Schedule> items = ORMManager.INSTANSE.getScheduleDAO().getAll();
 		logger.l5(MessageFormat.format("{0} items in queue", items.size()));
-		Bindings bindings = createBindings();
+        engine.setBindings(createBindings(), ScriptContext.ENGINE_SCOPE);
 		for (Schedule item : items) {
 			if (item.isNeedExec(now)) {
 				try {
-					executeScript(engine, item, bindings);
+					executeScript(engine, item);
 				} catch (ScriptException e) {
 					logger.l2(MessageFormat.format("fail script {0} execution",
 							item.getJscript().getId()), e);
@@ -115,16 +108,32 @@ public class JscriptExecutor implements Runnable {
 
 	}
 
-	private static void executeScript(ScriptEngine engine, Schedule item,
-			Bindings bindings) throws ScriptException {
+	private static void executeScript(ScriptEngine engine, Schedule item) throws ScriptException {
 		if (item.getJscript() != null && item.getJscript().getId() != null) {
 
 			String content = ORMManager.INSTANSE.getJscriptDAO()
 					.getById(item.getJscript().getId()).getContent();
 			if (content != null) {
-				engine.eval(content, bindings);
+                logger.l5(MessageFormat.format("execute script {0}", content));
+                dump(engine);
+				engine.eval(content);
 			}
 
 		}
 	}
+
+    private static void dump(ScriptEngine engine) throws ScriptException {
+        if (!logger.isNeedLog5()){
+            return;
+        }
+
+        Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        Set<String> allAttributes = bind.keySet();
+        Set<String> allFunctions = new HashSet<String>();
+        for ( String attr : allAttributes ) {
+                allFunctions.add(engine.eval("typeof " + attr) + " " + attr);
+        }
+        logger.l5("engine atrrs " + Arrays.toString(allFunctions.toArray()));
+    }
+
 }

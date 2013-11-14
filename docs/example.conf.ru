@@ -35,13 +35,13 @@ nodelist.path = /var/spool/jnode/NODELIST
 # Путь к индексу нодлиста ( читать и писать )
 nodelist.index = /var/spool/jnode/NODELIST.idx
 # Закоментируйте чтоб отключить обработку файлэх
-fileecho.enable = 1
+fileecho.enable = true
 # Путь к фэхам
 fileecho.path = /var/spool/jnode/files
 # Раскомментируйте, чтобы включить постинг статистики
-#stat.enable = 1
+#stat.enable = true
 #stat.posters = jnode.stat.ConnectionStat,jnode.stat.EchoareaStat,jnode.stat.FileareaStat
 # Эхоконференция, в которую пишут постеры статистики
 stat.area = jnode.local.stat
 # Раскомментируйте, чтобы включить запуск пользовательских скриптов по расписанию
-#jscript.enable = 1
+#jscript.enable = true
