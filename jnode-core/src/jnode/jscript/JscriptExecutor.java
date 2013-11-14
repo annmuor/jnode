@@ -117,6 +117,10 @@ public class JscriptExecutor implements Runnable {
                 logger.l5(MessageFormat.format("execute script {0}", content));
                 dump(engine);
 				engine.eval(content);
+                // выполнились? и иксипшена  не произошло? ну вот это счастье!
+                Schedule modItem = ORMManager.INSTANSE.getScheduleDAO().getById(item.getId());
+                modItem.setLastRunDate(new Date());
+                ORMManager.INSTANSE.getScheduleDAO().update(modItem);
 			}
 
 		}
