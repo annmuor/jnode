@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -347,14 +348,44 @@ public final class FtnTools {
 	 */
 	public static List<Ftn2D> read2D(String list2d) {
 		List<Ftn2D> ret = new ArrayList<Ftn2D>();
-		for (String l2d : list2d.split(" ")) {
+
+        if (list2d == null || list2d.length() == 0 || list2d.trim().length() == 0){
+            return ret;
+        }
+
+        String lastNet = null;
+
+        for (String l2d : list2d.split(" ")) {
 			String[] part = l2d.split("/");
-			try {
-				ret.add(new Ftn2D(Integer.valueOf(part[0]), Integer
-						.valueOf(part[1])));
-			} catch (RuntimeException e) {
-               logger.l2("fail read2D", e);
-			}
+
+            String net;
+            String node;
+
+            switch (part.length){
+                case 2:
+                    // 5020/841
+                    net = part[0];
+                    node = part[1];
+                    break;
+                case 1:
+                    // 841
+                    net = lastNet;
+                    node = part[0];
+                    break;
+                default:
+                    throw new IllegalArgumentException(MessageFormat.format("fail parse 2d address [{0}] in list [{1}]", l2d, list2d));
+            }
+
+            try {
+                ret.add(Ftn2D.fromString(net, node));
+                lastNet = net;
+            } catch (IllegalArgumentException e){
+                lastNet = null;
+                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - illegal arguments", l2d, list2d), e);
+            } catch(RuntimeException e2){
+                lastNet = null;
+                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - unexpected error", l2d, list2d), e2);
+            }
 		}
 		return ret;
 	}
@@ -446,19 +477,13 @@ public final class FtnTools {
 
 	public static boolean getOptionBooleanDefFalse(Link link, String option) {
 		String s = getOption(link, option);
-		if (s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON")) {
-			return true;
-		}
-		return false;
-	}
+        return s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON");
+    }
 
 	public static boolean getOptionBooleanDefTrue(Link link, String option) {
 		String s = getOption(link, option);
-		if (s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF")) {
-			return false;
-		}
-		return true;
-	}
+        return !(s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF"));
+    }
 
 	public static long getOptionLong(Link link, String option) {
 		String s = getOption(link, option);
@@ -942,8 +967,7 @@ public final class FtnTools {
 	 * Паковка сообщений
 	 * 
 	 * @param messages
-	 * @param to
-	 * @param password
+	 * @param link
 	 * @return
 	 */
 	public static List<Message> pack(List<FtnMessage> messages, Link link) {
@@ -1188,12 +1212,9 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		if (ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
-				"echoarea_id", "=", area) != null) {
-			return true;
-		}
-		return false;
-	}
+        return ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
+                "echoarea_id", "=", area) != null;
+    }
 
 	/**
 	 * Проверка на дроп нетмейла
