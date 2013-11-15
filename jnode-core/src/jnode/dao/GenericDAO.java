@@ -1,7 +1,9 @@
 package jnode.dao;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -119,6 +121,7 @@ public abstract class GenericDAO<T> {
 			return getDaoV().queryForId(id);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getById", e);
+            logger.l1(MessageFormat.format("we worked with {0}", e));
 		}
 		return null;
 	}
@@ -133,6 +136,7 @@ public abstract class GenericDAO<T> {
 			return getDao().queryForAll();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getAll", e);
+            logger.l1(MessageFormat.format("we worked with {0}", e));
 		}
 		return new ArrayList<T>();
 	}
@@ -150,6 +154,8 @@ public abstract class GenericDAO<T> {
 			return qb.query();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getAnd", e);
+            logger.l1(MessageFormat.format("we worked with {0}", Arrays.toString(args)));
+
 		}
 		return new ArrayList<T>();
 	}
@@ -162,6 +168,7 @@ public abstract class GenericDAO<T> {
 			return qb.query();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getOrderAnd", e);
+            logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order, asc, Arrays.toString(args)));
 		}
 		return new ArrayList<T>();
 	}
@@ -176,6 +183,7 @@ public abstract class GenericDAO<T> {
 			return qb.query();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getOrderLimitAnd", e);
+            logger.l1(MessageFormat.format("we worked with {0} {1} {2} {3}", limit, order, asc, Arrays.toString(args)));
 		}
 		return new ArrayList<T>();
 	}
@@ -193,6 +201,7 @@ public abstract class GenericDAO<T> {
 			return qb.query();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getOr", e);
+            logger.l1(MessageFormat.format("we worked with {0}", Arrays.toString(args)));
 		}
 		return new ArrayList<T>();
 	}
@@ -205,6 +214,7 @@ public abstract class GenericDAO<T> {
 			return qb.query();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getOrderOr", e);
+            logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order, asc, Arrays.toString(args)));
 		}
 		return new ArrayList<T>();
 	}
@@ -230,6 +240,7 @@ public abstract class GenericDAO<T> {
 			return getDao().queryRaw(query);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getRaw", e);
+            logger.l1(MessageFormat.format("we worked with {0}", query));
 		}
 		return null;
 	}
@@ -239,6 +250,7 @@ public abstract class GenericDAO<T> {
 			return getDao().queryRaw(query, types);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in getRaw", e);
+            logger.l1(MessageFormat.format("we worked with {0} {1}", query, Arrays.toString(types)));
 		}
 		return null;
 	}
@@ -248,6 +260,7 @@ public abstract class GenericDAO<T> {
 			getDao().update(object);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in update", e);
+            logger.l1(MessageFormat.format("we worked with {0}", object));
 		}
 	}
 
@@ -256,6 +269,7 @@ public abstract class GenericDAO<T> {
 			getDao().create(object);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in save", e);
+            logger.l1(MessageFormat.format("we worked with {0}", object));
 		}
 	}
 
@@ -264,6 +278,7 @@ public abstract class GenericDAO<T> {
 			getDao().createOrUpdate(object);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in saveOrUpdate", e);
+            logger.l1(MessageFormat.format("we worked with {0}", object));
 		}
 	}
 
@@ -272,6 +287,7 @@ public abstract class GenericDAO<T> {
 			getDao().delete(object);
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in delete", e);
+            logger.l1(MessageFormat.format("we worked with {0}", object));
 		}
 	}
 
@@ -283,6 +299,7 @@ public abstract class GenericDAO<T> {
 			ub.update();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in update", e);
+            logger.l1(MessageFormat.format("we worked with {0} {1} {2}", field, value, Arrays.toString(args)));
 		}
 	}
 
@@ -293,6 +310,7 @@ public abstract class GenericDAO<T> {
 			db.delete();
 		} catch (SQLException e) {
 			logger.l1("SQL Exception in delete", e);
+            logger.l1(MessageFormat.format("we worked with {0}", Arrays.toString(args)));
 		}
 	}
 
