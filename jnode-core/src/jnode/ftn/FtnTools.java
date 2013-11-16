@@ -554,7 +554,7 @@ public final class FtnTools {
 			is.close();
 			fos.close();
 		} else if (filename
-				.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
+				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
 			ZipInputStream zis = new ZipInputStream(message.getInputStream());
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null) {
