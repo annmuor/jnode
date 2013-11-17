@@ -20,7 +20,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>dist</id>
+                        <id>dist-core</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
@@ -30,7 +30,22 @@
                             <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
                             <finalName>jnode-core-${project.version}</finalName>
                             <descriptors>
-                                <descriptor>distribution.xml</descriptor>
+                                <descriptor>distribution-core.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>dist-contrib</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+                            <finalName>jnode-contrib-${project.version}</finalName>
+                            <descriptors>
+                                <descriptor>distribution-contrib.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -44,7 +59,7 @@
             <groupId>jnode</groupId>
             <artifactId>jnode</artifactId>
             <version>${project.version}</version>
-            <type>ear</type>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
