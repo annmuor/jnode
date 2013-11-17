@@ -26,15 +26,9 @@ public class JscriptExecutor implements Runnable {
 			.getLogger(JscriptExecutor.class);
 
 	public JscriptExecutor() {
-		Calendar calendar = Calendar.getInstance(Locale.US);
-		calendar.set(Calendar.DAY_OF_YEAR,
-				calendar.get(Calendar.DAY_OF_YEAR));
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 1);
-		calendar.set(Calendar.SECOND, 0);
-		Date showDate = new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
-		Calendar now = Calendar.getInstance(Locale.US);
-		long initialDelay = calendar.getTimeInMillis() - now.getTimeInMillis();
+        Date showDate = getNextLaunchDate();
+		Date now = new Date();
+		long initialDelay = showDate.getTime() - now.getTime();
 		if (initialDelay < 0) {
 			initialDelay = 0;
 		}
@@ -45,7 +39,17 @@ public class JscriptExecutor implements Runnable {
 				initialDelay, MILLISEC_IN_DAY, TimeUnit.MILLISECONDS);
 	}
 
-	@SuppressWarnings("unchecked")
+    private static Date getNextLaunchDate() {
+        Calendar calendar = Calendar.getInstance(Locale.US);
+        calendar.set(Calendar.DAY_OF_YEAR,
+                calendar.get(Calendar.DAY_OF_YEAR));
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 1);
+        calendar.set(Calendar.SECOND, 0);
+        return new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
+    }
+
+    @SuppressWarnings("unchecked")
 	private Bindings createBindings() {
 		Bindings bindings = new SimpleBindings();
 		for (ScriptHelper scriptHelper : ORMManager.INSTANSE
