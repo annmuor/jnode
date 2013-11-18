@@ -16,7 +16,8 @@ import java.util.Date;
  */
 @DatabaseTable(tableName = "schedule")
 public class Schedule {
-    private static final DateFormat dateFormat = new SimpleDateFormat("MMMM dd yyyy");
+    private static final DateFormat DATE_DAY_FORMAT = new SimpleDateFormat("MMMM dd yyyy");
+    private static final DateFormat DATE_HOUR_FORMAT = new SimpleDateFormat("MMMM dd yyyy HH");
     @DatabaseField(columnName = "id", generatedId = true)
     private Long id;
     @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")
@@ -29,7 +30,11 @@ public class Schedule {
     private Date lastRunDate;
 
     private static boolean isSameDay(Date date1, Date date2) {
-        return !(date1 == null || date2 == null) && dateFormat.format(date1).equals(dateFormat.format(date2));
+        return !(date1 == null || date2 == null) && DATE_DAY_FORMAT.format(date1).equals(DATE_DAY_FORMAT.format(date2));
+    }
+
+    private static boolean isSameHour(Date date1, Date date2) {
+        return !(date1 == null || date2 == null) && DATE_HOUR_FORMAT.format(date1).equals(DATE_HOUR_FORMAT.format(date2));
     }
 
     public Long getId() {
@@ -54,13 +59,24 @@ public class Schedule {
             return false;
         }
 
-        if (isSameDay(getLastRunDate(), new Date())) {
-            return false;
+        switch(getType()){
+            case HOURLY:
+                if (isSameHour(getLastRunDate(), new Date())){
+                    return false;
+                }
+                break;
+            default:
+                if (isSameDay(getLastRunDate(), new Date())){
+                    return false;
+                }
+                break;
         }
 
         switch (getType()) {
-            case DAILY:
+            case HOURLY:
                 return true;
+            case DAILY:
+                return checkDetails(calendar.get(Calendar.HOUR_OF_DAY));
             case ANNUALLY:
                 return checkDetails(calendar.get(Calendar.DAY_OF_YEAR));
             case MONTHLY:
@@ -114,6 +130,6 @@ public class Schedule {
     }
 
     public static enum Type {
-        DAILY, WEEKLY, MONTHLY, ANNUALLY
+        HOURLY, DAILY, WEEKLY, MONTHLY, ANNUALLY
     }
 }

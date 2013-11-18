@@ -48,6 +48,15 @@ public class RssPosterHelper extends IJscriptHelper {
 		postNewsToEchoareaSinceX(title, echoarea, URL, new Date(date));
 	}
 
+    /**
+     * Запостить новости за последний час
+     */
+    public void postNewsToEchoareaInHours(String title, String echoarea, String URL,
+                                   int hoursBefore) {
+        Long date = new Date().getTime() - 3600000 * hoursBefore;
+        postNewsToEchoareaSinceX(title, echoarea, URL, new Date(date));
+    }
+
 	private void postNewsToEchoareaSinceX(String title, String echoarea,
 			String URL, Date x) {
 		SyndFeedInput feedInput = new SyndFeedInput();

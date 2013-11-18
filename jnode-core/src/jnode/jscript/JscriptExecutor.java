@@ -21,7 +21,7 @@ import jnode.orm.ORMManager;
  */
 public class JscriptExecutor implements Runnable {
 	private static final String JSCRIPT_ENABLE = "jscript.enable";
-	private static final long MILLISEC_IN_DAY = 86400000L;
+    private static final long MILLISEC_IN_HOUR = 3600000L;
 	private static final Logger logger = Logger
 			.getLogger(JscriptExecutor.class);
 
@@ -34,19 +34,19 @@ public class JscriptExecutor implements Runnable {
 		}
 
 		logger.l3("First jscriptExecutor will run at " + showDate
-				+ " and every 24h after");
+				+ " and every 1h after");
 		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(this,
-				initialDelay, MILLISEC_IN_DAY, TimeUnit.MILLISECONDS);
+				initialDelay, MILLISEC_IN_HOUR, TimeUnit.MILLISECONDS);
 	}
 
     private static Date getNextLaunchDate() {
         Calendar calendar = Calendar.getInstance(Locale.US);
         calendar.set(Calendar.DAY_OF_YEAR,
                 calendar.get(Calendar.DAY_OF_YEAR));
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
         calendar.set(Calendar.MINUTE, 1);
         calendar.set(Calendar.SECOND, 0);
-        return new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
+        return new Date(calendar.getTime().getTime() + MILLISEC_IN_HOUR);
     }
 
     @SuppressWarnings("unchecked")
@@ -92,11 +92,11 @@ public class JscriptExecutor implements Runnable {
 		Calendar now = Calendar.getInstance(Locale.US);
 		List<Schedule> items = ORMManager.INSTANSE.getScheduleDAO().getAll();
 		logger.l5(MessageFormat.format("{0} items in queue", items.size()));
-        engine.setBindings(createBindings(), ScriptContext.ENGINE_SCOPE);
+        final Bindings bindings = createBindings();
 		for (Schedule item : items) {
 			if (item.isNeedExec(now)) {
 				try {
-					executeScript(engine, item);
+					executeScript(engine, item, bindings);
 				} catch (ScriptException e) {
 					logger.l2(MessageFormat.format("fail script {0} execution",
 							item.getJscript().getId()), e);
@@ -112,15 +112,14 @@ public class JscriptExecutor implements Runnable {
 
 	}
 
-	private static void executeScript(ScriptEngine engine, Schedule item) throws ScriptException {
+	private static void executeScript(ScriptEngine engine, Schedule item, Bindings bindings) throws ScriptException {
 		if (item.getJscript() != null && item.getJscript().getId() != null) {
 
 			String content = ORMManager.INSTANSE.getJscriptDAO()
 					.getById(item.getJscript().getId()).getContent();
 			if (content != null) {
                 logger.l5(MessageFormat.format("execute script {0}", content));
-                dump(engine);
-				engine.eval(content);
+				engine.eval(content, bindings);
                 // выполнились? и иксипшена  не произошло? ну вот это счастье!
                 Schedule modItem = ORMManager.INSTANSE.getScheduleDAO().getById(item.getId());
                 modItem.setLastRunDate(new Date());
@@ -130,18 +129,5 @@ public class JscriptExecutor implements Runnable {
 		}
 	}
 
-    private static void dump(ScriptEngine engine) throws ScriptException {
-        if (!logger.isNeedLog5()){
-            return;
-        }
-
-        Bindings bind = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-        Set<String> allAttributes = bind.keySet();
-        Set<String> allFunctions = new HashSet<String>();
-        for ( String attr : allAttributes ) {
-                allFunctions.add(engine.eval("typeof " + attr) + " " + attr);
-        }
-        logger.l5("engine atrrs " + Arrays.toString(allFunctions.toArray()));
-    }
 
 }
