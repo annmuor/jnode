@@ -620,9 +620,14 @@ public class FtnTosser {
 				for (FileSubscription sub : ORMManager.INSTANSE
 						.getFileSubscriptionDAO().getAnd("filearea_id", "=",
 								area)) {
-					Link l = ORMManager.INSTANSE.getLinkDAO().getById(
-							sub.getLink().getId());
-					seenby.add(new FtnAddress(l.getLinkAddress()));
+                    try
+                    {
+                        Link l = ORMManager.INSTANSE.getLinkDAO().getById(
+                                sub.getLink().getId());
+                        seenby.add(new FtnAddress(l.getLinkAddress()));
+                    } catch (NullPointerException e){
+                        logger.l1("bad link for FileSubscription " + sub + " - ignored", e);
+                    }
 				}
 				List<FtnAddress> sb = new ArrayList<FtnAddress>(seenby);
 				Collections.sort(sb, new Ftn4DComparator());
