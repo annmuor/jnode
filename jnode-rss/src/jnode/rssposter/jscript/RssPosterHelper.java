@@ -29,7 +29,7 @@ public class RssPosterHelper extends IJscriptHelper {
 
 			@Override
 			public int getMinor() {
-				return 1;
+				return 2;
 			}
 
 			@Override
@@ -44,8 +44,7 @@ public class RssPosterHelper extends IJscriptHelper {
 	 */
 	public void postNewsToEchoarea(String title, String echoarea, String URL,
 			int daysBefore) {
-		Long date = new Date().getTime() - 24 * 3600000 * daysBefore;
-		postNewsToEchoareaSinceX(title, echoarea, URL, new Date(date));
+        postNewsToEchoareaInHours(title, echoarea, URL, daysBefore * 24);
 	}
 
     /**
@@ -68,7 +67,7 @@ public class RssPosterHelper extends IJscriptHelper {
 		StringBuilder sb = new StringBuilder();
 		try {
 			SyndFeed feed = feedInput.build(new XmlReader(new URL(URL)));
-			if (x.after(feed.getPublishedDate())) {
+			if (feed.getPublishedDate() != null && x.after(feed.getPublishedDate())) {
 				logger.l4("There's no new entries at " + URL);
 				return;
 			}
@@ -89,6 +88,9 @@ public class RssPosterHelper extends IJscriptHelper {
 		} catch (Exception e) {
 			logger.l2("Some error happens while parsing " + URL, e);
 		}
-		FtnTools.writeEchomail(area, title, sb.toString());
+        if (sb.length() != 0){
+            FtnTools.writeEchomail(area, title, sb.toString());
+
+        }
 	}
 }
