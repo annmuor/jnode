@@ -529,11 +529,18 @@ public class FtnTosser {
 				List<Subscription> ssubs = ORMManager.INSTANSE
 						.getSubscriptionDAO().getAnd("echoarea_id", "=", area);
 				for (Subscription ssub : ssubs) {
-					Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
-							ssub.getLink().getId());
-					FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
-					Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
-					seenby.add(d2);
+
+                    try
+                    {
+                        Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
+                                ssub.getLink().getId());
+                        FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
+                        Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
+                        seenby.add(d2);
+                    } catch(NullPointerException e){
+                        logger.l1("Bad link for subscriprion " + ssub + " : ignored", e);
+                    }
+
 				}
 
 				FtnMessage message = new FtnMessage();
