@@ -56,41 +56,58 @@ public class RssPosterHelper extends IJscriptHelper {
         postNewsToEchoareaSinceX(title, echoarea, URL, new Date(date));
     }
 
-	private void postNewsToEchoareaSinceX(String title, String echoarea,
+    /**
+     * Дата, смещенная относительно текущей на shiftInSec секунд
+     * @param shiftInSec смещение в секундах (с минусом - в прошлое, с плюсом - в будущее)
+     * @return смещенная дата
+     */
+    public Date shiftedDate(int shiftInSec){
+       return new Date(new Date().getTime() + 1000 * shiftInSec);
+    }
+
+	public void postNewsToEchoareaSinceX(String title, String echoarea,
 			String URL, Date x) {
-		SyndFeedInput feedInput = new SyndFeedInput();
 		Echoarea area = FtnTools.getAreaByName(echoarea, null);
 		if (area == null) {
 			logger.l4("No such echoarea - " + echoarea);
 			return;
 		}
-		StringBuilder sb = new StringBuilder();
-		try {
-			SyndFeed feed = feedInput.build(new XmlReader(new URL(URL)));
-			if (feed.getPublishedDate() != null && x.after(feed.getPublishedDate())) {
-				logger.l4("There's no new entries at " + URL);
-				return;
-			}
-
-			for (Object object : feed.getEntries()) {
-				SyndEntry entry = (SyndEntry) object;
-				if (x.after(entry.getPublishedDate())) {
-					break;
-				}
-				sb.append(entry.getTitle());
-				sb.append("\n\n");
-				sb.append(entry.getDescription().getValue()
-						.replaceAll("\\<.*?>", ""));
-				sb.append("\nRead more: ");
-				sb.append(entry.getUri());
-				sb.append("\n----------------------------------------------------------------------\n");
-			}
-		} catch (Exception e) {
-			logger.l2("Some error happens while parsing " + URL, e);
-		}
+        StringBuilder sb = getText(URL, x);
+        if (sb == null) return;
         if (sb.length() != 0){
             FtnTools.writeEchomail(area, title, sb.toString());
-
         }
 	}
+
+    private StringBuilder getText(String URL, Date x) {
+        SyndFeedInput feedInput = new SyndFeedInput();
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            SyndFeed feed = feedInput.build(new XmlReader(new java.net.URL(URL)));
+            if (feed.getPublishedDate() != null && x.after(feed.getPublishedDate())) {
+                logger.l4("There's no new entries at " + URL);
+                return null;
+            }
+
+            for (Object object : feed.getEntries()) {
+                SyndEntry entry = (SyndEntry) object;
+                if (x.after(entry.getPublishedDate())) {
+                    break;
+                }
+                sb.append("*");
+                sb.append(entry.getTitle());
+                sb.append("*");
+                sb.append("\n\n");
+                sb.append(entry.getDescription().getValue()
+                        .replaceAll("\\<.*?>", ""));
+                sb.append("\nRead more: ");
+                sb.append(entry.getUri());
+                sb.append("\n----------------------------------------------------------------------\n");
+            }
+        } catch (Exception e) {
+            logger.l2("Some error happens while parsing " + URL, e);
+        }
+        return sb;
+    }
 }
