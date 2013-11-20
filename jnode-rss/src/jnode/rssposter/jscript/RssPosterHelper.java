@@ -1,6 +1,7 @@
 package jnode.rssposter.jscript;
 
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Date;
 
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -66,15 +67,19 @@ public class RssPosterHelper extends IJscriptHelper {
     }
 
 	public void postNewsToEchoareaSinceX(String title, String echoarea,
-			String URL, Date x) {
+			String url, Date x) {
+
+        logger.l5(MessageFormat.format("postNewsToEchoareaSinceX title = {0}, echoarea = {1}, url = {2}, dateX = {3}",
+                title, echoarea, url, x));
+
 		Echoarea area = FtnTools.getAreaByName(echoarea, null);
 		if (area == null) {
 			logger.l4("No such echoarea - " + echoarea);
 			return;
 		}
-        StringBuilder sb = getText(URL, x);
-        if (sb == null) return;
-        if (sb.length() != 0){
+        StringBuilder sb = getText(url, x);
+        if (sb != null && sb.length() != 0){
+            logger.l5(MessageFormat.format("write in area {0} {1} entries", area, sb.length()));
             FtnTools.writeEchomail(area, title, sb.toString());
         }
 	}
@@ -90,9 +95,11 @@ public class RssPosterHelper extends IJscriptHelper {
                 return null;
             }
 
+
             for (Object object : feed.getEntries()) {
                 SyndEntry entry = (SyndEntry) object;
                 if (x.after(entry.getPublishedDate())) {
+                    logger.l5(MessageFormat.format("x = {0}, published date = {1} - break", x, entry.getPublishedDate()));
                     break;
                 }
                 sb.append("*");
