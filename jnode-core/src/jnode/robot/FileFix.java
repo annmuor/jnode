@@ -1,6 +1,7 @@
 package jnode.robot;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,65 +22,37 @@ import jnode.orm.ORMManager;
  * @author kreon
  * 
  */
-public class FileFix implements IRobot {
-	private static final Pattern help = Pattern.compile("^%HELP$",
+public class FileFix extends AbstractRobot {
+	private static final Pattern LIST = Pattern.compile("^%LIST$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern list = Pattern.compile("^%LIST$",
+	private static final Pattern QUERY = Pattern.compile("^%QUERY$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern query = Pattern.compile("^%QUERY$",
+	private static final Pattern ADD = Pattern.compile("^%?\\+?(\\S+)$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern add = Pattern.compile("^%?\\+?(\\S+)$",
-			Pattern.CASE_INSENSITIVE);
-	private static final Pattern rem = Pattern.compile("^%?\\-(\\S+)$",
+	private static final Pattern REM = Pattern.compile("^%?\\-(\\S+)$",
 			Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
-		Link link;
-		{
-			List<Link> links = ORMManager.INSTANSE.getLinkDAO().getAnd(
-					"ftn_address", "=", fmsg.getFromAddr().toString());
-			if (links.isEmpty()) {
-				FtnTools.writeReply(fmsg, "Access denied",
-						"You are not in links of origin");
-				return;
-			}
-			link = links.get(0);
-		}
-		if (!FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_FILEFIX)) {
-			FtnTools.writeReply(fmsg, "You are not welcome",
-					"Sorry, AreaFix is off for you");
-			return;
-		}
-		{
-			String password = FtnTools.getOptionString(link,
-					LinkOption.STRING_FILEFIX_PWD);
-			if ("".equals(password)) {
-				password = link.getPaketPassword();
+		Link link = getAndCheckLink(fmsg);
 
-			}
-			if (!password.equals(fmsg.getSubject())) {
-				FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
-				return;
-			}
-		}
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			line = line.toLowerCase();
-			if (help.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "FileFix help", help());
-			} else if (list.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "FileFix list", list(link));
-			} else if (query.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "FileFix query", query(link));
+			if (HELP.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} help", getRobotName()), help());
+			} else if (LIST.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} list", getRobotName()), list(link));
+			} else if (QUERY.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} query", getRobotName()), query(link));
 			} else {
-				Matcher m = rem.matcher(line);
+				Matcher m = REM.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					reply.append(rem(link, area));
 					continue;
 				}
-				m = add.matcher(line);
+				m = ADD.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					reply.append(add(link, area));
@@ -88,7 +61,7 @@ public class FileFix implements IRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			FtnTools.writeReply(fmsg, "AreaFix reply", reply.toString());
+			FtnTools.writeReply(fmsg, MessageFormat.format("{0} reply", getRobotName()), reply.toString());
 		}
 	}
 
@@ -97,8 +70,8 @@ public class FileFix implements IRobot {
 	 * 
 	 * @return
 	 */
-	private String help() {
-		return "Avalible commands:\n" + "%HELP - this message\n"
+    protected String help() {
+		return "Available commands:\n" + "%HELP - this message\n"
 				+ "%LIST - list of avalible fileareas\n"
 				+ "%QUERY - list of subscribed fileareas\n"
 				+ "+file.area - subscribe echo.area\n"
@@ -262,5 +235,20 @@ public class FileFix implements IRobot {
 		sb.append('\n');
 		return sb.toString();
 	}
+
+    @Override
+    protected String getRobotName() {
+        return "FileFix";
+    }
+
+    @Override
+    protected boolean isEnabled(Link link) {
+        return link != null && FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_FILEFIX);
+    }
+
+    @Override
+    protected String getPasswordOption() {
+        return LinkOption.STRING_FILEFIX_PWD;
+    }
 
 }

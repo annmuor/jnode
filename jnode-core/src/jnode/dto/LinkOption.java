@@ -25,9 +25,11 @@ public class LinkOption {
 	public static final String BOOLEAN_POLL_BY_TIMEOT = "pollbytimeout";
 	public static final String BOOLEAN_AREAFIX = "areafix";
 	public static final String BOOLEAN_FILEFIX = "filefix";
+    public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
 	public static final String LONG_LINK_LEVEL = "level";
 	public static final String SARRAY_LINK_GROUPS = "groups";
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";
+	public static final String STRING_SCRIPTFIX_PWD = "scriptfixpwd";
 	public static final String STRING_FILEFIX_PWD = "filefixpwd";
 	private static final HashMap<String, String> options = generateOptionsMap();
 

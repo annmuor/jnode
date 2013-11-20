@@ -1,6 +1,7 @@
 package jnode.robot;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,83 +18,57 @@ import jnode.orm.ORMManager;
  * @author kreon
  * 
  */
-public class AreaFix implements IRobot {
-	private static final Pattern help = Pattern.compile("^%HELP$",
+public class AreaFix extends AbstractRobot {
+	private static final Pattern LIST = Pattern.compile("^%LIST$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern list = Pattern.compile("^%LIST$",
+	private static final Pattern QUERY = Pattern.compile("^%QUERY$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern query = Pattern.compile("^%QUERY$",
+	private static final Pattern ADD = Pattern.compile("^%?\\+?(\\S+)$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern add = Pattern.compile("^%?\\+?(\\S+)$",
+	private static final Pattern REM = Pattern.compile("^%?\\-(\\S+)$",
 			Pattern.CASE_INSENSITIVE);
-	private static final Pattern rem = Pattern.compile("^%?\\-(\\S+)$",
-			Pattern.CASE_INSENSITIVE);
-	private static final Pattern rescan = Pattern.compile(
+	private static final Pattern RESCAN = Pattern.compile(
 			"^%RESCAN (\\S+) (\\d+)$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern add_rescan = Pattern.compile(
+	private static final Pattern ADD_RESCAN = Pattern.compile(
 			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
 
-	@Override
+    @Override
 	public void execute(FtnMessage fmsg) throws Exception {
-		Link link;
-		{
-			List<Link> links = ORMManager.INSTANSE.getLinkDAO().getAnd(
-					"ftn_address", "=", fmsg.getFromAddr().toString());
-			if (links.isEmpty()) {
-				FtnTools.writeReply(fmsg, "Access denied",
-						"You are not in links of origin");
-				return;
-			}
-			link = links.get(0);
-		}
-		if (!FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_AREAFIX)) {
-			FtnTools.writeReply(fmsg, "You are not welcome",
-					"Sorry, AreaFix is off for you");
-			return;
-		}
-		{
-			String password = FtnTools.getOptionString(link,
-					LinkOption.STRING_AREAFIX_PWD);
-			if ("".equals(password)) {
-				password = link.getPaketPassword();
-
-			}
-			if (!password.equals(fmsg.getSubject())) {
-				FtnTools.writeReply(fmsg, "Access denied", "Wrong password");
-				return;
-			}
-		}
+		Link link = getAndCheckLink(fmsg);
+        if (link == null){
+            return;
+        }
 
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			line = line.toLowerCase();
-			if (help.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix help", help());
-			} else if (list.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix list", list(link));
-			} else if (query.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, "AreaFix query", query(link));
+			if (HELP.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} help", getRobotName()), help());
+			} else if (LIST.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} list", getRobotName()), list(link));
+			} else if (QUERY.matcher(line).matches()) {
+				FtnTools.writeReply(fmsg, MessageFormat.format("{0} query", getRobotName()), query(link));
 			} else {
-				Matcher m = rem.matcher(line);
+				Matcher m = REM.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					reply.append(rem(link, area));
 					continue;
 				}
-				m = add.matcher(line);
+				m = ADD.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					reply.append(add(link, area));
 					continue;
 				}
-				m = rescan.matcher(line);
+				m = RESCAN.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					int num = Integer.valueOf(m.group(2));
 					reply.append(rescan(link, area, num));
 					continue;
 				}
-				m = add_rescan.matcher(line);
+				m = ADD_RESCAN.matcher(line);
 				if (m.matches()) {
 					String area = m.group(1);
 					int num = Integer.valueOf(m.group(2));
@@ -104,7 +79,7 @@ public class AreaFix implements IRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			FtnTools.writeReply(fmsg, "AreaFix reply", reply.toString());
+			FtnTools.writeReply(fmsg, MessageFormat.format("{0} reply", getRobotName()), reply.toString());
 		}
 	}
 
@@ -113,7 +88,7 @@ public class AreaFix implements IRobot {
 	 * 
 	 * @return
 	 */
-	private String help() {
+    protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
@@ -311,4 +286,20 @@ public class AreaFix implements IRobot {
 		sb.append('\n');
 		return sb.toString();
 	}
+
+    @Override
+    protected String getRobotName() {
+        return "AreaFix";
+    }
+
+    @Override
+    protected boolean isEnabled(Link link) {
+        return link != null && FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_AREAFIX);
+    }
+
+    @Override
+    protected String getPasswordOption() {
+        return LinkOption.STRING_AREAFIX_PWD;
+    }
+
 }
