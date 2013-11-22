@@ -36,6 +36,8 @@ public final class Cleaner {
 
         if (isTitle){
             replaceAll(sb, "<", "'");
+            replaceAll(sb, "&lt;", "'");
+            replaceAll(sb, "&gt;", "'");
             replaceAll(sb, ">", "'");
             replaceAll(sb, "«", "'");
             replaceAll(sb, "»", "'");
@@ -47,6 +49,8 @@ public final class Cleaner {
 
         } else {
             replaceAll(sb, "<", "\"");
+            replaceAll(sb, "&lt;", "\"");
+            replaceAll(sb, "&gt;", "\"");
             replaceAll(sb, ">", "\"");
             replaceAll(sb, "«", "\"");
             replaceAll(sb, "»", "\"");
