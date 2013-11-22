@@ -46,6 +46,10 @@ public final class Cleaner {
             replaceAll(sb, "\\", "'");
             replaceAll(sb, "&#8220;", "'");
             replaceAll(sb, "&#8221;", "'");
+            replaceAll(sb, "&#171;", "'");
+            replaceAll(sb, "&#171;", "'");
+            replaceAll(sb, "“", "'");
+            replaceAll(sb, "”", "'");
 
         } else {
             replaceAll(sb, "<", "\"");
@@ -58,6 +62,10 @@ public final class Cleaner {
             replaceAll(sb, "&raquo;", "\"");
             replaceAll(sb, "&#8220;", "\"");
             replaceAll(sb, "&#8221;", "\"");
+            replaceAll(sb, "&#171;", "\"");
+            replaceAll(sb, "&#187;", "\"");
+            replaceAll(sb, "“", "\"");
+            replaceAll(sb, "”", "\"");
         }
 
         replaceAll(sb, "\u0261", "-");
@@ -77,6 +85,8 @@ public final class Cleaner {
         replaceAll(sb, "&#8217;", "'");
 
         replaceAll(sb, "&#8230;", "...");
+        replaceAll(sb, "\u2013", "-");
+        replaceAll(sb, "\u2014", "-");
 
         if (!isTitle){
             replaceAll(sb, "\r", " ");
