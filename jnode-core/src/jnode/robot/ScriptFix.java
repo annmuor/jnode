@@ -5,10 +5,12 @@ import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
+import jnode.jscript.JscriptExecutor;
 import jnode.orm.ORMManager;
 
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -18,6 +20,8 @@ public class ScriptFix extends AbstractRobot {
 
     private static final Pattern LIST = Pattern.compile("^%LIST$",
             Pattern.CASE_INSENSITIVE);
+    private static final Pattern RUN = Pattern.compile(
+            "^%RUN (\\d+)$", Pattern.CASE_INSENSITIVE);
 
     @Override
     public void execute(FtnMessage fmsg) throws Exception {
@@ -33,12 +37,21 @@ public class ScriptFix extends AbstractRobot {
                 FtnTools.writeReply(fmsg, MessageFormat.format("{0} help", getRobotName()), help());
             } else if (LIST.matcher(line).matches())  {
                 FtnTools.writeReply(fmsg, MessageFormat.format("{0} list", getRobotName()), list());
+            } else {
+                Matcher m = RUN.matcher(line);
+                if (m.matches()) {
+                    long id = Long.valueOf(m.group(1));
+                    FtnTools.writeReply(fmsg, MessageFormat.format("{0} run script {1}", getRobotName(), id), runScript(id));
+                }
             }
 
         }
     }
 
-
+    private String runScript(long id){
+        String errMessage = JscriptExecutor.executeScript(id);
+        return errMessage != null ? errMessage : MessageFormat.format("script {0} executed successfully", id);
+    }
 
     @Override
     protected String getRobotName() {
@@ -58,7 +71,8 @@ public class ScriptFix extends AbstractRobot {
     protected String help() {
         return "Available commands:\n" +
                 "%HELP - this message\n" +
-                "%LIST - list of all scripts";
+                "%LIST - list of all scripts\n" +
+                "%RUN scriptId - force run script";
     }
 
     private String list() throws SQLException {
@@ -93,8 +107,8 @@ public class ScriptFix extends AbstractRobot {
         GenericRawResults<String[]> items = ORMManager.INSTANSE
                 .getJscriptDAO()
                 .getRaw("SELECT J.ID, S.ID AS S_ID, S.TYPE, S.DETAILS, " +
-                        " S.LASTRUNDATE, J.CONTENT FROM JSCRIPTS J LEFT OUTER JOIN  SCHEDULE S "+
-                        " ON (J.ID = S.JSCRIPT_ID) ORDER BY LASTRUNDATE DESC, ID DESC;");
+                        " S.LASTRUNDATE, J.CONTENT FROM JSCRIPTS J LEFT JOIN  SCHEDULE S "+
+                        " ON (J.ID = S.JSCRIPT_ID) ORDER BY ID;");
         for (String[] tokens : items.getResults()) {
             answer.parse(tokens);
             sb.append("--------------------------\n");

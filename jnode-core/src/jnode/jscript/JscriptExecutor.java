@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.script.*;
 
+import jnode.dto.Jscript;
 import jnode.dto.Schedule;
 import jnode.dto.ScriptHelper;
 import jnode.logger.Logger;
@@ -50,69 +51,79 @@ public class JscriptExecutor implements Runnable {
     }
 
     @SuppressWarnings("unchecked")
-	private Bindings createBindings() {
+	private static Bindings createBindings() {
 		Bindings bindings = new SimpleBindings();
 		for (ScriptHelper scriptHelper : ORMManager.INSTANSE
 				.getScriptHelperDAO().getAll()) {
-			Class<? super IJscriptHelper> clazz;
-			try {
-				clazz = (Class<? super IJscriptHelper>) Class
-						.forName(scriptHelper.getClassName());
-				IJscriptHelper object = (IJscriptHelper) clazz.newInstance();
-				bindings.put(scriptHelper.getId(), object);
-				logger.l4("ScriptHelper " + object.toString() + " ("
-						+ scriptHelper.getId() + ") loaded");
-			} catch (ClassNotFoundException e) {
-				logger.l2("Helper " + scriptHelper.getClassName()
-						+ " not found");
-			} catch (InstantiationException e) {
-				logger.l2("Helper " + scriptHelper.getClassName()
-						+ " can't been initialized");
-			} catch (IllegalAccessException e) {
-				logger.l2("Helper " + scriptHelper.getClassName()
-						+ " can't been initialized (2)");
-			} catch (ClassCastException e) {
-				logger.l2("Helper " + scriptHelper.getClassName()
-						+ " is not IJscriptHelper");
-			}
-
+            loadHelper(bindings, scriptHelper);
 		}
 		return bindings;
 	}
 
-	@Override
+    private static void loadHelper(Bindings bindings, ScriptHelper scriptHelper) {
+        Class<? super IJscriptHelper> clazz;
+        String scriptHelperClassName = scriptHelper.getClassName();
+        try {
+            clazz = (Class<? super IJscriptHelper>) Class
+                    .forName(scriptHelperClassName);
+            IJscriptHelper object = (IJscriptHelper) clazz.newInstance();
+            bindings.put(scriptHelper.getId(), object);
+            logger.l4("ScriptHelper " + object.toString() + " ("
+                    + scriptHelper.getId() + ") loaded");
+        } catch (ClassNotFoundException e) {
+            logger.l2("Helper " + scriptHelperClassName
+                    + " not found");
+        } catch (InstantiationException e) {
+            logger.l2("Helper " + scriptHelperClassName
+                    + " can't been initialized");
+        } catch (IllegalAccessException e) {
+            logger.l2("Helper " + scriptHelperClassName
+                    + " can't been initialized (2)");
+        } catch (ClassCastException e) {
+            logger.l2("Helper " + scriptHelperClassName
+                    + " is not IJscriptHelper");
+        }
+    }
+
+    @Override
 	public void run() {
 		if (!MainHandler.getCurrentInstance().getBooleanProperty(
 				JSCRIPT_ENABLE, true)) {
 			return;
 		}
 
-		ScriptEngine engine = new ScriptEngineManager()
-				.getEngineByName("javascript");
 		Calendar now = Calendar.getInstance(Locale.US);
 		List<Schedule> items = ORMManager.INSTANSE.getScheduleDAO().getAll();
 		logger.l5(MessageFormat.format("{0} items in queue", items.size()));
-        final Bindings bindings = createBindings();
-		for (Schedule item : items) {
-			if (item.isNeedExec(now)) {
-				try {
-					executeScript(engine, item, bindings);
-				} catch (ScriptException e) {
-					logger.l2(MessageFormat.format("fail script {0} execution",
-							item.getJscript().getId()), e);
-				} catch (Exception e) {
-					logger.l2(MessageFormat.format(
-							"unexpected fail script {0} execution", item
-									.getJscript().getId()), e);
-				}
-				logger.l5(MessageFormat.format("executed script {0}", item
-						.getJscript().getId()));
-			}
-		}
+        if (items.size() == 0){
+            return;
+        }
+        tryRunItemsByDate(now, items);
 
 	}
 
-	private static void executeScript(ScriptEngine engine, Schedule item, Bindings bindings) throws ScriptException {
+    private static void tryRunItemsByDate(Calendar now, List<Schedule> items) {
+        final ScriptEngine engine = createScriptEngine();
+        final Bindings bindings = createBindings();
+        for (Schedule item : items) {
+            if (item.isNeedExec(now)) {
+                try {
+                    executeScript(engine, item, bindings);
+                } catch (ScriptException e) {
+                    logger.l2(MessageFormat.format("fail script {0} execution",
+                            item.getJscript().getId()), e);
+                } catch (Exception e) {
+                    logger.l2(MessageFormat.format(
+                            "unexpected fail script {0} execution", item
+                                    .getJscript().getId()), e);
+                }
+                logger.l5(MessageFormat.format("executed script {0}", item
+                        .getJscript().getId()));
+            }
+        }
+    }
+
+    private static void executeScript(ScriptEngine engine, Schedule item, Bindings bindings) throws ScriptException {
 		if (item.getJscript() != null && item.getJscript().getId() != null) {
 
 			String content = ORMManager.INSTANSE.getJscriptDAO()
@@ -129,5 +140,45 @@ public class JscriptExecutor implements Runnable {
 		}
 	}
 
+    /**
+     * Выполнить скрипт с идентификатором id
+     * @param id идентификатор скрипта
+     * @return отчет об ошибках
+     */
+    public static String executeScript(Long id){
 
+        if (!MainHandler.getCurrentInstance().getBooleanProperty(
+                JSCRIPT_ENABLE, true)) {
+            return "Script execution disabled";
+        }
+
+        try
+        {
+            Jscript jscript = ORMManager.INSTANSE.getJscriptDAO()
+                    .getById(id);
+            if (jscript == null){
+                return MessageFormat.format("Script with id {0} not found", id);
+            }
+            String content = jscript.getContent();
+            if (content == null){
+                return MessageFormat.format("Null content of script with id {0}", id);
+            }
+
+            final ScriptEngine engine = createScriptEngine();
+            final Bindings bindings = createBindings();
+            logger.l5(MessageFormat.format("custom execute script {0}", content));
+            engine.eval(content, bindings);
+
+        } catch (Exception ex){
+            logger.l4(MessageFormat.format("fail execute script with id {0}", id), ex);
+            return "fail execute script: " + ex.getMessage();
+        }
+
+        return null;
+    }
+
+    private static ScriptEngine createScriptEngine() {
+        return new ScriptEngineManager()
+                .getEngineByName("javascript");
+    }
 }
