@@ -88,9 +88,9 @@ public final class Cleaner {
         replaceAll(sb, "\u2013", "-");
         replaceAll(sb, "\u2014", "-");
 
-        if (!isTitle){
-            replaceAll(sb, "\r", " ");
-            replaceAll(sb, "\n", " ");
+        if (isTitle){
+            replaceAll(sb, "\r", "");
+            replaceAll(sb, "\n", "");
         }
 
         return sb.toString();
