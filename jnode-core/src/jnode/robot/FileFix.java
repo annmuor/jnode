@@ -35,6 +35,9 @@ public class FileFix extends AbstractRobot {
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
 		Link link = getAndCheckLink(fmsg);
+        if (link == null){
+            return;
+        }
 
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
