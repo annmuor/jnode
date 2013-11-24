@@ -1,17 +1,14 @@
 package jnode.altrssposter.jscript;
 
 import jnode.altrssposter.RssPoster;
-import jnode.altrssposter.XMLSerializer;
+import jnode.altrssposter.Watermarks;
 import jnode.dto.Echoarea;
 import jnode.ftn.FtnTools;
 import jnode.jscript.IJscriptHelper;
 import jnode.logger.Logger;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Еще одна постилка RSS
@@ -40,11 +37,12 @@ public class RssPosterHelperAlt extends IJscriptHelper {
 
     /**
      * Постит новости в фидоарию
-     * @param title subject сообщения
+     *
+     * @param title    subject сообщения
      * @param echoarea ария
-     * @param url url источника
+     * @param url      url источника
      * @param datafile файл с данными
-     * @param limit максимальное количество собщений для положительной величины, либо неограничено
+     * @param limit    максимальное количество собщений для положительной величины, либо неограничено
      */
     public void postNewsToEchoarea(String title, String echoarea, String url, String datafile, int limit) {
 
@@ -57,24 +55,17 @@ public class RssPosterHelperAlt extends IJscriptHelper {
             return;
         }
 
-        Map<String, String> watermarks;
         try {
-            watermarks = new File(datafile).exists() ?
-                    (Map<String, String>) XMLSerializer.read(datafile) :
-                    new HashMap<String, String>();
+            Watermarks watermarks = new Watermarks(datafile);
+
+            StringBuilder sb = RssPoster.getText(url, watermarks, limit);
+            if (sb != null && sb.length() != 0) {
+                FtnTools.writeEchomail(area, title, sb.toString());
+            }
+
         } catch (FileNotFoundException e) {
-            logger.l4(MessageFormat.format("file {0} not found", datafile), e);
-            return;
+            logger.l4(MessageFormat.format("File {0} not found", datafile), e);
         }
 
-        StringBuilder sb = RssPoster.getText(url, watermarks, limit);
-        if (sb != null && sb.length() != 0){
-            try {
-                XMLSerializer.write(watermarks, datafile);
-                FtnTools.writeEchomail(area, title, sb.toString());
-            } catch (FileNotFoundException e) {
-                logger.l4(MessageFormat.format("file {0} not found - fail save", datafile), e);
-            }
-        }
     }
 }

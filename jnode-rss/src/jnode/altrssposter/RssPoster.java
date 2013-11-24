@@ -7,14 +7,11 @@ import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 import jnode.logger.Logger;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Manjago (kirill@temnenkov.com)
@@ -27,16 +24,11 @@ public final class RssPoster {
     // simple test
     public static void main(String[] args) throws FileNotFoundException {
         String fileName = "/temp/data.txt";
-        Map<String, String> watermarks = new File(fileName).exists() ?
-                (Map<String, String>) XMLSerializer.read(fileName) :
-                new HashMap<String, String>();
+        Watermarks watermarks = new Watermarks(fileName);
         System.out.println(getText("http://flibusta.net/polka/show/all/rss", watermarks, 4));
-
-        XMLSerializer.write(watermarks, fileName);
-
     }
 
-    private static String fill(StringBuilder sb, String url, String watermark, int limit){
+    private static String fill(StringBuilder sb, String url, String watermark, int limit) {
         String lastWatermark = null;
         try {
             List<SyndEntry> entries = new ArrayList<SyndEntry>();
@@ -48,11 +40,11 @@ public final class RssPoster {
         return lastWatermark;
     }
 
-    public static StringBuilder getText(String url, Map<String, String> watermarks, int limit) {
+    public static StringBuilder getText(String url, Watermarks watermarks, int limit) throws FileNotFoundException {
 
         StringBuilder sb = new StringBuilder();
         String lastWatermark = null;
-        final String watermark = watermarks.containsKey(url) ? watermarks.get(url) : null;
+        final String watermark = watermarks.readValue(url);
 
         try {
             lastWatermark = fill(sb, url, watermark, limit);
@@ -61,7 +53,7 @@ public final class RssPoster {
         }
 
         if (lastWatermark != null) {
-            watermarks.put(url, lastWatermark);
+            watermarks.storeValue(url, lastWatermark);
         }
         return sb;
     }
@@ -72,7 +64,7 @@ public final class RssPoster {
 
         SyndFeed feed = feedInput.build(new XmlReader(new URL(url)));
 
-        int max =  limit > 0 ?  Math.min(feed.getEntries().size(), limit) : feed.getEntries().size();
+        int max = limit > 0 ? Math.min(feed.getEntries().size(), limit) : feed.getEntries().size();
         for (int i = 0; i < max; ++i) {
             SyndEntry entry = (SyndEntry) feed.getEntries().get(i);
 
