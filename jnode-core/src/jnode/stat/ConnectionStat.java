@@ -19,14 +19,14 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 	private final String statPath = FtnTools.getInbound() + File.separator
 			+ "connstat.xml";
 
-	static class ConnectionStatDataElement  {
-		FtnAddress link;
-		int bytesReceived;
-		int bytesSended;
-		int incomingOk;
-		int incomingFailed;
-		int outgoingOk;
-		int outgoingFailed;
+	public static class ConnectionStatDataElement  {
+        public String linkStr;
+        public int bytesReceived;
+        public int bytesSended;
+        public int incomingOk;
+        public int incomingFailed;
+        public int outgoingOk;
+        public int outgoingFailed;
 	}
 
     private List<ConnectionStatDataElement> load() {
@@ -82,12 +82,12 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
         for (int i = 0; i < elements.size(); ++i) {
             ConnectionStatDataElement element = elements.get(i);
             if (evt.getAddress() == null) {
-                if (element.link == null) {
+                if (element.linkStr == null) {
                     pos = i;
                     break;
                 }
-            } else if (element.link != null) {
-                if (element.link.equals(evt.getAddress())) {
+            } else if (element.linkStr != null) {
+                if (element.linkStr.equals(evt.getAddress().asString())) {
                     pos = i;
                     break;
                 }
@@ -112,7 +112,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
                 int pos = findPos(evt, elements);
                 if (pos == -1){
                     current = new ConnectionStatDataElement();
-                    current.link = evt.getAddress();
+                    current.linkStr = evt.getAddress() != null ? evt.getAddress().asString() : null;
                 } else {
                     current = elements.get(pos);
                 }
@@ -158,8 +158,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 			@Override
 			public int compare(ConnectionStatDataElement arg0,
 					ConnectionStatDataElement arg1) {
-				FtnAddress a1 = arg0.link;
-				FtnAddress a2 = arg1.link;
+				FtnAddress a1 = FtnAddress.fromString(arg0.linkStr);
+				FtnAddress a2 = FtnAddress.fromString(arg1.linkStr);
 				if (a1 == null && a2 != null) {
 					return 1;
 				} else if (a2 == null && a1 != null) {
@@ -214,7 +214,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 		}
 		sb.append('\n');
 		for (ConnectionStatDataElement element : elements) {
-			String linkName = (element.link != null) ? element.link.toString()
+            FtnAddress link = FtnAddress.fromString(element.linkStr);
+			String linkName = (link != null) ? link.toString()
 					: "Unknown";
 			iOkT += element.incomingOk;
 			iFaT += element.incomingFailed;
