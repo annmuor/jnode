@@ -132,13 +132,21 @@ public class FtnTosser {
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
-		if (isADupe(area, echomail.getMsgid())) {
-			logger.l3("Message " + echomail.getArea() + " "
-					+ echomail.getMsgid() + " is a dupe");
-			Integer n = bad.get(echomail.getArea());
-			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
-			return;
-		}
+
+        // попадаются злобные сообщения без MSGID
+
+        if (echomail.getMsgid() == null){
+            logger.l3("echomai " + echomail + " has null msgid");
+        } else {
+            if (isADupe(area, echomail.getMsgid())) {
+                logger.l3("Message " + echomail.getArea() + " "
+                        + echomail.getMsgid() + " is a dupe");
+                Integer n = bad.get(echomail.getArea());
+                bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+                return;
+            }
+        }
+
 
 		processRewrite(echomail);
 
