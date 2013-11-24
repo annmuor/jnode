@@ -1,4 +1,4 @@
-package jnode.altrssposter;
+package jnode.store;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;

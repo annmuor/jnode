@@ -1,16 +1,8 @@
 package jnode.stat;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.*;
 
 import jnode.event.ConnectionEndEvent;
 import jnode.event.IEvent;
@@ -20,15 +12,14 @@ import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.stat.threads.StatPoster;
+import jnode.store.XMLSerializer;
 
 public class ConnectionStat implements IStatPoster, IEventHandler {
     private static final Logger logger = Logger.getLogger(ConnectionStat.class);
-	private List<ConnectionStatDataElement> elements;
 	private final String statPath = FtnTools.getInbound() + File.separator
-			+ "connstat.bin";
+			+ "connstat.xml";
 
-	static class ConnectionStatDataElement implements Serializable {
-		private static final long serialVersionUID = 1L;
+	static class ConnectionStatDataElement  {
 		FtnAddress link;
 		int bytesReceived;
 		int bytesSended;
@@ -38,27 +29,75 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 		int outgoingFailed;
 	}
 
+    private List<ConnectionStatDataElement> load() {
+        synchronized (ConnectionStat.class){
+            return internalLoad();
+        }
+    }
+
+    private List<ConnectionStatDataElement> loadAndDrop(){
+        synchronized (ConnectionStat.class){
+            List<ConnectionStatDataElement> result = internalLoad();
+            try {
+                XMLSerializer.write(new ArrayList<ConnectionStatDataElement>(), statPath);
+            } catch (FileNotFoundException e) {
+                logger.l2(MessageFormat.format("file {0} not found, fail clear data", statPath), e);
+            }
+            return result;
+        }
+    }
+
+    private void store(ConnectionEndEvent evt, ConnectionStatDataElement element){
+        synchronized (ConnectionStat.class){
+            List<ConnectionStatDataElement> elements = internalLoad();
+            int pos = findPos(evt, elements);
+            if (pos == -1){
+                elements.add(element);
+            } else {
+                elements.set(pos, element);
+            }
+            try {
+                XMLSerializer.write(elements, statPath);
+            } catch (FileNotFoundException e) {
+                logger.l2(MessageFormat.format("file {0} not found, fail store data", statPath), e);
+            }
+        }
+    }
+
+    private List<ConnectionStatDataElement> internalLoad()  {
+        List<ConnectionStatDataElement> result;
+        try {
+            result = new File(statPath).exists() ?
+                    (List<ConnectionStatDataElement>) XMLSerializer.read(statPath) :
+                    new ArrayList<ConnectionStatDataElement>();
+        } catch (FileNotFoundException e) {
+            logger.l2("file with stat connection ACCIDENTALLY not found", e);
+            return new ArrayList<ConnectionStatDataElement>();
+        }
+        return result;
+    }
+
+    private int findPos(ConnectionEndEvent evt, List<ConnectionStatDataElement> elements){
+        int pos = -1;
+        for (int i = 0; i < elements.size(); ++i) {
+            ConnectionStatDataElement element = elements.get(i);
+            if (evt.getAddress() == null) {
+                if (element.link == null) {
+                    pos = i;
+                    break;
+                }
+            } else if (element.link != null) {
+                if (element.link.equals(evt.getAddress())) {
+                    pos = i;
+                    break;
+                }
+            }
+        }
+        return pos;
+    }
+
 	public ConnectionStat() {
 		Notifier.INSTANSE.register(ConnectionEndEvent.class, this);
-		File stat = new File(statPath);
-		elements = new ArrayList<ConnectionStatDataElement>();
-		if (stat.exists()) {
-			try {
-				ObjectInputStream ois = new ObjectInputStream(
-						new FileInputStream(stat));
-				Object obj;
-				while ((obj = ois.readObject()) != null) {
-					if (obj instanceof ConnectionStatDataElement) {
-						elements.add((ConnectionStatDataElement) obj);
-					}
-				}
-				ois.close();
-			} catch (IOException e) {
-                logger.l2("fail load data", e);
-			} catch (ClassNotFoundException e) {
-                logger.l2("fail load data", e);
-			}
-		}
 	}
 
 	public void handle(IEvent event) {
@@ -66,23 +105,18 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 
 			if (event instanceof ConnectionEndEvent) {
 				ConnectionEndEvent evt = (ConnectionEndEvent) event;
-				ConnectionStatDataElement current = null;
-				for (ConnectionStatDataElement element : elements) {
-					if (evt.getAddress() == null) {
-						if (element.link == null) {
-							current = element;
-						}
-					} else if (element.link != null) {
-						if (element.link.equals(evt.getAddress())) {
-							current = element;
-						}
-					}
-				}
-				if (current == null) {
-					current = new ConnectionStatDataElement();
-					current.link = evt.getAddress();
-					elements.add(current);
-				}
+				ConnectionStatDataElement current;
+
+                List<ConnectionStatDataElement> elements = load();
+
+                int pos = findPos(evt, elements);
+                if (pos == -1){
+                    current = new ConnectionStatDataElement();
+                    current.link = evt.getAddress();
+                } else {
+                    current = elements.get(pos);
+                }
+
 				if (evt.isIncoming()) {
 					if (evt.isSuccess()) {
 						current.incomingOk++;
@@ -98,16 +132,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 				}
 				current.bytesReceived += evt.getBytesReceived();
 				current.bytesSended += evt.getBytesSended();
-				try {
-					ObjectOutputStream oos = new ObjectOutputStream(
-							new FileOutputStream(statPath));
-					for (ConnectionStatDataElement element : elements) {
-						oos.writeObject(element);
-					}
-					oos.close();
-				} catch (IOException e) {
-                    logger.l2("fail load data", e);
-				}
+
+                store(evt, current);
 			}
 		}
 	}
@@ -119,11 +145,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 
 	@Override
 	public String getText() {
-		List<ConnectionStatDataElement> elements;
-		synchronized (ConnectionStat.class) {
-			elements = this.elements;
-			this.elements = new ArrayList<ConnectionStatDataElement>();
-		}
+		List<ConnectionStatDataElement> elements = loadAndDrop();
 		int iOkT = 0;
 		int iFaT = 0;
 		int oOkT = 0;
@@ -316,7 +338,6 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 
 	@Override
 	public void init(StatPoster poster) {
-		// TODO Auto-generated method stub
-		
+
 	}
 }

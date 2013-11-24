@@ -1,5 +1,7 @@
 package jnode.altrssposter;
 
+import jnode.store.XMLSerializer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.MessageFormat;
@@ -13,19 +15,20 @@ public class Watermarks {
 
     private final String datafile;
 
-    private static final Object syncobject = new Object();
-
     public Watermarks(String datafile) {
         this.datafile = datafile;
     }
 
     private Map<String, String> load() throws FileNotFoundException {
-        synchronized (syncobject){
-            Map<String, String> watermarks = new File(datafile).exists() ?
-                        (Map<String, String>) XMLSerializer.read(datafile) :
-                        new HashMap<String, String>();
-            return watermarks;
+        synchronized (Watermarks.class){
+            return internalLoad();
         }
+    }
+
+    private Map<String, String> internalLoad() throws FileNotFoundException {
+        return new File(datafile).exists() ?
+                    (Map<String, String>) XMLSerializer.read(datafile) :
+                    new HashMap<String, String>();
     }
 
     public String readValue(String key) throws FileNotFoundException {
@@ -34,8 +37,8 @@ public class Watermarks {
     }
 
     public void storeValue(String key, String value) throws FileNotFoundException {
-        synchronized (syncobject){
-            Map<String, String> watermarks = load();
+        synchronized (Watermarks.class){
+            Map<String, String> watermarks = internalLoad();
             watermarks.put(key, value);
             XMLSerializer.write(watermarks, datafile);
         }
