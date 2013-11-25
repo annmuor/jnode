@@ -87,7 +87,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
                     break;
                 }
             } else if (element.linkStr != null) {
-                if (element.linkStr.equals(evt.getAddress().asString())) {
+                if (element.linkStr.equals(evt.getAddress().toString())) {
                     pos = i;
                     break;
                 }
@@ -112,7 +112,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
                 int pos = findPos(evt, elements);
                 if (pos == -1){
                     current = new ConnectionStatDataElement();
-                    current.linkStr = evt.getAddress() != null ? evt.getAddress().asString() : null;
+                    current.linkStr = evt.getAddress() != null ? evt.getAddress().toString() : null;
                 } else {
                     current = elements.get(pos);
                 }
@@ -158,8 +158,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 			@Override
 			public int compare(ConnectionStatDataElement arg0,
 					ConnectionStatDataElement arg1) {
-				FtnAddress a1 = FtnAddress.fromString(arg0.linkStr);
-				FtnAddress a2 = FtnAddress.fromString(arg1.linkStr);
+				FtnAddress a1 = new FtnAddress(arg0.linkStr);
+				FtnAddress a2 = new FtnAddress(arg1.linkStr);
 				if (a1 == null && a2 != null) {
 					return 1;
 				} else if (a2 == null && a1 != null) {
@@ -214,7 +214,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
 		}
 		sb.append('\n');
 		for (ConnectionStatDataElement element : elements) {
-            FtnAddress link = FtnAddress.fromString(element.linkStr);
+            FtnAddress link = new FtnAddress(element.linkStr);
 			String linkName = (link != null) ? link.toString()
 					: "Unknown";
 			iOkT += element.incomingOk;

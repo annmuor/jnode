@@ -20,23 +20,6 @@ public class FtnAddress implements Serializable {
 	protected int node;
 	protected int point;
 
-    public String asString(){
-        return MessageFormat.format("{0}:{1}:{2}:{3}", zone, net, node, point);
-    }
-
-    public static FtnAddress fromString(String str){
-       if (str == null){
-           return null;
-       }
-       String[] items = str.split(":");
-       if (items.length != 4){
-           return null;
-       }
-        return new FtnAddress(
-                Integer.parseInt(items[0]), Integer.parseInt(items[1]),
-                Integer.parseInt(items[2]), Integer.parseInt(items[3]));
-    }
-
 	public FtnAddress(String addr) {
 		Pattern p = Pattern
 				.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
@@ -59,7 +42,7 @@ public class FtnAddress implements Serializable {
 		}
 	}
 
-    public FtnAddress(int zone, int point, int node, int net) {
+    public FtnAddress(int zone, int net, int node, int point) {
         this.zone = zone;
         this.point = point;
         this.node = node;
