@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.7.0_10" class="java.beans.XMLDecoder">
+ <object class="java.util.ArrayList">
+  <void method="add">
+   <object class="jnode.report.ConnectionStatData$ConnectionStatDataElement" id="ConnectionStatData$ConnectionStatDataElement0">
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>linkStr</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <string>2:5020/828.17</string>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>bytesReceived</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>1</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>bytesSended</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>2</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>incomingOk</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>4</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>incomingFailed</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>3</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>outgoingOk</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>6</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>outgoingFailed</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement0"/>
+      <int>5</int>
+     </void>
+    </void>
+   </object>
+  </void>
+  <void method="add">
+   <object class="jnode.report.ConnectionStatData$ConnectionStatDataElement" id="ConnectionStatData$ConnectionStatDataElement1">
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>linkStr</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <string>2:5020/828.18</string>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>bytesReceived</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>11</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>bytesSended</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>21</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>incomingOk</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>41</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>incomingFailed</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>31</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>outgoingOk</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>61</int>
+     </void>
+    </void>
+    <void class="jnode.report.ConnectionStatData$ConnectionStatDataElement" method="getField">
+     <string>outgoingFailed</string>
+     <void method="set">
+      <object idref="ConnectionStatData$ConnectionStatDataElement1"/>
+      <int>51</int>
+     </void>
+    </void>
+   </object>
+  </void>
+ </object>
+</java>
