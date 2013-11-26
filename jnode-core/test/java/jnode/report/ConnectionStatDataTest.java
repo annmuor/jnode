@@ -97,6 +97,36 @@ public class ConnectionStatDataTest {
 
     }
 
+    @Test
+    public void testStore2() throws Exception {
+        ConnectionStatData data = new ConnectionStatData(path);
+
+        data.store(new FtnAddress("2:5020/828.17"), e1);
+        e2.linkStr = null;
+        data.store(null, e2);
+
+        List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
+
+        TestCase.assertNotNull(loaded);
+        TestCase.assertEquals(2, loaded.size());
+
+        TestCase.assertEquals(1, loaded.get(0).bytesReceived);
+        TestCase.assertEquals(2, loaded.get(0).bytesSended);
+        TestCase.assertEquals(3, loaded.get(0).incomingFailed);
+        TestCase.assertEquals(4, loaded.get(0).incomingOk);
+        TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
+        TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
+        TestCase.assertEquals(6, loaded.get(0).outgoingOk);
+
+        TestCase.assertEquals(11, loaded.get(1).bytesReceived);
+        TestCase.assertEquals(21, loaded.get(1).bytesSended);
+        TestCase.assertEquals(31, loaded.get(1).incomingFailed);
+        TestCase.assertEquals(41, loaded.get(1).incomingOk);
+        TestCase.assertNull(loaded.get(1).linkStr);
+        TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
+        TestCase.assertEquals(61, loaded.get(1).outgoingOk);
+    }
+
     private void check(List<ConnectionStatData.ConnectionStatDataElement> loaded) {
         TestCase.assertNotNull(loaded);
         TestCase.assertEquals(2, loaded.size());

@@ -70,9 +70,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
         return "Daily connection stat";
     }
 
-    @Override
-    public String getText() {
-        ConnectionStatData data = new ConnectionStatData(statPath);
+    private static String getText(String path){
+        ConnectionStatData data = new ConnectionStatData(path);
         List<ConnectionStatData.ConnectionStatDataElement> elements = data.loadAndDrop();
         int iOkT = 0;
         int iFaT = 0;
@@ -86,8 +85,8 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
             @Override
             public int compare(ConnectionStatData.ConnectionStatDataElement arg0,
                                ConnectionStatData.ConnectionStatDataElement arg1) {
-                FtnAddress a1 = new FtnAddress(arg0.linkStr);
-                FtnAddress a2 = new FtnAddress(arg1.linkStr);
+                FtnAddress a1 = arg0.linkStr != null ? new FtnAddress(arg0.linkStr) : null;
+                FtnAddress a2 = arg1.linkStr != null ? new FtnAddress(arg1.linkStr) : null;
                 if (a1 == null && a2 != null) {
                     return 1;
                 } else if (a2 == null && a1 != null) {
@@ -142,7 +141,7 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
         }
         sb.append('\n');
         for (ConnectionStatData.ConnectionStatDataElement element : elements) {
-            FtnAddress link = new FtnAddress(element.linkStr);
+            FtnAddress link = element.linkStr != null ? new FtnAddress(element.linkStr) : null;
             String linkName = (link != null) ? link.toString()
                     : "Unknown";
             iOkT += element.incomingOk;
@@ -251,7 +250,12 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
         return sb.toString();
     }
 
-    private String b2s(int bytes) {
+    @Override
+    public String getText() {
+        return getText(statPath);
+    }
+
+    private static String b2s(int bytes) {
         String format = "%4.2f %s";
         String type = (bytes > 1024) ? (bytes > 1048576) ? (bytes > 1073741824) ? "Gb"
                 : "Mb"
