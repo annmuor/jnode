@@ -4,11 +4,33 @@ import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
  */
 public class ReportBuilderTest {
+
+    @Test
+    public void testArrayString() throws Exception {
+        List<String> res = ReportBuilder.asStrList("1,2,3", ",");
+        TestCase.assertNotNull(res);
+        TestCase.assertEquals(3, res.size());
+        TestCase.assertEquals("1", res.get(0));
+        TestCase.assertEquals("2", res.get(1));
+        TestCase.assertEquals("3", res.get(2));
+    }
+
+    @Test
+    public void testArrayInt() throws Exception {
+        List<Integer> res = ReportBuilder.asIntList("1,2,3", ",");
+        TestCase.assertNotNull(res);
+        TestCase.assertEquals(3, res.size());
+        TestCase.assertEquals(Integer.valueOf(1), res.get(0));
+        TestCase.assertEquals(Integer.valueOf(2), res.get(1));
+        TestCase.assertEquals(Integer.valueOf(3), res.get(2));
+    }
+
     @Test
     public void testAddItem() throws Exception {
         StringBuilder sb = new StringBuilder();

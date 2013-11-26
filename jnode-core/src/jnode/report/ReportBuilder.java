@@ -1,6 +1,7 @@
 package jnode.report;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -61,6 +62,32 @@ public class ReportBuilder {
 
     }
 
+    private static boolean isEmptyStr(String s){
+        return s == null || s.length() == 0;
+    }
+
+    static List<String> asStrList(String data, String delims){
+        if (isEmptyStr(data) || isEmptyStr(delims)) {
+            return null;
+        }
+
+        String[] items = data.split(delims);
+        return Arrays.asList(items);
+    }
+
+    static List<Integer> asIntList(String data, String delims){
+        List<String> temp = asStrList(data, delims);
+        if (temp == null){
+            return null;
+        }
+
+        List<Integer> result = new ArrayList<>();
+        for(String item : temp){
+           result.add(Integer.valueOf(item));
+        }
+        return result;
+    }
+
     static void newLine(StringBuilder sb) {
         sb.append('\n');
     }
@@ -77,6 +104,10 @@ public class ReportBuilder {
 
     private List<Integer> getColLength() {
         return colLength;
+    }
+
+    public void setColLength(String colLen, String delim){
+        setColLength(asIntList(colLen, delim));
     }
 
     public void setColLength(List<Integer> colLength) {
@@ -96,6 +127,10 @@ public class ReportBuilder {
 
     private List<String> getColumns() {
         return columns;
+    }
+
+    public void setColumns(String cols, String delim){
+        setColumns(asStrList(cols, delim));
     }
 
     public void setColumns(List<String> columns) {
