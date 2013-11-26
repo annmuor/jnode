@@ -24,7 +24,7 @@ public class StatPoster extends TimerTask {
 
     public StatPoster() {
 		if (getStatisticEnabled()) {
-			posters = new ArrayList<IStatPoster>();
+			posters = new ArrayList<>();
 			{
 				String[] posters = MainHandler
 						.getCurrentInstance()
@@ -40,8 +40,6 @@ public class StatPoster extends TimerTask {
 						instance.init(this);
 						this.posters.add(instance);
 						logger.l2("Poster " + poster + " started");
-					} catch (RuntimeException e) {
-						logger.l1("Unable to load poster " + poster, e);
 					} catch (Exception e) {
 						logger.l1("Unable to load poster " + poster, e);
 					}
@@ -69,9 +67,15 @@ public class StatPoster extends TimerTask {
 		logger.l1("StatPoster activated");
 		Echoarea area = FtnTools.getAreaByName(getTechEchoarea(), null);
 		for (IStatPoster poster : posters) {
-			FtnTools.writeEchomail(area, poster.getSubject(), poster.getText());
-			logger.l3("Posted stat from robot "
-					+ poster.getClass().getCanonicalName());
+            String text = poster.getText();
+            if (text != null && text.length() != 0){
+                FtnTools.writeEchomail(area, poster.getSubject(), poster.getText());
+                logger.l3("Posted stat from robot "
+                        + poster.getClass().getCanonicalName());
+            } else {
+                logger.l3("Empty stat from robot "
+                        + poster.getClass().getCanonicalName());
+            }
 		}
 	}
 
