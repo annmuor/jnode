@@ -8,13 +8,19 @@ import jnode.orm.ORMManager;
 import jnode.report.ReportBuilder;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Manjago (kirill@temnenkov.com)
  */
 public class ReportHelper extends IJscriptHelper {
 
+    private static final String DELIM = ",";
     private final Logger logger = Logger
             .getLogger(getClass());
 
@@ -34,7 +40,7 @@ public class ReportHelper extends IJscriptHelper {
         };
     }
 
-    public void report(String echoarea, String subject, String sql, String headers, String colLen) {
+    public void report(String echoarea, String subject, String sql, String headers, String colLen, String formats) {
 
         GenericRawResults<String[]> results = ORMManager.INSTANSE
                 .getEchomailDAO()
@@ -57,8 +63,11 @@ public class ReportHelper extends IJscriptHelper {
         }
 
         ReportBuilder builder = new ReportBuilder();
-        builder.setColumns(headers, ",");
-        builder.setColLength(colLen, ",");
+        builder.setColumns(headers, DELIM);
+        builder.setColLength(colLen, DELIM);
+        if (formats != null && formats.length() != 0){
+            builder.setFormats(formats, DELIM);
+        }
 
         for (String[] items : res) {
             builder.printLine(items);

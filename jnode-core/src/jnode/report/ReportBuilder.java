@@ -1,18 +1,58 @@
 package jnode.report;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
  */
 public class ReportBuilder {
+    private final StringBuilder sb = new StringBuilder();
+    private final Map<String, FieldFormatter> formatters = new HashMap<>();
     private List<String> columns;
     private List<Integer> colLength;
     private int width;
-    private final StringBuilder sb = new StringBuilder();
     private boolean isHeaderPrinted;
+    private List<String> formats;
+
+    public ReportBuilder() {
+        formatters.put("S", new FieldFormatter() {
+            @Override
+            public String formatValue(Object s) {
+                return s == null ? "" : String.valueOf(s);
+            }
+        });
+        formatters.put("D", new FieldFormatter() {
+            private final DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+            @Override
+            public String formatValue(Object s) {
+
+                if (!(s instanceof String)) {
+                    return "";
+                }
+
+                String str = (String) s;
+
+                long time;
+                try {
+                    time = Long.parseLong(str);
+                } catch (NumberFormatException e) {
+                    return "Bad date(1)";
+                }
+
+                if (time <= 0) {
+                    return "Bad date(2)";
+                }
+
+                Date date = new Date(time);
+
+                return dateFormat.format(date);
+            }
+        });
+
+    }
 
     static void addVer(StringBuilder sb) {
         sb.append('|');
@@ -62,11 +102,11 @@ public class ReportBuilder {
 
     }
 
-    private static boolean isEmptyStr(String s){
+    private static boolean isEmptyStr(String s) {
         return s == null || s.length() == 0;
     }
 
-    static List<String> asStrList(String data, String delims){
+    static List<String> asStrList(String data, String delims) {
         if (isEmptyStr(data) || isEmptyStr(delims)) {
             return null;
         }
@@ -75,15 +115,15 @@ public class ReportBuilder {
         return Arrays.asList(items);
     }
 
-    static List<Integer> asIntList(String data, String delims){
+    static List<Integer> asIntList(String data, String delims) {
         List<String> temp = asStrList(data, delims);
-        if (temp == null){
+        if (temp == null) {
             return null;
         }
 
         List<Integer> result = new ArrayList<>();
-        for(String item : temp){
-           result.add(Integer.valueOf(item));
+        for (String item : temp) {
+            result.add(Integer.valueOf(item));
         }
         return result;
     }
@@ -98,16 +138,24 @@ public class ReportBuilder {
         }
     }
 
+    public List<String> getFormats() {
+        return formats;
+    }
+
+    public void setFormats(List<String> formats) {
+        if (formats == null) {
+            this.formats = null;
+        } else {
+            this.formats = new ArrayList<>(formats);
+        }
+    }
+
     public int getWidth() {
         return width;
     }
 
     private List<Integer> getColLength() {
         return colLength;
-    }
-
-    public void setColLength(String colLen, String delim){
-        setColLength(asIntList(colLen, delim));
     }
 
     public void setColLength(List<Integer> colLength) {
@@ -125,12 +173,12 @@ public class ReportBuilder {
         }
     }
 
-    private List<String> getColumns() {
-        return columns;
+    public void setColLength(String colLen, String delim) {
+        setColLength(asIntList(colLen, delim));
     }
 
-    public void setColumns(String cols, String delim){
-        setColumns(asStrList(cols, delim));
+    private List<String> getColumns() {
+        return columns;
     }
 
     public void setColumns(List<String> columns) {
@@ -141,31 +189,52 @@ public class ReportBuilder {
         }
     }
 
+    public void setColumns(String cols, String delim) {
+        setColumns(asStrList(cols, delim));
+    }
+
+    public void setFormats(String formats, String delim) {
+        setFormats(asStrList(formats, delim));
+    }
+
     public StringBuilder getText() {
-        if (sb.length() != 0){
+        if (sb.length() != 0) {
             printHorLine();
         }
         return sb;
     }
 
-    public void printLine(String... args){
+    public void printLine(String... args) {
         checks();
-        if (args == null){
+        if (args == null) {
             throw new IllegalArgumentException("bad args");
         }
-        if (args.length != getColLength().size() ){
+        if (args.length != getColLength().size()) {
             throw new IllegalArgumentException("bad args count");
         }
-        if (!isHeaderPrinted){
+        if (!isHeaderPrinted) {
             printHeader();
         }
 
         for (int i = 0; i < args.length; ++i) {
             addVer(sb);
-            addItem(sb, args[i] != null ? args[i] : "", getColLength().get(i));
+            addItem(sb, convert(args[i] != null ? args[i] : "", i), getColLength().get(i));
         }
         addVer(sb);
         newLine(sb);
+    }
+
+    String convert(String item, int convNum) {
+        if (getFormats() == null) {
+            return item;
+        }
+
+        final String formatterKey = getFormats().get(convNum);
+        if (formatters.containsKey(formatterKey)) {
+            return formatters.get(formatterKey).formatValue(item);
+        } else {
+            return item;
+        }
     }
 
     private void checks() {
@@ -178,11 +247,14 @@ public class ReportBuilder {
         if (getColumns().size() != getColLength().size()) {
             throw new IllegalStateException("columns.size() != colLength.size()");
         }
+        if (getFormats() != null && getFormats().size() != getColumns().size()) {
+            throw new IllegalStateException("getFormats().size() !=  getColumns().size()");
+        }
     }
 
-    public void printHorLine(){
+    public void printHorLine() {
         checks();
-        if (!isHeaderPrinted){
+        if (!isHeaderPrinted) {
             printHeader();
         }
         horLine(sb);
@@ -210,5 +282,9 @@ public class ReportBuilder {
         horLine(sb);
 
         isHeaderPrinted = true;
+    }
+
+    interface FieldFormatter {
+        String formatValue(Object s);
     }
 }

@@ -35,7 +35,7 @@ public class Connector {
 
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
-		messages = new ArrayList<Message>();
+		messages = new ArrayList<>();
 	}
 
 	public void setMessages(List<Message> messages) {
@@ -148,7 +148,7 @@ public class Connector {
 					connector.getBytesReceived(), connector.getBytesSent());
 		}
 		Notifier.INSTANSE.notify(event);
-		messages = new ArrayList<Message>();
+		messages = new ArrayList<>();
 		index = 0;
 	}
 
@@ -174,7 +174,8 @@ public class Connector {
 		} catch (SocketTimeoutException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
 					.getLinkAddress()), false, false, 0, 0));
-			throw new ProtocolException("Connection timeout");
+			throw new ProtocolException("Connection timeout for " + link
+                    .getLinkAddress());
 
 		} catch (IOException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link

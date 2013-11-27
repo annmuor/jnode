@@ -46,6 +46,35 @@ public class ReportBuilderTest {
     }
 
     @Test
+    public void testAddItemNoConvert() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        ReportBuilder.addItem(sb, "12345", 5);
+        TestCase.assertEquals("12345", sb.toString());
+    }
+
+    @Test
+    public void testAddItemConvert() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        ReportBuilder b = new ReportBuilder();
+        b.setColumns("Test", ",");
+        b.setColLength("40", ",");
+        b.setFormats(Arrays.asList("S"));
+        ReportBuilder.addItem(sb, b.convert("12345", 0), 5);
+        TestCase.assertEquals("12345", sb.toString());
+    }
+
+    @Test
+    public void testAddItemConvertDate() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        ReportBuilder b = new ReportBuilder();
+        b.setColumns("Test", ",");
+        b.setColLength("10", ",");
+        b.setFormats("D",",");
+        ReportBuilder.addItem(sb, b.convert("1384007690000", 0), 10);
+        TestCase.assertEquals("09.11.2013", sb.toString());
+    }
+
+    @Test
     public void testAddCenterItem() throws Exception {
         StringBuilder sb = new StringBuilder();
         ReportBuilder.addCenterItem(sb, "123", 5);
