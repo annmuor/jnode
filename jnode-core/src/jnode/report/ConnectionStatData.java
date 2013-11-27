@@ -97,4 +97,12 @@ public class ConnectionStatData {
         public int outgoingOk;
         public int outgoingFailed;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ConnectionStatData{");
+        sb.append("statPath='").append(statPath).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

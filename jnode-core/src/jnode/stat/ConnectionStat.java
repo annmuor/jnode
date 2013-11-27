@@ -6,11 +6,13 @@ import jnode.event.IEventHandler;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
+import jnode.logger.Logger;
 import jnode.report.ConnectionStatData;
 import jnode.report.ReportBuilder;
 import jnode.stat.threads.StatPoster;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +20,7 @@ import java.util.List;
 
 public class ConnectionStat implements IStatPoster, IEventHandler {
 
+    private static final Logger logger = Logger.getLogger(ConnectionStatData.class);
     private final String statPath = FtnTools.getInbound() + File.separator
             + "connstat.xml";
 
@@ -72,9 +75,12 @@ public class ConnectionStat implements IStatPoster, IEventHandler {
         return "Daily connection stat";
     }
 
-    private static String getText(String path, boolean reset){
+    public static String getText(String path, boolean reset){
+        logger.l5("getText path = [" + path + "], reset = [" + reset + "]");
         ConnectionStatData data = new ConnectionStatData(path);
+        logger.l5("get ConnectionStatData " + data);
         List<ConnectionStatData.ConnectionStatDataElement> elements = reset ? data.loadAndDrop() : data.load();
+        logger.l5(MessageFormat.format("has {0} elements", elements != null ? elements.size() : 0));
 
         ReportBuilder builder = new ReportBuilder();
         builder.setColumns(Arrays.asList("Link", "I_OK", "I_FA", "O_OK", "O_FA", "BR", "BS"));

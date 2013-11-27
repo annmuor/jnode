@@ -42,7 +42,7 @@ public class EchoareaStat implements IStatPoster, IEventHandler {
 
         ReportBuilder builder = new ReportBuilder();
         builder.setColumns(Arrays.asList("Area", "Count", "Description"));
-        builder.setColLength(Arrays.asList(35, 4, 35));
+        builder.setColLength(Arrays.asList(35, 5, 35));
 
 		for (String[] res : results) {
 
