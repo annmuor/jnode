@@ -69,7 +69,7 @@ public class StatPoster extends TimerTask {
 		for (IStatPoster poster : posters) {
             String text = poster.getText();
             if (text != null && text.length() != 0){
-                FtnTools.writeEchomail(area, poster.getSubject(), poster.getText());
+                FtnTools.writeEchomail(area, poster.getSubject(), text);
                 logger.l3("Posted stat from robot "
                         + poster.getClass().getCanonicalName());
             } else {
