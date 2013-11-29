@@ -23,15 +23,19 @@ public final class Logger {
 
 	public static Logger getLogger(Class<?> clazz) {
 		String className = clazz.getSimpleName();
-		StringBuilder b = new StringBuilder(20);
-		b.append(className);
-		for (int i = b.length(); i < 20; i++) {
-			b.append(' ');
-		}
-		return new Logger(b.toString());
+        return getLogger(className);
 	}
 
-	private Logger(String className) {
+    public static Logger getLogger(String name) {
+        StringBuilder b = new StringBuilder(20);
+        b.append(name);
+        for (int i = b.length(); i < 20; i++) {
+            b.append(' ');
+        }
+        return new Logger(b.toString());
+    }
+
+    private Logger(String className) {
 		this.className = className;
 	}
 
