@@ -3,6 +3,7 @@ package jnode.robot;
 import com.j256.ormlite.dao.GenericRawResults;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
+import jnode.extenal.Api;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
 import jnode.jscript.JscriptExecutor;
@@ -49,7 +50,7 @@ public class ScriptFix extends AbstractRobot {
     }
 
     private String runScript(long id){
-        String errMessage = JscriptExecutor.executeScript(id);
+        String errMessage = Api.executeScript(id);
         return errMessage != null ? errMessage : MessageFormat.format("script {0} executed successfully", id);
     }
 

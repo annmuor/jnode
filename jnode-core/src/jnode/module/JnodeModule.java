@@ -19,7 +19,7 @@ public abstract class JnodeModule implements IEventHandler {
 		File config = new File(configFile);
 		if (!(config.exists() && config.canRead())) {
 			throw new JnodeModuleException("Config file " + configFile
-					+ " unavalible");
+					+ " unavailable");
 		}
 		properties = new Properties();
 		try {

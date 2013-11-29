@@ -46,3 +46,7 @@ fileecho.path = /var/spool/jnode/files
 stat.area = jnode.local.stat
 # Uncomment to enable user scripts running on schedule
 #jscript.enable = true
+# Uncomment to enable control through xml-rpc
+#xmlrpc.login = admin
+# Uncomment to enable control through xml-rpc
+#xmlrpc.password = changeThisPasswoirddd
