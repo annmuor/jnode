@@ -33,6 +33,13 @@
             </excludes>
         </fileSet>
         <fileSet>
+            <directory>${basedir}/../jnode-xmlrpc-server/docs</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>/docs</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>${basedir}/../jnode-xmlrpc-server/target</directory>
             <outputDirectory>/lib</outputDirectory>
             <includes>

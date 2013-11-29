@@ -45,7 +45,5 @@ fileecho.path = /var/spool/jnode/files
 stat.area = jnode.local.stat
 # Раскомментируйте, чтобы включить запуск пользовательских скриптов по расписанию
 #jscript.enable = true
-# Раскомментируйте, если будете использовать упраление через xml-rpc
-#xmlrpc.login = admin
-# Раскомментируйте, если будете использовать упраление через xml-rpc
-#xmlrpc.password = changeThisPasswoirddd
+# Раскомментируйте и укажите путь к конфигурационному файлы для модуля поддержки управления через xml-rpc
+#modules = jnode.XmlRpcServerModule:/path/to/config
