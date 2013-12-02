@@ -23,13 +23,6 @@ public class XmlRpcServerModule extends JnodeModule {
 
     public XmlRpcServerModule(String configFile) throws JnodeModuleException {
         super(configFile);
-        Properties props = System.getProperties();
-        props.setProperty("org.apache.commons.logging.Log", LogWrapper.class.getName());
-    }
-
-    public static void main(String[] args) throws JnodeModuleException {
-        XmlRpcServerModule x = new XmlRpcServerModule("C:\\FTN\\bat\\test.config");
-        x.start();
     }
 
     @Override
