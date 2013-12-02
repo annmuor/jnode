@@ -26,7 +26,10 @@ public class ScripterImpl implements Scripter {
             return MessageFormat.format("Bad script id: \"{0}\"", id);
         }
 
-        final String result = Api.executeScript(realId);
+        String result = Api.executeScript(realId);
+        if (result == null){
+            result = "";
+        }
         logger.l5("run with result " + result);
         return result;
     }

@@ -141,7 +141,7 @@ public class RunScript extends JFrame {
 
         @Override
         protected void done() {
-            getResText().setText(result);
+            getResText().setText(result == null || result.length() == 0 ? "Ok" : result);
             button.setEnabled(true);
         }
     }
