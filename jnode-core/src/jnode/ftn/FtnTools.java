@@ -213,15 +213,22 @@ public final class FtnTools {
 			if (parts == null || parts.length() < 1 || parts.equals(SEEN_BY)) {
 				continue;
 			} else {
-				String[] part = parts.split("/");
-				int node;
-				if (part.length == 2) {
-					net = Integer.valueOf(part[0]);
-					node = Integer.valueOf(part[1]);
-				} else {
-					node = Integer.valueOf(part[0]);
-				}
-				seen.add(new Ftn2D(net, node));
+
+                try{
+                    String[] part = parts.split("/");
+                    int node;
+                    if (part.length == 2) {
+                        net = Integer.valueOf(part[0]);
+                        node = Integer.valueOf(part[1]);
+                    } else {
+                        node = Integer.valueOf(part[0]);
+                    }
+                    seen.add(new Ftn2D(net, node));
+                } catch (NumberFormatException e){
+                    logger.l2(MessageFormat.format("Error: fail write seen {0} for lines {1}", parts, seenByLines), e);
+                }
+
+
 			}
 		}
 		return seen;
@@ -436,7 +443,6 @@ public final class FtnTools {
 	 * Пишем 4d-адреса через разделитель
 	 * 
 	 * @param list
-	 * @param sort
 	 * @return
 	 */
 	public static String write4D(List<FtnAddress> list) {

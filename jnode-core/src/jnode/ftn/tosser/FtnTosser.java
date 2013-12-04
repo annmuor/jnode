@@ -516,6 +516,13 @@ public class FtnTosser {
 					.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
 			for (EchomailAwaiting ema : mailToSend) {
 				Echomail mail = ema.getMail();
+
+                if (mail == null){
+                    // консистентность базы, констрейнты? Нет, не слышал
+                    logger.l2(MessageFormat.format("Error: not found echomail for awaiting mail {0}", ema));
+                    continue;
+                }
+
 				Echoarea area = mail.getArea();
 				toRemove.add(mail);
 				Set<Ftn2D> seenby = new HashSet<Ftn2D>(read2D(mail.getSeenBy()));
