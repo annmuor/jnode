@@ -272,12 +272,13 @@ public class AreaFix extends AbstractRobot {
 					sb.append(" is not subscribed");
 				} else {
 					List<Echomail> mails = ORMManager.INSTANSE.getEchomailDAO()
-							.getOrderLimitAnd(num, "id", true, "echoarea_id",
+							.getOrderLimitAnd(num, "id", false, "echoarea_id",
 									"=", earea);
-					for (Echomail mail : mails) {
-						ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
-								new EchomailAwaiting(link, mail));
-					}
+                    for(int i = mails.size() - 1; i >=0; --i){
+                        Echomail mail = mails.get(i);
+                        ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
+                                new EchomailAwaiting(link, mail));
+                    }
 					sb.append(" rescanned " + mails.size() + " messages");
 				}
 				sb.append('\n');
