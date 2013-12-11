@@ -85,6 +85,7 @@ public final class Cleaner {
         replaceAll(sb, "&#8217;", "'");
 
         replaceAll(sb, "&#8230;", "...");
+        replaceAll(sb, "&hellip;", "...");
         replaceAll(sb, "\u2013", "-");
         replaceAll(sb, "\u2014", "-");
 
