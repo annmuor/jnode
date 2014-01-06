@@ -580,7 +580,15 @@ public final class FtnTools {
 			while ((ze = zis.getNextEntry()) != null) {
 				String name = ze.getName().toLowerCase();
 				logger.l4("found " + filename + "#" + name);
-				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
+				int idx = name.lastIndexOf('/');
+				if (idx >= 0) {
+					name = name.substring(idx + 1);
+				}
+				idx = name.lastIndexOf('\\');
+				if (idx >= 0) {
+					name = name.substring(idx + 1);
+				}
+				if (name.matches("^[a-f0-9]{8}\\.pkt$")) {
 					File out = createInboundFile(message.isSecure());
 					FileOutputStream fos = new FileOutputStream(out);
 					int len;

@@ -98,9 +98,9 @@ public class PointCheckerModule extends JnodeModule {
 	@Override
 	public void start() {
 		synchronized (this) {
-			logger.l5("Module started");
+			logger.l3("Module started");
 			while (true) {
-				logger.l5("Scan inbound...");
+				logger.l4("Scan inbound...");
 				for (File file : new File(FtnTools.getInbound()).listFiles()) {
 					if (file.isDirectory())
 						continue;
