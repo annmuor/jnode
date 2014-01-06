@@ -925,8 +925,8 @@ public final class FtnTools {
 		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
 		net.setText(sb.toString());
 		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(to);
-		ret.setToAddr(from);
+		ret.setFromAddr(from);
+		ret.setToAddr(to);
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
 			logger.l2("Routing not found for " + to);
