@@ -18,3 +18,4 @@ jnode-core/.settings
 .settings
 .idea
 *.iml
+jnode-pointchecker-module/.classpath

@@ -425,7 +425,7 @@ public class FtnTosser {
 		}
 	}
 
-	public String getFileechoPath() {
+	public static String getFileechoPath() {
 		return MainHandler.getCurrentInstance().getProperty(FILEECHO_PATH,
 				getInbound());
 	}

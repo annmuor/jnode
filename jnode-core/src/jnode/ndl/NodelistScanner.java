@@ -37,8 +37,10 @@ public class NodelistScanner {
 
 	private boolean createNdlIndexFile() {
 		boolean ok = false;
-		File ndl = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_PATH, "NODELIST"));
-		File idx = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_INDEX, "NODELIST.idx"));
+		File ndl = new File(MainHandler.getCurrentInstance().getProperty(
+				NODELIST_PATH, "NODELIST"));
+		File idx = new File(MainHandler.getCurrentInstance().getProperty(
+				NODELIST_INDEX, "NODELIST.idx"));
 		List<FtnNdlAddress> address = new ArrayList<FtnNdlAddress>();
 		try {
 			FileInputStream fis = new FileInputStream(ndl);
@@ -59,6 +61,7 @@ public class NodelistScanner {
 				Matcher mNode = pNode.matcher(line);
 				String ftn = "";
 				Status status = Status.NORMAL;
+				String name = "";
 				if (mZone.matches()) {
 					zone = mZone.group(1);
 					net = zone;
@@ -73,6 +76,7 @@ public class NodelistScanner {
 					status = Status.HOST;
 				} else if (mNode.matches()) {
 					ftn = zone + ":" + net + "/" + mNode.group(2);
+					name = mNode.group(3);
 					if (mNode.group(1).equalsIgnoreCase("hold")) {
 						status = Status.HOLD;
 					} else if (mNode.group(1).equalsIgnoreCase("down")) {
@@ -86,6 +90,7 @@ public class NodelistScanner {
 				if (ftn.length() > 0) {
 					try {
 						FtnNdlAddress node = new FtnNdlAddress(ftn, status);
+						node.setName(name);
 						address.add(node);
 					} catch (NumberFormatException e) {
 						//
@@ -98,11 +103,11 @@ public class NodelistScanner {
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(idx));
 			oos.writeObject(index);
-			logger.l4("Создан индекс нодлиста: " + address.size() + " адресов");
+			logger.l4("Nodelist index was created. It containts: " + address.size() + " adresses");
 			oos.close();
 			ok = true;
 		} catch (IOException e) {
-			logger.l2("Ошибка при создании индекса нодлиста "
+			logger.l2("Nodelist creation error "
 					+ ndl.getAbsolutePath() + " -> " + idx.getAbsolutePath()
 					+ " : " + e.getMessage());
 		}
@@ -111,10 +116,12 @@ public class NodelistScanner {
 
 	private NodelistIndex createNdlIndex() {
 		NodelistIndex index = null;
-		File idx = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_INDEX, "NODELIST.idx"));
+		File idx = new File(MainHandler.getCurrentInstance().getProperty(
+				NODELIST_INDEX, "NODELIST.idx"));
 		long timestamp = 0L;
 		{
-			File ndl = new File(MainHandler.getCurrentInstance().getProperty(NODELIST_PATH, "NODELIST"));
+			File ndl = new File(MainHandler.getCurrentInstance().getProperty(
+					NODELIST_PATH, "NODELIST"));
 			if (ndl.exists()) {
 				timestamp = ndl.lastModified();
 			}
@@ -133,11 +140,11 @@ public class NodelistScanner {
 					}
 				}
 			} catch (IOException e) {
-				logger.l2("Не могу прочитать nodelist.index");
+				logger.l2("nodelist.index : ioexception");
 			} catch (ClassNotFoundException e) {
-				logger.l2("Не могу найти nodelist.index");
+				logger.l2("nodelist.index : classnotfound");
 			} catch (ClassCastException e) {
-				logger.l2("В файле nodelist.index содержится не nodelist.index");
+				logger.l2("nodeist.index : classcast");
 				if (createNdlIndexFile()) {
 					return createNdlIndex();
 				}

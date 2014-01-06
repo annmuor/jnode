@@ -61,5 +61,6 @@
         <module>jnode-xmlrpc-common</module>
         <module>jnode-xmlrpc-client</module>
         <module>jnode-assembly</module>
+        <module>jnode-pointchecker-module</module>
     </modules>
 </project>

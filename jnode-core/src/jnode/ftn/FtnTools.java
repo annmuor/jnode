@@ -32,6 +32,8 @@ import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
 import jnode.dto.FileSubscription;
 import jnode.dto.Filearea;
+import jnode.dto.Filemail;
+import jnode.dto.FilemailAwaiting;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
@@ -42,6 +44,7 @@ import jnode.dto.Subscription;
 import jnode.event.NewEchoareaEvent;
 import jnode.event.NewFileareaEvent;
 import jnode.event.Notifier;
+import jnode.ftn.tosser.FtnTosser;
 import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
@@ -834,21 +837,7 @@ public final class FtnTools {
 	 * @throws SQLException
 	 */
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
-		FtnAddress from = getPrimaryFtnAddress();
-		Netmail netmail = new Netmail();
-		netmail.setFromFTN(from.toString());
-		netmail.setFromName(MainHandler.getCurrentInstance().getInfo()
-				.getStationName());
-		netmail.setToFTN(fmsg.getFromAddr().toString());
-		netmail.setToName(fmsg.getFromName());
-		netmail.setSubject(subject);
-		netmail.setDate(new Date());
 		StringBuilder sb = new StringBuilder();
-		sb.append(String
-				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
-						fmsg.getMsgid(), from.toString(), generate8d(),
-						MainHandler.getVersion(), MainHandler.getVersion(),
-						netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
@@ -861,25 +850,54 @@ public final class FtnTools {
 					.replaceAll("---", "+++")
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
-		sb.append("========== Original message ==========\n\n--- "
-				+ MainHandler.getVersion() + "\n");
-		netmail.setText(sb.toString());
+		sb.append("========== Original message ==========");
+		writeNetmail(getPrimaryFtnAddress(), fmsg.getFromAddr(), MainHandler
+				.getCurrentInstance().getInfo().getStationName(),
+				fmsg.getFromName(), subject, text);
+	}
+
+	/**
+	 * Создание нетмейла
+	 * 
+	 * @param from
+	 * @param to
+	 * @param nameFrom
+	 * @param nameTo
+	 * @param subject
+	 * @param text
+	 */
+	public static void writeNetmail(FtnAddress from, FtnAddress to,
+			String nameFrom, String nameTo, String subject, String text) {
+		Netmail net = new Netmail();
+		net.setDate(new Date());
+		net.setFromName(nameFrom);
+		net.setToName(nameTo);
+		net.setFromFTN(from.toString());
+		net.setToFTN(to.toString());
+		net.setSubject(subject);
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format(
+				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
+				from.toString(), generate8d(), MainHandler.getVersion(),
+				MainHandler.getVersion(), net.getToName()));
+		sb.append(text);
+		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
+		net.setText(sb.toString());
 		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(new FtnAddress(from.toString()));
-		ret.setToAddr(fmsg.getFromAddr());
+		ret.setFromAddr(to);
+		ret.setToAddr(from);
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
-			logger.l2("Routing for reply not found" + fmsg.getMsgid());
+			logger.l2("Routing not found for " + to);
 			return;
 		}
-		netmail.setRouteVia(routeVia);
-		ORMManager.INSTANSE.getNetmailDAO().save(netmail);
-		logger.l4("Netmail #" + netmail.getId() + " created");
+		net.setRouteVia(routeVia);
+		ORMManager.INSTANSE.getNetmailDAO().save(net);
+		logger.l4("Netmail #" + net.getId() + " created");
 		if (FtnTools.getOptionBooleanDefTrue(routeVia,
 				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
 			PollQueue.INSTANSE.add(routeVia);
 		}
-
 	}
 
 	private static File createOutboundFile(Link link) {
@@ -1373,5 +1391,50 @@ public final class FtnTools {
 	public static FtnAddress getPrimaryFtnAddress() {
 		return MainHandler.getCurrentInstance().getInfo().getAddressList()
 				.get(0);
+	}
+
+	/**
+	 * Отправка файла в фэху
+	 * 
+	 * @param area
+	 * @param attach
+	 * @param description
+	 */
+	public static void hatchFile(Filearea area, File attach, String filename, String description) {
+		Filemail mail = new Filemail();
+		mail.setFilearea(area);
+		mail.setFiledesc(description);
+		mail.setFilename(filename);
+		mail.setCreated(new Date());
+		mail.setOrigin(getPrimaryFtnAddress().toString());
+		mail.setPath("PATH " + getPrimaryFtnAddress().toString() + " "
+				+ (mail.getCreated().getTime() / 1000) + " "
+				+ mail.getCreated().toString() + "\r\n");
+		mail.setSeenby("");
+
+		new File(FtnTosser.getFileechoPath() + File.separator + area.getName())
+				.mkdir();
+		String path = FtnTosser.getFileechoPath() + File.separator
+				+ area.getName() + File.separator + attach.getName();
+		File newFile = new File(path);
+		if(newFile.exists()) {
+			newFile.delete();
+		}
+		if (attach.renameTo(new File(path))) {
+			mail.setFilepath(path);
+		} else {
+			mail.setFilepath(attach.getAbsolutePath());
+		}
+		ORMManager.INSTANSE.getFilemailDAO().save(mail);
+		for (FileSubscription sub : ORMManager.INSTANSE
+				.getFileSubscriptionDAO().getAnd("filearea_id", "=", area)) {
+			FilemailAwaiting fma = new FilemailAwaiting();
+			fma.setLink(sub.getLink());
+			fma.setMail(mail);
+			if (getOptionBooleanDefFalse(sub.getLink(),
+					LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+				PollQueue.INSTANSE.add(sub.getLink());
+			}
+		}
 	}
 }
