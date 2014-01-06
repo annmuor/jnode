@@ -138,7 +138,7 @@ public class Main {
 		@Override
 		public void run() {
 			try {
-				TosserQueue.INSTANSE.toss();
+				TosserQueue.getInstanse().toss();
 			} catch (RuntimeException e) {
 				logger.l1("Error while tossing", e);
 			}
