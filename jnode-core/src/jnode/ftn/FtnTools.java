@@ -848,7 +848,21 @@ public final class FtnTools {
 	 * @throws SQLException
 	 */
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
+		FtnAddress from = getPrimaryFtnAddress();
+		Netmail netmail = new Netmail();
+		netmail.setFromFTN(from.toString());
+		netmail.setFromName(MainHandler.getCurrentInstance().getInfo()
+				.getStationName());
+		netmail.setToFTN(fmsg.getFromAddr().toString());
+		netmail.setToName(fmsg.getFromName());
+		netmail.setSubject(subject);
+		netmail.setDate(new Date());
 		StringBuilder sb = new StringBuilder();
+		sb.append(String
+				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
+						fmsg.getMsgid(), from.toString(), generate8d(),
+						MainHandler.getVersion(), MainHandler.getVersion(),
+						netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
@@ -861,10 +875,25 @@ public final class FtnTools {
 					.replaceAll("---", "+++")
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
-		sb.append("========== Original message ==========");
-		writeNetmail(getPrimaryFtnAddress(), fmsg.getFromAddr(), MainHandler
-				.getCurrentInstance().getInfo().getStationName(),
-				fmsg.getFromName(), subject, text);
+		sb.append("========== Original message ==========\n\n--- "
+				+ MainHandler.getVersion() + "\n");
+		netmail.setText(sb.toString());
+		FtnMessage ret = new FtnMessage();
+		ret.setFromAddr(new FtnAddress(from.toString()));
+		ret.setToAddr(fmsg.getFromAddr());
+		Link routeVia = getRouting(ret);
+		if (routeVia == null) {
+			logger.l2("Routing for reply not found" + fmsg.getMsgid());
+			return;
+		}
+		netmail.setRouteVia(routeVia);
+		ORMManager.INSTANSE.getNetmailDAO().save(netmail);
+		logger.l4("Netmail #" + netmail.getId() + " created");
+		if (FtnTools.getOptionBooleanDefTrue(routeVia,
+				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+			PollQueue.INSTANSE.add(routeVia);
+		}
+
 	}
 
 	/**
@@ -879,36 +908,15 @@ public final class FtnTools {
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
 			String nameFrom, String nameTo, String subject, String text) {
-		logger.l2("write netmail !");
-		Netmail net = new Netmail();
-		net.setDate(new Date());
-		net.setFromName(nameFrom);
-		net.setToName(nameTo);
-		net.setFromFTN(from.toString());
-		net.setToFTN(to.toString());
-		net.setSubject(subject);
-		StringBuilder sb = new StringBuilder();
-		sb.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
-				from.toString(), generate8d(), MainHandler.getVersion(),
-				MainHandler.getVersion(), net.getToName()));
-		sb.append(text);
-		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
-		net.setText(sb.toString());
-		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(to);
-		ret.setToAddr(from);
-		Link routeVia = getRouting(ret);
-		if (routeVia == null) {
-			logger.l2("Routing not found for " + to);
-		}
-		net.setRouteVia(routeVia);
-		ORMManager.INSTANSE.getNetmailDAO().save(net);
-		logger.l4("Netmail #" + net.getId() + " created");
-		if (FtnTools.getOptionBooleanDefTrue(routeVia,
-				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-			PollQueue.INSTANSE.add(routeVia);
-		}
+		FtnMessage fmsg = new FtnMessage();
+		fmsg.setFromAddr(to);
+		fmsg.setFromName(nameTo);
+		fmsg.setToAddr(from);
+		fmsg.setToName(nameFrom);
+		fmsg.setText("");
+		fmsg.setSubject("xxx");
+		fmsg.setDate(new Date());
+		writeReply(fmsg, subject, text);
 	}
 
 	private static File createOutboundFile(Link link) {
