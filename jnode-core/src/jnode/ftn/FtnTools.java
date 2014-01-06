@@ -477,7 +477,7 @@ public final class FtnTools {
 	 * @param option
 	 * @return
 	 */
-	private static String getOption(Link link, String option) {
+	public static String getOption(Link link, String option) {
 		String value = "";
 		LinkOption opt = ORMManager.INSTANSE.getLinkOptionDAO().getFirstAnd(
 				"link_id", "=", link, "name", "=", option.toLowerCase());

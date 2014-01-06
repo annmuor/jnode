@@ -111,8 +111,7 @@ public class BinkpConnector implements ProtocolConnector {
 		String mAddr = null;
 		if (link != null) {
 			try {
-				String from = FtnTools.getOptionForAddr(
-						new FtnAddress(link.getLinkAddress()),
+				String from = FtnTools.getOption(link,
 						LinkOption.STRING_OUR_AKA);
 				if (MainHandler.getCurrentInstance().getInfo().getAddressList()
 						.contains(new FtnAddress(from))) {
