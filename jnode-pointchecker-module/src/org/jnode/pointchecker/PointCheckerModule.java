@@ -101,16 +101,13 @@ public class PointCheckerModule extends JnodeModule {
 	@Override
 	public void start() {
 		synchronized (this) {
+			logger.l5("Module started");
 			while (true) {
-				byte[] content = null;
+				logger.l5("Scan inbound...");
 				for (File file : new File(FtnTools.getInbound()).listFiles()) {
 					if (file.isDirectory())
 						continue;
 					try {
-						if (content != null) {
-							break;
-						}
-
 						if (pZip.matcher(file.getName()).matches()) {
 							ZipInputStream zis = new ZipInputStream(
 									new FileInputStream(file));
