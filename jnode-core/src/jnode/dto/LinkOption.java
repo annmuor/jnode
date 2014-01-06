@@ -31,6 +31,7 @@ public class LinkOption {
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";
 	public static final String STRING_SCRIPTFIX_PWD = "scriptfixpwd";
 	public static final String STRING_FILEFIX_PWD = "filefixpwd";
+	public static final String STRING_OUR_AKA = "ouraka";
 	private static final HashMap<String, String> options = generateOptionsMap();
 
 	/**
@@ -55,6 +56,7 @@ public class LinkOption {
 		options.put("groups", "-grps");
 		options.put("areafixpwd", "-afixpwd");
 		options.put("filefixpwd", "-ffixpwd");
+		options.put("ouraka", "-oaka");
 		return options;
 	}
 

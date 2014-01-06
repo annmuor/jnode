@@ -214,20 +214,21 @@ public final class FtnTools {
 				continue;
 			} else {
 
-                try{
-                    String[] part = parts.split("/");
-                    int node;
-                    if (part.length == 2) {
-                        net = Integer.valueOf(part[0]);
-                        node = Integer.valueOf(part[1]);
-                    } else {
-                        node = Integer.valueOf(part[0]);
-                    }
-                    seen.add(new Ftn2D(net, node));
-                } catch (NumberFormatException e){
-                    logger.l2(MessageFormat.format("Error: fail write seen {0} for lines {1}", parts, seenByLines), e);
-                }
-
+				try {
+					String[] part = parts.split("/");
+					int node;
+					if (part.length == 2) {
+						net = Integer.valueOf(part[0]);
+						node = Integer.valueOf(part[1]);
+					} else {
+						node = Integer.valueOf(part[0]);
+					}
+					seen.add(new Ftn2D(net, node));
+				} catch (NumberFormatException e) {
+					logger.l2(MessageFormat.format(
+							"Error: fail write seen {0} for lines {1}", parts,
+							seenByLines), e);
+				}
 
 			}
 		}
@@ -356,43 +357,52 @@ public final class FtnTools {
 	public static List<Ftn2D> read2D(String list2d) {
 		List<Ftn2D> ret = new ArrayList<Ftn2D>();
 
-        if (list2d == null || list2d.length() == 0 || list2d.trim().length() == 0){
-            return ret;
-        }
+		if (list2d == null || list2d.length() == 0
+				|| list2d.trim().length() == 0) {
+			return ret;
+		}
 
-        String lastNet = null;
+		String lastNet = null;
 
-        for (String l2d : list2d.split(" ")) {
+		for (String l2d : list2d.split(" ")) {
 			String[] part = l2d.split("/");
 
-            String net;
-            String node;
+			String net;
+			String node;
 
-            switch (part.length){
-                case 2:
-                    // 5020/841
-                    net = part[0];
-                    node = part[1];
-                    break;
-                case 1:
-                    // 841
-                    net = lastNet;
-                    node = part[0];
-                    break;
-                default:
-                    throw new IllegalArgumentException(MessageFormat.format("fail parse 2d address [{0}] in list [{1}]", l2d, list2d));
-            }
+			switch (part.length) {
+			case 2:
+				// 5020/841
+				net = part[0];
+				node = part[1];
+				break;
+			case 1:
+				// 841
+				net = lastNet;
+				node = part[0];
+				break;
+			default:
+				throw new IllegalArgumentException(MessageFormat.format(
+						"fail parse 2d address [{0}] in list [{1}]", l2d,
+						list2d));
+			}
 
-            try {
-                ret.add(Ftn2D.fromString(net, node));
-                lastNet = net;
-            } catch (IllegalArgumentException e){
-                lastNet = null;
-                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - illegal arguments", l2d, list2d), e);
-            } catch(RuntimeException e2){
-                lastNet = null;
-                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - unexpected error", l2d, list2d), e2);
-            }
+			try {
+				ret.add(Ftn2D.fromString(net, node));
+				lastNet = net;
+			} catch (IllegalArgumentException e) {
+				lastNet = null;
+				logger.l1(
+						MessageFormat
+								.format("fail parse 2d address [{0}] in list [{1}] - illegal arguments",
+										l2d, list2d), e);
+			} catch (RuntimeException e2) {
+				lastNet = null;
+				logger.l1(
+						MessageFormat
+								.format("fail parse 2d address [{0}] in list [{1}] - unexpected error",
+										l2d, list2d), e2);
+			}
 		}
 		return ret;
 	}
@@ -409,7 +419,7 @@ public final class FtnTools {
 			try {
 				ret.add(new FtnAddress(l2d));
 			} catch (RuntimeException e) {
-               logger.l2("fail read4D");
+				logger.l2("fail read4D");
 			}
 		}
 		return ret;
@@ -483,13 +493,13 @@ public final class FtnTools {
 
 	public static boolean getOptionBooleanDefFalse(Link link, String option) {
 		String s = getOption(link, option);
-        return s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON");
-    }
+		return s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON");
+	}
 
 	public static boolean getOptionBooleanDefTrue(Link link, String option) {
 		String s = getOption(link, option);
-        return !(s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF"));
-    }
+		return !(s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF"));
+	}
 
 	public static long getOptionLong(Link link, String option) {
 		String s = getOption(link, option);
@@ -528,8 +538,8 @@ public final class FtnTools {
 			text.append('\n');
 		}
 		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
-                .getInfo().getAddressList().toString(),
-                FORMAT.format(new Date())));
+				.getInfo().getAddressList().toString(),
+				FORMAT.format(new Date())));
 		message.setText(text.toString());
 		return message;
 	}
@@ -1012,10 +1022,7 @@ public final class FtnTools {
 
 			try {
 				for (FtnMessage net : packedNetmail) {
-					FtnAddress from = (MainHandler.getCurrentInstance()
-							.getInfo().getAddressList().contains(net
-							.getFromAddr())) ? net.getFromAddr()
-							: getPrimaryFtnAddress();
+					FtnAddress from = selectOurAka(net);
 					FtnPkt head = new FtnPkt(from, to, password, new Date());
 					Message m = new Message(createZipFile(head, link,
 							Arrays.asList(net)));
@@ -1044,10 +1051,7 @@ public final class FtnTools {
 		if (!unpackedNetmail.isEmpty()) {
 			try {
 				for (FtnMessage net : unpackedNetmail) {
-					FtnAddress from = (MainHandler.getCurrentInstance()
-							.getInfo().getAddressList().contains(net
-							.getFromAddr())) ? net.getFromAddr()
-							: getPrimaryFtnAddress();
+					FtnAddress from = selectOurAka(net);
 					FtnPkt head = new FtnPkt(from, to, password, new Date());
 					File out = createOutboundFile(link);
 					FileOutputStream fos = new FileOutputStream(out);
@@ -1088,6 +1092,46 @@ public final class FtnTools {
 		return ret;
 	}
 
+	public static FtnAddress selectOurAka(FtnMessage net) {
+		FtnAddress ret = getPrimaryFtnAddress();
+		if (net.getToAddr().getPoint() > 0) {
+			for (FtnAddress address : MainHandler.getCurrentInstance()
+					.getInfo().getAddressList()) {
+				if (net.getToAddr().isPointOf(address)) { // если это пойнт - то
+															// посылаем с того
+															// адреса, на
+															// который он
+															// привязан
+					ret = address;
+					break;
+				}
+			}
+		} else {
+			String ourAka = FtnTools.getOptionForAddr(net.getToAddr(),
+					LinkOption.STRING_OUR_AKA);
+			if (ourAka != null) {
+				try {
+					FtnAddress _our = new FtnAddress(ourAka);
+					if (MainHandler.getCurrentInstance().getInfo()
+							.getAddressList().contains(_our)) {
+						ret = _our;
+					}
+				} catch (NumberFormatException e) {
+				}
+			}
+		}
+		return ret;
+	}
+
+	public static String getOptionForAddr(FtnAddress toAddr, String name) {
+		Link link = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
+				"=", toAddr.toString());
+		if (link != null) {
+			return getOption(link, name);
+		}
+		return null;
+	}
+
 	/**
 	 * Кривые пакеты - в инбаунд
 	 * 
@@ -1101,7 +1145,7 @@ public final class FtnTools {
 		try {
 			unpack(message);
 		} catch (IOException e) {
-            logger.l2("fail move to bad", e);
+			logger.l2("fail move to bad", e);
 		}
 	}
 
@@ -1218,16 +1262,16 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-        return ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
-                "echoarea_id", "=", area) != null;
-    }
+		return ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=",
+				msgid, "echoarea_id", "=", area) != null;
+	}
 
 	/**
 	 * Проверка на дроп нетмейла
 	 * 
-	 *
-     * @param netmail
-     * @return
+	 * 
+	 * @param netmail
+	 * @return
 	 */
 	public static boolean validateNetmail(FtnMessage netmail) {
 		boolean validFrom = false;

@@ -20,6 +20,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.dto.Link;
+import jnode.dto.LinkOption;
+import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
@@ -106,7 +108,23 @@ public class BinkpConnector implements ProtocolConnector {
 				+ MainHandler.getVersion() + " binkp/1.1"));
 		frames.add(new BinkpFrame(BinkpCommand.M_NUL, "TIME "
 				+ format.format(new Date())));
-		frames.add(new BinkpFrame(BinkpCommand.M_ADR, getOwnAddressList()));
+		String mAddr = null;
+		if (link != null) {
+			try {
+				String from = FtnTools.getOptionForAddr(
+						new FtnAddress(link.getLinkAddress()),
+						LinkOption.STRING_OUR_AKA);
+				if (MainHandler.getCurrentInstance().getInfo().getAddressList()
+						.contains(new FtnAddress(from))) {
+					mAddr = from + "@fidonet";
+				}
+			} catch (RuntimeException e) {
+			}
+		}
+		if (mAddr == null) {
+			mAddr = getOwnAddressList();
+		}
+		frames.add(new BinkpFrame(BinkpCommand.M_ADR, mAddr));
 	}
 
 	private String getOwnAddressList() {
@@ -205,7 +223,8 @@ public class BinkpConnector implements ProtocolConnector {
 							in.read(data);
 							if (data[data.length - 1] == 0) { // null at the end
 								byte[] datawonull = new byte[data.length - 1];
-                                System.arraycopy(data, 0, datawonull, 0, data.length - 1);
+								System.arraycopy(data, 0, datawonull, 0,
+										data.length - 1);
 								arg = new String(datawonull);
 							} else {
 								arg = new String(data);
@@ -224,7 +243,7 @@ public class BinkpConnector implements ProtocolConnector {
 			}
 		} catch (IOException e) {
 			logger.l2("Frame receiving error", e);
-            return null;
+			return null;
 		}
 		return ret;
 	}
@@ -272,7 +291,7 @@ public class BinkpConnector implements ProtocolConnector {
 											+ algo + ")");
 									break;
 								} catch (NoSuchAlgorithmException e) {
-                                    logger.l2("fail algo ", e);
+									logger.l2("fail algo ", e);
 								}
 							}
 							if (!useCram) {
@@ -324,7 +343,7 @@ public class BinkpConnector implements ProtocolConnector {
 								}
 
 							} catch (NumberFormatException e) {
-                                logger.l2("fail parse address ", e);
+								logger.l2("fail parse address ", e);
 							}
 						}
 					}
