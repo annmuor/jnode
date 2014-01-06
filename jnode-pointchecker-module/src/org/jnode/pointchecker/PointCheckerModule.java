@@ -154,8 +154,16 @@ public class PointCheckerModule extends JnodeModule {
 	}
 
 	private void addError(int linenum, String msg, StringBuffer errors) {
+		System.out.println("error " + msg);
 		String error = "Line: " + linenum + " error : " + msg + "\n";
 		errors.append(error);
+	}
+
+	public static void main(String[] args) {
+		Pattern pPoint = Pattern
+				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
+		String s = "Point,4321,Bonya_Station,Sergiev_Posad__Russia,Bonya_Petrov,-Unpublished-,9600,MO,IBN";
+		System.out.println(pPoint.matcher(s).matches());
 	}
 
 	private boolean check(String fileName, byte[] data, boolean multi)
@@ -174,7 +182,7 @@ public class PointCheckerModule extends JnodeModule {
 		boolean bossnotfound = false;
 		for (String line : lines) {
 			linenum++;
-			logger.l4("line: '" + line+"'");
+			logger.l4("line: '" + line + "'");
 			if (line.startsWith(";")) {
 				if (!(multi || bosses.isEmpty())) {
 					addError(linenum,
@@ -210,8 +218,10 @@ public class PointCheckerModule extends JnodeModule {
 					continue;
 				}
 			}
+			System.out.println("points matcher");
 			m = pPoint.matcher(line);
 			if (m.matches()) {
+				System.out.println("point matches");
 				if (bosses.isEmpty()) {
 					addError(linenum,
 							"Point string present, but no boss present before",
