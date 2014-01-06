@@ -43,6 +43,7 @@ import jnode.ftn.types.FtnTIC;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
+import jnode.main.threads.TosserQueue;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import static jnode.ftn.FtnTools.*;
@@ -195,7 +196,7 @@ public class FtnTosser {
 
 		try {
 			unpack(message);
-			tossInboundDirectory();
+			TosserQueue.getInstanse().toss();
 		} catch (IOException e) {
 			logger.l1(
 					"Exception file tossing message "
@@ -213,7 +214,6 @@ public class FtnTosser {
 		Set<Link> poll = new HashSet<Link>();
 		File inbound = new File(getInbound());
 		for (File file : inbound.listFiles()) {
-			logger.l4("found file " + file.getAbsolutePath());
 			String loname = file.getName().toLowerCase();
 			if (loname.matches("^[a-f0-9]{8}\\.pkt$")) {
 				try {
