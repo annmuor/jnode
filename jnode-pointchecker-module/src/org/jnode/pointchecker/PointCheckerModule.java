@@ -174,7 +174,7 @@ public class PointCheckerModule extends JnodeModule {
 		boolean bossnotfound = false;
 		for (String line : lines) {
 			linenum++;
-			logger.l4("line: " + line);
+			logger.l4("line: '" + line+"'");
 			if (line.startsWith(";")) {
 				if (!(multi || bosses.isEmpty())) {
 					addError(linenum,
