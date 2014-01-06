@@ -868,6 +868,7 @@ public final class FtnTools {
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
 			String nameFrom, String nameTo, String subject, String text) {
+		logger.l2("write netmail !");
 		Netmail net = new Netmail();
 		net.setDate(new Date());
 		net.setFromName(nameFrom);
@@ -889,7 +890,6 @@ public final class FtnTools {
 		Link routeVia = getRouting(ret);
 		if (routeVia == null) {
 			logger.l2("Routing not found for " + to);
-			return;
 		}
 		net.setRouteVia(routeVia);
 		ORMManager.INSTANSE.getNetmailDAO().save(net);
