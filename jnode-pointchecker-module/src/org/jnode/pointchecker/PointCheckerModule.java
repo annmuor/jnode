@@ -158,15 +158,17 @@ public class PointCheckerModule extends JnodeModule {
 		errors.append(error);
 	}
 
-	private boolean check(String fileName, byte[] data, boolean multi) throws IOException {
+	private boolean check(String fileName, byte[] data, boolean multi)
+			throws IOException {
 		StringBuffer errors = new StringBuffer();
 		List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
 		List<Long> points = new ArrayList<Long>();
-		
+
 		Pattern pBoss = Pattern.compile("^Boss," + bossRegExp + "$");
 		Pattern pPoint = Pattern
 				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
-		String[] lines = new String(data,"CP866").replaceAll("\n", "").split("\r");
+		String[] lines = new String(data, "CP866").replaceAll("\n", "").split(
+				"\r");
 		int linenum = 0;
 		int _points = 0;
 		boolean bossnotfound = false;
@@ -174,27 +176,27 @@ public class PointCheckerModule extends JnodeModule {
 			linenum++;
 			logger.l4("line: " + line);
 			if (line.startsWith(";")) {
-				if (multi || bosses.isEmpty()) {
-					continue;
-				} else {
+				if (!(multi || bosses.isEmpty())) {
 					addError(linenum,
-							"No multi pointlist, comment after boss string",errors);
+							"No multi pointlist, comment after boss string",
+							errors);
 				}
 				continue;
 			}
+			logger.l4("check matcher boss");
 			Matcher m = pBoss.matcher(line);
 			if (m.matches()) {
+				logger.l4("matches boss");
 				FtnNdlAddress boss = NodelistScanner.getInstance().isExists(
 						new FtnAddress(m.group(1)));
-				logger.l4("boss found");
 				if (boss == null) {
-					addError(linenum, line + " not found in nodelist",errors);
+					addError(linenum, line + " not found in nodelist", errors);
 					bossnotfound = true;
 				} else {
 					if (multi || bosses.isEmpty()) {
 						if (bosses.contains(boss)) {
 							addError(linenum, line
-									+ " already exists in pointlist",errors);
+									+ " already exists in pointlist", errors);
 							bossnotfound = true;
 						} else {
 							bosses.add(boss);
@@ -203,39 +205,42 @@ public class PointCheckerModule extends JnodeModule {
 						}
 					} else {
 						addError(linenum,
-								"Not multi pointlist, next boss found",errors);
+								"Not multi pointlist, next boss found", errors);
 					}
 					continue;
 				}
-				m = pPoint.matcher(line);
-				if (m.matches()) {
-					if (bosses.isEmpty()) {
-						addError(linenum,
-								"Point string present, but no boss present before",errors);
-					} else {
-						Long point = Long.valueOf(m.group(1));
-						if (points.contains(point)) {
-							if (bossnotfound) {
-								addError(linenum,
-										"Point for boss, thats not found in nodelist",errors);
-							} else {
-								addError(linenum,
-										"Point " + point
-												+ " already exists for "
-												+ bosses.get(bosses.size() - 1),errors);
-							}
+			}
+			m = pPoint.matcher(line);
+			if (m.matches()) {
+				if (bosses.isEmpty()) {
+					addError(linenum,
+							"Point string present, but no boss present before",
+							errors);
+				} else {
+					Long point = Long.valueOf(m.group(1));
+					if (points.contains(point)) {
+						if (bossnotfound) {
+							addError(
+									linenum,
+									"Point for boss, thats not found in nodelist",
+									errors);
 						} else {
-							String flags = m.group(7);
-							if (flags != null && checkflags(flags, linenum, errors)) {
-								points.add(point);
-								_points++;
-							}
+							addError(linenum,
+									"Point " + point + " already exists for "
+											+ bosses.get(bosses.size() - 1),
+									errors);
+						}
+					} else {
+						String flags = m.group(7);
+						if (flags != null && checkflags(flags, linenum, errors)) {
+							points.add(point);
+							_points++;
 						}
 					}
-					continue;
 				}
-				addError(linenum, "Unknown line: " + line,errors);
+				continue;
 			}
+			addError(linenum, "Unknown line: " + line, errors);
 		}
 		boolean isReg = false;
 		boolean isNet = false;
