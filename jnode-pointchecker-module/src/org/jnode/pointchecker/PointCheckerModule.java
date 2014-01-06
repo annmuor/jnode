@@ -139,7 +139,6 @@ public class PointCheckerModule extends JnodeModule {
 
 	private void readAndCheck(String fileName, InputStream io, int size)
 			throws IOException {
-		logger.l3("Checking file " + fileName + " " + size);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		byte[] buf = new byte[1024];
 		while ((size = io.read(buf, 0, buf.length)) != -1) {
@@ -151,6 +150,7 @@ public class PointCheckerModule extends JnodeModule {
 		FileOutputStream fof = new FileOutputStream(newname.toLowerCase());
 		fof.write(bos.toByteArray());
 		fof.close();
+		logger.l3("readAndCheck " + fileName + " " + size + " : " + success);
 	}
 
 	private void addError(int linenum, String msg, StringBuffer errors) {
@@ -249,9 +249,11 @@ public class PointCheckerModule extends JnodeModule {
 				+ ((isReg) ? "regional" : (isNet) ? "net" : "local") + "\n"
 				+ "Boss lines: " + bosses.size() + "\n" + "Point lines: "
 				+ _points + "\n";
+		logger.l4(text);
 		if (!success)
 			text += errors.toString();
 		for (FtnNdlAddress boss : bosses) {
+			logger.l4("netmail to " + boss);
 			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss,
 					nameFrom, boss.getName(), subject, text);
 		}
