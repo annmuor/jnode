@@ -9,7 +9,10 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jnode.dto.Link;
 import jnode.event.ConnectionEndEvent;
@@ -31,7 +34,8 @@ public class Connector {
 	private Link link;
 	private int index = 0;
 	private static final Logger logger = Logger.getLogger(Connector.class);
-	private final FtnTosser tosser = new FtnTosser();
+
+	public static final Map<String, Long> busyMap = new HashMap<>();
 
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
@@ -47,6 +51,7 @@ public class Connector {
 	}
 
 	public void setLink(Link link) {
+		busyMap.put(link.getLinkAddress(), new Date().getTime());
 		this.link = link;
 		List<Message> messages = FtnTosser.getMessagesForLink(link);
 		this.messages = messages;
@@ -56,7 +61,7 @@ public class Connector {
 	}
 
 	public int onReceived(final Message message) {
-		return tosser.tossIncoming(message);
+		return FtnTosser.tossIncoming(message);
 
 	}
 
@@ -85,7 +90,7 @@ public class Connector {
 					lastactive = System.currentTimeMillis();
 				}
 			} catch (IOException ex) {
-                logger.l2("Exception during doSocket", ex);
+				logger.l2("Exception during doSocket", ex);
 			}
 
 			Frame[] frames = connector.getFrames();
@@ -121,7 +126,7 @@ public class Connector {
 						clientSocket.close();
 					}
 				} catch (IOException e) {
-                    logger.l2("fail close socket", e);
+					logger.l2("fail close socket", e);
 				}
 				break;
 			}
@@ -142,6 +147,7 @@ public class Connector {
 			event = new ConnectionEndEvent(connector.getIncoming(), success
 					&& connector.getSuccess());
 		} else {
+			busyMap.remove(link.getLinkAddress());
 			event = new ConnectionEndEvent(
 					new FtnAddress(link.getLinkAddress()),
 					connector.getIncoming(), success && connector.getSuccess(),
@@ -156,6 +162,12 @@ public class Connector {
 		if (link == null) {
 			throw new ProtocolException("Link can not be null");
 		}
+		Long date = busyMap.get(link.getLinkAddress());
+		if (date != null && date < (3600 * 1000)) {
+			logger.l2(link.getLinkAddress() + " is in busy map, skipping");
+			return;
+		}
+		
 		this.link = link;
 		connector.reset();
 		connector.initOutgoing(this);
@@ -165,7 +177,6 @@ public class Connector {
 			clientSocket = new Socket();
 			clientSocket.connect(soAddr, 30000);
 			doSocket(clientSocket);
-			tosser.end();
 		} catch (UnknownHostException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
 					.getLinkAddress()), false, false, 0, 0));
@@ -174,8 +185,8 @@ public class Connector {
 		} catch (SocketTimeoutException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
 					.getLinkAddress()), false, false, 0, 0));
-			throw new ProtocolException("Connection timeout for " + link
-                    .getLinkAddress());
+			throw new ProtocolException("Connection timeout for "
+					+ link.getLinkAddress());
 
 		} catch (IOException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
@@ -187,7 +198,7 @@ public class Connector {
 					clientSocket.close();
 				}
 			} catch (IOException e) {
-                logger.l2("fail close socket", e);
+				logger.l2("fail close socket", e);
 			}
 		}
 	}
@@ -196,6 +207,5 @@ public class Connector {
 		connector.reset();
 		connector.initIncoming(this);
 		doSocket(clientSocket);
-		tosser.end();
 	}
 }

@@ -189,7 +189,7 @@ public class FtnTosser {
 	 * @param message
 	 *            сообщение
 	 */
-	public int tossIncoming(Message message) {
+	public static int tossIncoming(Message message) {
 		if (message == null) {
 			return 0;
 		}
