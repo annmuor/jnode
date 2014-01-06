@@ -999,7 +999,7 @@ public final class FtnTools {
 		List<FtnMessage> unpackedNetmail = new ArrayList<FtnMessage>();
 		FtnAddress to = new FtnAddress(link.getLinkAddress());
 		String password = link.getPaketPassword();
-		FtnPkt header = new FtnPkt(getPrimaryFtnAddress(), to, password,
+		FtnPkt header = new FtnPkt(selectOurAka(link), to, password,
 				new Date());
 
 		for (FtnMessage message : messages) {
@@ -1022,8 +1022,7 @@ public final class FtnTools {
 
 			try {
 				for (FtnMessage net : packedNetmail) {
-					FtnAddress from = selectOurAka(net);
-					FtnPkt head = new FtnPkt(from, to, password, new Date());
+					FtnPkt head = new FtnPkt(header.getFromAddr(), to, password, new Date());
 					Message m = new Message(createZipFile(head, link,
 							Arrays.asList(net)));
 					m.setMessageName(generateEchoBundle());
@@ -1051,8 +1050,7 @@ public final class FtnTools {
 		if (!unpackedNetmail.isEmpty()) {
 			try {
 				for (FtnMessage net : unpackedNetmail) {
-					FtnAddress from = selectOurAka(net);
-					FtnPkt head = new FtnPkt(from, to, password, new Date());
+					FtnPkt head = new FtnPkt(header.getFromAddr(), to, password, new Date());
 					File out = createOutboundFile(link);
 					FileOutputStream fos = new FileOutputStream(out);
 					fos.write(head.pack());
@@ -1092,24 +1090,24 @@ public final class FtnTools {
 		return ret;
 	}
 
-	public static FtnAddress selectOurAka(FtnMessage net) {
-		System.out.print("selectOurAka from " + net.getToAddr() + " to " + net.getFromAddr());
+	public static FtnAddress selectOurAka(Link link) {
+		System.out.print("selectOurAka for " + link.getLinkAddress());
 		FtnAddress ret = getPrimaryFtnAddress();
-		if (net.getToAddr().getPoint() > 0) {
+		FtnAddress addr = new FtnAddress(link.getLinkAddress());
+		if (addr.getPoint() > 0) {
 			for (FtnAddress address : MainHandler.getCurrentInstance()
 					.getInfo().getAddressList()) {
-				if (net.getToAddr().isPointOf(address)) { // если это пойнт - то
-															// посылаем с того
-															// адреса, на
-															// который он
-															// привязан
+				if (addr.isPointOf(address)) { // если это пойнт - то
+												// посылаем с того
+												// адреса, на
+												// который он
+												// привязан
 					ret = address;
 					break;
 				}
 			}
 		} else {
-			String ourAka = FtnTools.getOptionForAddr(net.getToAddr(),
-					LinkOption.STRING_OUR_AKA);
+			String ourAka = FtnTools.getOption(link, LinkOption.STRING_OUR_AKA);
 			if (ourAka != null) {
 				try {
 					FtnAddress _our = new FtnAddress(ourAka);
