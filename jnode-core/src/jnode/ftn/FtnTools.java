@@ -574,9 +574,12 @@ public final class FtnTools {
 			fos.close();
 		} else if (filename
 				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
+
 			ZipInputStream zis = new ZipInputStream(message.getInputStream());
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null) {
+				String name = ze.getName().toLowerCase();
+				logger.l4("found " + filename + "#" + name);
 				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
 					File out = createInboundFile(message.isSecure());
 					FileOutputStream fos = new FileOutputStream(out);
@@ -794,7 +797,7 @@ public final class FtnTools {
 	 */
 	public static Link getRouting(FtnMessage message) {
 		Link routeVia;
-		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
+		FtnAddress routeTo = message.getToAddr().clone();
 		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", routeTo.toString());
 		// check our point
@@ -1400,7 +1403,8 @@ public final class FtnTools {
 	 * @param attach
 	 * @param description
 	 */
-	public static void hatchFile(Filearea area, File attach, String filename, String description) {
+	public static void hatchFile(Filearea area, File attach, String filename,
+			String description) {
 		Filemail mail = new Filemail();
 		mail.setFilearea(area);
 		mail.setFiledesc(description);
@@ -1417,7 +1421,7 @@ public final class FtnTools {
 		String path = FtnTosser.getFileechoPath() + File.separator
 				+ area.getName() + File.separator + attach.getName();
 		File newFile = new File(path);
-		if(newFile.exists()) {
+		if (newFile.exists()) {
 			newFile.delete();
 		}
 		if (attach.renameTo(new File(path))) {
