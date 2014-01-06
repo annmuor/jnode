@@ -154,16 +154,9 @@ public class PointCheckerModule extends JnodeModule {
 	}
 
 	private void addError(int linenum, String msg, StringBuffer errors) {
-		System.out.println("error " + msg);
 		String error = "Line: " + linenum + " error : " + msg + "\n";
 		errors.append(error);
-	}
-
-	public static void main(String[] args) {
-		Pattern pPoint = Pattern
-				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
-		String s = "Point,4321,Bonya_Station,Sergiev_Posad__Russia,Bonya_Petrov,-Unpublished-,9600,MO,IBN";
-		System.out.println(pPoint.matcher(s).matches());
+		logger.l3(error);
 	}
 
 	private boolean check(String fileName, byte[] data, boolean multi)
@@ -172,7 +165,7 @@ public class PointCheckerModule extends JnodeModule {
 		List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
 		List<Long> points = new ArrayList<Long>();
 
-		Pattern pBoss = Pattern.compile("^Boss," + bossRegExp + "$");
+		Pattern pBoss = Pattern.compile("^Boss,(" + bossRegExp + ")$");
 		Pattern pPoint = Pattern
 				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
 		String[] lines = new String(data, "CP866").replaceAll("\n", "").split(
@@ -182,7 +175,6 @@ public class PointCheckerModule extends JnodeModule {
 		boolean bossnotfound = false;
 		for (String line : lines) {
 			linenum++;
-			logger.l4("line: '" + line + "'");
 			if (line.startsWith(";")) {
 				if (!(multi || bosses.isEmpty())) {
 					addError(linenum,
@@ -191,10 +183,8 @@ public class PointCheckerModule extends JnodeModule {
 				}
 				continue;
 			}
-			logger.l4("check matcher boss");
 			Matcher m = pBoss.matcher(line);
 			if (m.matches()) {
-				logger.l4("matches boss");
 				FtnNdlAddress boss = NodelistScanner.getInstance().isExists(
 						new FtnAddress(m.group(1)));
 				if (boss == null) {
@@ -218,10 +208,8 @@ public class PointCheckerModule extends JnodeModule {
 					continue;
 				}
 			}
-			System.out.println("points matcher");
 			m = pPoint.matcher(line);
 			if (m.matches()) {
-				System.out.println("point matches");
 				if (bosses.isEmpty()) {
 					addError(linenum,
 							"Point string present, but no boss present before",
@@ -270,7 +258,6 @@ public class PointCheckerModule extends JnodeModule {
 		if (!success)
 			text += errors.toString();
 		for (FtnNdlAddress boss : bosses) {
-			logger.l4("netmail to " + boss);
 			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss,
 					nameFrom, boss.getName(), subject, text);
 		}
