@@ -158,20 +158,21 @@ public class PointCheckerModule extends JnodeModule {
 		errors.append(error);
 	}
 
-	private boolean check(String fileName, byte[] data, boolean multi) {
+	private boolean check(String fileName, byte[] data, boolean multi) throws IOException {
 		StringBuffer errors = new StringBuffer();
 		List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
-		errors.delete(0, errors.length());
 		List<Long> points = new ArrayList<Long>();
+		
 		Pattern pBoss = Pattern.compile("^Boss," + bossRegExp + "$");
 		Pattern pPoint = Pattern
 				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
-		String[] lines = new String(data).replaceAll("\n", "").split("\r");
+		String[] lines = new String(data,"CP866").replaceAll("\n", "").split("\r");
 		int linenum = 0;
 		int _points = 0;
 		boolean bossnotfound = false;
 		for (String line : lines) {
 			linenum++;
+			logger.l4("line: " + line);
 			if (line.startsWith(";")) {
 				if (multi || bosses.isEmpty()) {
 					continue;
@@ -185,12 +186,13 @@ public class PointCheckerModule extends JnodeModule {
 			if (m.matches()) {
 				FtnNdlAddress boss = NodelistScanner.getInstance().isExists(
 						new FtnAddress(m.group(1)));
+				logger.l4("boss found");
 				if (boss == null) {
 					addError(linenum, line + " not found in nodelist",errors);
 					bossnotfound = true;
 				} else {
 					if (multi || bosses.isEmpty()) {
-						if (bosses.contains(m.group(1))) {
+						if (bosses.contains(boss)) {
 							addError(linenum, line
 									+ " already exists in pointlist",errors);
 							bossnotfound = true;
