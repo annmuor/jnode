@@ -234,7 +234,7 @@ public class FtnTosser {
 										pkt.getFromAddr().toString());
 						boolean secure = loname.charAt(0) == 's';
 						if (secure) {
-							if (!getOptionBooleanDefFalse(link,
+							if (!getOptionBooleanDefTrue(link,
 									LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
 								if (!link.getPaketPassword().equalsIgnoreCase(
 										pkt.getPassword())) {
