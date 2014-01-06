@@ -908,7 +908,6 @@ public final class FtnTools {
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
 			String nameFrom, String nameTo, String subject, String text) {
-		logger.l2("write netmail !");
 		Netmail net = new Netmail();
 		net.setDate(new Date());
 		net.setFromName(nameFrom);
@@ -935,10 +934,6 @@ public final class FtnTools {
 		net.setRouteVia(routeVia);
 		ORMManager.INSTANSE.getNetmailDAO().save(net);
 		logger.l4("Netmail #" + net.getId() + " created");
-		if (FtnTools.getOptionBooleanDefTrue(routeVia,
-				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-			PollQueue.INSTANSE.add(routeVia);
-		}
 	}
 
 	private static File createOutboundFile(Link link) {
