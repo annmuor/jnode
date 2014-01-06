@@ -31,8 +31,9 @@ public class MainHandler {
 		return config.containsKey(property);
 	}
 
-	public boolean getBooleanProperty(String property, boolean def) {
-		return Boolean.valueOf(getProperty(property, Boolean.valueOf(def).toString()));
+	public boolean getBooleanProperty(String property, Boolean def) {
+		String value = getProperty(property, def.toString());
+		return (value.matches("^([tT][rR][uU][eE]|1)$"));
 	}
 
 	public int getIntegerProperty(String property, int def) {

@@ -1093,6 +1093,7 @@ public final class FtnTools {
 	}
 
 	public static FtnAddress selectOurAka(FtnMessage net) {
+		System.out.print("selectOurAka from " + net.getToAddr() + " to " + net.getFromAddr());
 		FtnAddress ret = getPrimaryFtnAddress();
 		if (net.getToAddr().getPoint() > 0) {
 			for (FtnAddress address : MainHandler.getCurrentInstance()
@@ -1120,6 +1121,7 @@ public final class FtnTools {
 				}
 			}
 		}
+		System.out.println(" == " + ret);
 		return ret;
 	}
 
