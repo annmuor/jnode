@@ -59,9 +59,6 @@ public class PointCheckerModule extends JnodeModule {
 	private String bossRegExp;
 	private Long scanDelay;
 
-	private StringBuffer errors = new StringBuffer();
-	private List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
-
 	public PointCheckerModule(String configFile) throws JnodeModuleException {
 		super(configFile);
 		multi = Boolean.valueOf(properties.getProperty(CONFIG_MULTI));
@@ -156,14 +153,15 @@ public class PointCheckerModule extends JnodeModule {
 		fof.close();
 	}
 
-	private void addError(int linenum, String msg) {
+	private void addError(int linenum, String msg, StringBuffer errors) {
 		String error = "Line: " + linenum + " error : " + msg + "\n";
 		errors.append(error);
 	}
 
 	private boolean check(String fileName, byte[] data, boolean multi) {
+		StringBuffer errors = new StringBuffer();
+		List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
 		errors.delete(0, errors.length());
-		bosses.clear();
 		List<Long> points = new ArrayList<Long>();
 		Pattern pBoss = Pattern.compile("^Boss," + bossRegExp + "$");
 		Pattern pPoint = Pattern
@@ -179,7 +177,7 @@ public class PointCheckerModule extends JnodeModule {
 					continue;
 				} else {
 					addError(linenum,
-							"No multi pointlist, comment after boss string");
+							"No multi pointlist, comment after boss string",errors);
 				}
 				continue;
 			}
@@ -188,13 +186,13 @@ public class PointCheckerModule extends JnodeModule {
 				FtnNdlAddress boss = NodelistScanner.getInstance().isExists(
 						new FtnAddress(m.group(1)));
 				if (boss == null) {
-					addError(linenum, line + " not found in nodelist\n");
+					addError(linenum, line + " not found in nodelist",errors);
 					bossnotfound = true;
 				} else {
 					if (multi || bosses.isEmpty()) {
 						if (bosses.contains(m.group(1))) {
 							addError(linenum, line
-									+ " already exists in pointlist");
+									+ " already exists in pointlist",errors);
 							bossnotfound = true;
 						} else {
 							bosses.add(boss);
@@ -203,7 +201,7 @@ public class PointCheckerModule extends JnodeModule {
 						}
 					} else {
 						addError(linenum,
-								"Not multi pointlist, next boss found\n");
+								"Not multi pointlist, next boss found",errors);
 					}
 					continue;
 				}
@@ -211,22 +209,22 @@ public class PointCheckerModule extends JnodeModule {
 				if (m.matches()) {
 					if (bosses.isEmpty()) {
 						addError(linenum,
-								"Point string present, but no boss present before");
+								"Point string present, but no boss present before",errors);
 					} else {
 						Long point = Long.valueOf(m.group(1));
 						if (points.contains(point)) {
 							if (bossnotfound) {
 								addError(linenum,
-										"Point for boss, thats not found in nodelist");
+										"Point for boss, thats not found in nodelist",errors);
 							} else {
 								addError(linenum,
 										"Point " + point
 												+ " already exists for "
-												+ bosses.get(bosses.size() - 1));
+												+ bosses.get(bosses.size() - 1),errors);
 							}
 						} else {
 							String flags = m.group(7);
-							if (flags != null && checkflags(flags, linenum)) {
+							if (flags != null && checkflags(flags, linenum, errors)) {
 								points.add(point);
 								_points++;
 							}
@@ -234,7 +232,7 @@ public class PointCheckerModule extends JnodeModule {
 					}
 					continue;
 				}
-				addError(linenum, "Unknown line: " + line);
+				addError(linenum, "Unknown line: " + line,errors);
 			}
 		}
 		boolean isReg = false;
@@ -260,7 +258,7 @@ public class PointCheckerModule extends JnodeModule {
 		return success;
 	}
 
-	private boolean checkflags(String flagline, int linenum) {
+	private boolean checkflags(String flagline, int linenum, StringBuffer errors) {
 		if (flagline.length() == 0)
 			return true;
 		String regex = "^(CM|MO|LO|V21|V22|V29|V32|V32B|V32T|V33|V34|HST|"
@@ -283,7 +281,7 @@ public class PointCheckerModule extends JnodeModule {
 			if (uflag) {
 				continue;
 			}
-			addError(linenum, "unknown flag: " + flag);
+			addError(linenum, "unknown flag: " + flag, errors);
 			status = false;
 
 		}
