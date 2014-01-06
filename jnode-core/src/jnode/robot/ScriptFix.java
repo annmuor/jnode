@@ -6,7 +6,6 @@ import jnode.dto.LinkOption;
 import jnode.extenal.Api;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
-import jnode.jscript.JscriptExecutor;
 import jnode.orm.ORMManager;
 
 import java.sql.SQLException;

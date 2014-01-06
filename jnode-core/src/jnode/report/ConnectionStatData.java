@@ -75,7 +75,8 @@ public class ConnectionStatData {
         return pos;
     }
 
-    private List<ConnectionStatDataElement> internalLoad() {
+    @SuppressWarnings("unchecked")
+	private List<ConnectionStatDataElement> internalLoad() {
         List<ConnectionStatDataElement> result;
         try {
             result = new File(statPath).exists() ?

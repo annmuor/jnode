@@ -1,19 +1,15 @@
 package jnode.jscript;
 
-import com.j256.ormlite.dao.GenericRawResults;
+import java.sql.SQLException;
+import java.util.List;
+
 import jnode.dto.Echoarea;
 import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import jnode.report.ReportBuilder;
 
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.j256.ormlite.dao.GenericRawResults;
 
 /**
  * @author Manjago (kirill@temnenkov.com)

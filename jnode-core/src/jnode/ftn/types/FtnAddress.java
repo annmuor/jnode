@@ -1,7 +1,6 @@
 package jnode.ftn.types;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -50,7 +50,6 @@ public class JscriptExecutor implements Runnable {
         return new Date(calendar.getTime().getTime() + MILLISEC_IN_HOUR);
     }
 
-    @SuppressWarnings("unchecked")
 	private static Bindings createBindings() {
 		Bindings bindings = new SimpleBindings();
 		for (ScriptHelper scriptHelper : ORMManager.INSTANSE
@@ -60,7 +59,8 @@ public class JscriptExecutor implements Runnable {
 		return bindings;
 	}
 
-    private static void loadHelper(Bindings bindings, ScriptHelper scriptHelper) {
+    @SuppressWarnings("unchecked")
+	private static void loadHelper(Bindings bindings, ScriptHelper scriptHelper) {
         Class<? super IJscriptHelper> clazz;
         String scriptHelperClassName = scriptHelper.getClassName();
         try {

@@ -1,7 +1,6 @@
 package jnode.robot;
 
 import jnode.dto.Link;
-import jnode.dto.LinkOption;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
 import jnode.orm.ORMManager;
