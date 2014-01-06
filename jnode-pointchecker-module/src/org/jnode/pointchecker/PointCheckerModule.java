@@ -258,7 +258,7 @@ public class PointCheckerModule extends JnodeModule {
 		if (!success)
 			text += errors.toString();
 		for (FtnNdlAddress boss : bosses) {
-			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss,
+			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss.clone(),
 					nameFrom, boss.getName(), subject, text);
 		}
 		return success;
