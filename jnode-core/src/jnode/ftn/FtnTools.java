@@ -901,17 +901,17 @@ public final class FtnTools {
 	 * 
 	 * @param from
 	 * @param to
-	 * @param nameFrom
-	 * @param nameTo
+	 * @param fromName
+	 * @param toName
 	 * @param subject
 	 * @param text
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
-			String nameFrom, String nameTo, String subject, String text) {
+			String fromName, String toName, String subject, String text) {
 		Netmail net = new Netmail();
 		net.setDate(new Date());
-		net.setFromName(nameFrom);
-		net.setToName(nameTo);
+		net.setFromName(fromName);
+		net.setToName(toName);
 		net.setFromFTN(from.toString());
 		net.setToFTN(to.toString());
 		net.setSubject(subject);
