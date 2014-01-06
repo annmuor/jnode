@@ -999,8 +999,7 @@ public final class FtnTools {
 		List<FtnMessage> unpackedNetmail = new ArrayList<FtnMessage>();
 		FtnAddress to = new FtnAddress(link.getLinkAddress());
 		String password = link.getPaketPassword();
-		FtnPkt header = new FtnPkt(selectOurAka(link), to, password,
-				new Date());
+		FtnPkt header = new FtnPkt(selectOurAka(link), to, password, new Date());
 
 		for (FtnMessage message : messages) {
 			if (message.isNetmail()) {
@@ -1022,7 +1021,8 @@ public final class FtnTools {
 
 			try {
 				for (FtnMessage net : packedNetmail) {
-					FtnPkt head = new FtnPkt(header.getFromAddr(), to, password, new Date());
+					FtnPkt head = new FtnPkt(header.getFromAddr(), to,
+							password, new Date());
 					Message m = new Message(createZipFile(head, link,
 							Arrays.asList(net)));
 					m.setMessageName(generateEchoBundle());
@@ -1050,7 +1050,8 @@ public final class FtnTools {
 		if (!unpackedNetmail.isEmpty()) {
 			try {
 				for (FtnMessage net : unpackedNetmail) {
-					FtnPkt head = new FtnPkt(header.getFromAddr(), to, password, new Date());
+					FtnPkt head = new FtnPkt(header.getFromAddr(), to,
+							password, new Date());
 					File out = createOutboundFile(link);
 					FileOutputStream fos = new FileOutputStream(out);
 					fos.write(head.pack());
@@ -1091,7 +1092,9 @@ public final class FtnTools {
 	}
 
 	public static FtnAddress selectOurAka(Link link) {
-		System.out.print("selectOurAka for " + link.getLinkAddress());
+		if (MainHandler.getCurrentInstance().getInfo().getAddressList().size() < 2) {
+			return getPrimaryFtnAddress();
+		}
 		FtnAddress ret = getPrimaryFtnAddress();
 		FtnAddress addr = new FtnAddress(link.getLinkAddress());
 		if (addr.getPoint() > 0) {
@@ -1119,7 +1122,7 @@ public final class FtnTools {
 				}
 			}
 		}
-		System.out.println(" == " + ret);
+		logger.l5("Using aka " + ret + " for " + link.getLinkAddress() + "");
 		return ret;
 	}
 
