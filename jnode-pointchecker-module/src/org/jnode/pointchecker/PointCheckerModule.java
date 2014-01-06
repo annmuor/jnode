@@ -254,12 +254,11 @@ public class PointCheckerModule extends JnodeModule {
 				+ ((isReg) ? "regional" : (isNet) ? "net" : "local") + "\n"
 				+ "Boss lines: " + bosses.size() + "\n" + "Point lines: "
 				+ _points + "\n";
-		logger.l4(text);
 		if (!success)
 			text += errors.toString();
 		for (FtnNdlAddress boss : bosses) {
 			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss.clone(),
-					nameFrom, boss.getName(), subject, text);
+					nameFrom, boss.getName().replace('_', ' '), subject, text);
 		}
 		return success;
 	}
