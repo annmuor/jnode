@@ -6,7 +6,7 @@ import java.util.List;
 
 public enum Notifier {
 	INSTANSE;
-	private Hashtable<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
+	private final Hashtable<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
 
 	private Notifier() {
 		notifyMap = new Hashtable<Class<? extends IEvent>, List<IEventHandler>>();

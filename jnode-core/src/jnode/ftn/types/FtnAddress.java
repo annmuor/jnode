@@ -1,6 +1,7 @@
 package jnode.ftn.types;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +42,14 @@ public class FtnAddress implements Serializable {
 		}
 	}
 
-	public FtnAddress() {
+    public FtnAddress(int zone, int net, int node, int point) {
+        this.zone = zone;
+        this.point = point;
+        this.node = node;
+        this.net = net;
+    }
+
+    public FtnAddress() {
 		zone = MainHandler.getCurrentInstance().getInfo().getZone();
 		net = 0;
 		node = 0;

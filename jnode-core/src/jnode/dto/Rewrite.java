@@ -12,7 +12,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "rewrite")
 public class Rewrite {
 	public static enum Type {
-		NETMAIL, ECHOMAIL;
+		NETMAIL, ECHOMAIL
 	}
 
 	@DatabaseField(canBeNull = false, defaultValue = "0", columnName = "nice")

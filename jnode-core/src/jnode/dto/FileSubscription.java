@@ -5,25 +5,33 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "filesubscription")
 public class FileSubscription {
-	@DatabaseField(foreign = true, columnName = "link_id")
-	private Link link;
-	@DatabaseField(foreign = true, columnName = "filearea_id")
-	private Filearea area;
+    @DatabaseField(foreign = true, columnName = "link_id")
+    private Link link;
+    @DatabaseField(foreign = true, columnName = "filearea_id")
+    private Filearea area;
 
-	public Link getLink() {
-		return link;
-	}
+    public Link getLink() {
+        return link;
+    }
 
-	public void setLink(Link link) {
-		this.link = link;
-	}
+    public void setLink(Link link) {
+        this.link = link;
+    }
 
-	public Filearea getArea() {
-		return area;
-	}
+    public Filearea getArea() {
+        return area;
+    }
 
-	public void setArea(Filearea area) {
-		this.area = area;
-	}
+    public void setArea(Filearea area) {
+        this.area = area;
+    }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("FileSubscription{");
+        sb.append("link=").append(link);
+        sb.append(", area=").append(area);
+        sb.append('}');
+        return sb.toString();
+    }
 }

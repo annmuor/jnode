@@ -1,99 +1,135 @@
 package jnode.dto;
 
-import java.util.Calendar;
-
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Планировщик (жалкая замена cron :-) )
- * 
- * @author Manjago
  *
+ * @author Manjago
  */
-@DatabaseTable(tableName = "schedules")
+@DatabaseTable(tableName = "schedule")
 public class Schedule {
-	public static enum Type {
-		DAILY, WEEKLY, MONTHLY, ANNUALLY;
-	}
+    private static final DateFormat DATE_DAY_FORMAT = new SimpleDateFormat("MMMM dd yyyy");
+    private static final DateFormat DATE_HOUR_FORMAT = new SimpleDateFormat("MMMM dd yyyy HH");
+    @DatabaseField(columnName = "id", generatedId = true)
+    private Long id;
+    @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")
+    private Type type;
+    @DatabaseField(columnName = "details", defaultValue = "0")
+    private Integer details;
+    @DatabaseField(columnName = "jscript_id", foreign = true, canBeNull = false, uniqueIndexName = "lsched_idx")
+    private Jscript jscript;
+    @DatabaseField(columnName = "lastRunDate", canBeNull = true, dataType = DataType.DATE)
+    private Date lastRunDate;
 
-	@DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")
-	private Type type;
-	@DatabaseField(columnName = "details", defaultValue = "0")
-	private Integer details;
-	@DatabaseField(columnName = "jscript_id", foreign = true, canBeNull = false, uniqueIndexName = "lsched_idx")
-	private Jscript jscript;
+    private static boolean isSameDay(Date date1, Date date2) {
+        return !(date1 == null || date2 == null) && DATE_DAY_FORMAT.format(date1).equals(DATE_DAY_FORMAT.format(date2));
+    }
 
-	public boolean isNeedExec(Calendar calendar) {
+    private static boolean isSameHour(Date date1, Date date2) {
+        return !(date1 == null || date2 == null) && DATE_HOUR_FORMAT.format(date1).equals(DATE_HOUR_FORMAT.format(date2));
+    }
 
-		if (calendar == null || getType() == null || getDetails() == null) {
-			return false;
-		}
+    public Long getId() {
+        return id;
+    }
 
-		switch (getType()) {
-		case DAILY:
-			return true;
-		case ANNUALLY:
-			return checkDetails(calendar.get(Calendar.DAY_OF_YEAR));	
-		case MONTHLY:
-			return checkDetails(calendar.get(Calendar.DAY_OF_MONTH));
-		case WEEKLY:
-			return checkDetails(calendar.get(Calendar.DAY_OF_WEEK));
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-		default:
-			return false;
-		}
-	}
+    public Date getLastRunDate() {
+        return lastRunDate;
+    }
 
-	private boolean checkDetails(int fromCalendar){
-		return getDetails() != null && getDetails().equals(fromCalendar);
-	}
-	
-	public Type getType() {
-		return type;
-	}
+    public void setLastRunDate(Date lastRunDate) {
+        this.lastRunDate = lastRunDate;
+    }
 
-	public void setType(Type type) {
-		this.type = type;
-	}
+    public boolean isNeedExec(Calendar calendar) {
 
-	public Integer getDetails() {
-		return details;
-	}
+        if (calendar == null || getType() == null || getDetails() == null) {
+            return false;
+        }
 
-	public void setDetails(Integer details) {
-		this.details = details;
-	}
+        switch(getType()){
+            case HOURLY:
+                if (isSameHour(getLastRunDate(), new Date())){
+                    return false;
+                }
+                break;
+            default:
+                if (isSameDay(getLastRunDate(), new Date())){
+                    return false;
+                }
+                break;
+        }
 
-	public Jscript getJscript() {
-		return jscript;
-	}
+        switch (getType()) {
+            case HOURLY:
+                return true;
+            case DAILY:
+                return checkDetails(calendar.get(Calendar.HOUR_OF_DAY));
+            case ANNUALLY:
+                return checkDetails(calendar.get(Calendar.DAY_OF_YEAR));
+            case MONTHLY:
+                return checkDetails(calendar.get(Calendar.DAY_OF_MONTH));
+            case WEEKLY:
+                return checkDetails(calendar.get(Calendar.DAY_OF_WEEK));
 
-	public void setJscript(Jscript jscript) {
-		this.jscript = jscript;
-	}
+            default:
+                return false;
+        }
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Schedule [");
-		if (type != null) {
-			builder.append("type=");
-			builder.append(type);
-			builder.append(", ");
-		}
-		if (details != null) {
-			builder.append("details=");
-			builder.append(details);
-			builder.append(", ");
-		}
-		if (jscript != null) {
-			builder.append("jscript=");
-			builder.append(jscript.getId());
-		}
-		builder.append("]");
-		return builder.toString();
-	}
+    private boolean checkDetails(int fromCalendar) {
+        return getDetails() != null && getDetails().equals(fromCalendar);
+    }
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Integer getDetails() {
+        return details;
+    }
+
+    public void setDetails(Integer details) {
+        this.details = details;
+    }
+
+    public Jscript getJscript() {
+        return jscript;
+    }
+
+    public void setJscript(Jscript jscript) {
+        this.jscript = jscript;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Schedule{");
+        sb.append("id=").append(id);
+        sb.append(", type=").append(type);
+        sb.append(", details=").append(details);
+        sb.append(", jscript=").append(jscript);
+        sb.append(", lastRunDate=").append(lastRunDate);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public static enum Type {
+        HOURLY, DAILY, WEEKLY, MONTHLY, ANNUALLY
+    }
 }

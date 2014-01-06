@@ -1,37 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>jnode</groupId>
-	<artifactId>jnode</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<url>http://fidonode.in/jnode/</url>
-	<inceptionYear>2012</inceptionYear>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>jnode</groupId>
+    <artifactId>jnode</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>jnode</name>
+    <packaging>pom</packaging>
+    <url>http://fidonode.in/jnode/</url>
+    <inceptionYear>2012</inceptionYear>
 
-	<developers>
-		<developer>
-			<id>kreon</id>
-			<name>Ivan Agarkov</name>
-			<email>ivan.agarkov@gmail.com</email>
-			<roles>
-				<role>Project Admin</role>
-				<role>Lead developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>Manjago</id>
-			<name>Kirill Temnenkov</name>
-			<email>kirill@temnenkov.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
-	</developers>
-	
-	<modules>
-		<module>jnode-core</module>
-		<module>jnode-rss</module>
-		<module>jnode-xmpp</module>
-		<module>jnode-dumb-module</module>
-	</modules>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ormlite.version>4.47</ormlite.version>
+        <java.compiler.version>1.7</java.compiler.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>kreon</id>
+            <name>Ivan Agarkov</name>
+            <email>ivan.agarkov@gmail.com</email>
+            <roles>
+                <role>Project Admin</role>
+                <role>Lead developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>Manjago</id>
+            <name>Kirill Temnenkov</name>
+            <email>kirill@temnenkov.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>${java.compiler.version}</source>
+                    <target>${java.compiler.version}</target>
+                    <verbose>true</verbose>
+                    <fork>true</fork>
+                    <compilerVersion>${java.compiler.version}</compilerVersion>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>jnode-core</module>
+        <module>jnode-rss</module>
+        <module>jnode-xmpp</module>
+        <module>jnode-dumb-module</module>
+        <module>jnode-xmlrpc-server</module>
+        <module>jnode-xmlrpc-common</module>
+        <module>jnode-xmlrpc-client</module>
+        <module>jnode-assembly</module>
+    </modules>
 </project>

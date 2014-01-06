@@ -25,9 +25,11 @@ public class LinkOption {
 	public static final String BOOLEAN_POLL_BY_TIMEOT = "pollbytimeout";
 	public static final String BOOLEAN_AREAFIX = "areafix";
 	public static final String BOOLEAN_FILEFIX = "filefix";
+    public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
 	public static final String LONG_LINK_LEVEL = "level";
 	public static final String SARRAY_LINK_GROUPS = "groups";
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";
+	public static final String STRING_SCRIPTFIX_PWD = "scriptfixpwd";
 	public static final String STRING_FILEFIX_PWD = "filefixpwd";
 	private static final HashMap<String, String> options = generateOptionsMap();
 
@@ -36,7 +38,7 @@ public class LinkOption {
 	 * 
 	 * @return
 	 */
-	private static final HashMap<String, String> generateOptionsMap() {
+	private static HashMap<String, String> generateOptionsMap() {
 		HashMap<String, String> options = new HashMap<String, String>();
 		options.put("ignorepktpwd", "-nopwd");
 		options.put("packnetmail", "-netpack");
@@ -56,11 +58,11 @@ public class LinkOption {
 		return options;
 	}
 
-	public static final String getOptByName(String name) {
+	public static String getOptByName(String name) {
 		return options.get(name);
 	}
 
-	public static final String getNameByOpt(String opt) {
+	public static String getNameByOpt(String opt) {
 		String ret = null;
 		for (String k : options.keySet()) {
 			if (options.get(k).equalsIgnoreCase(opt)) {

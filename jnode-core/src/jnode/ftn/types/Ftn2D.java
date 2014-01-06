@@ -1,5 +1,7 @@
 package jnode.ftn.types;
 
+import java.text.MessageFormat;
+
 /**
  * 
  * @author kreon
@@ -25,10 +27,19 @@ public class Ftn2D {
 		this.node = node;
 	}
 
-	public Ftn2D() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    public static Ftn2D fromString(String net, String node){
+        int netInt;
+        int nodeInt;
+        try
+        {
+            netInt = Integer.parseInt(net);
+            nodeInt = Integer.parseInt(node);
+        } catch (NumberFormatException e){
+            throw new IllegalArgumentException(MessageFormat.format("fail create Ftn2D from string args [{0}, {1}]", net, node));
+        }
+
+        return new Ftn2D(netInt, nodeInt);
+    }
 
 	public Ftn2D(int net, int node) {
 		super();

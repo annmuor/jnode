@@ -4,31 +4,37 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * 
  * @author kreon
- * 
  */
 @DatabaseTable(tableName = "subscription")
 public class Subscription {
-	@DatabaseField(columnName = "link_id", foreign = true, uniqueIndexName = "subs_idx")
-	private Link link;
-	@DatabaseField(columnName = "echoarea_id", foreign = true, uniqueIndexName = "subs_idx")
-	private Echoarea area;
+    @DatabaseField(columnName = "link_id", foreign = true, uniqueIndexName = "subs_idx")
+    private Link link;
+    @DatabaseField(columnName = "echoarea_id", foreign = true, uniqueIndexName = "subs_idx")
+    private Echoarea area;
 
-	public Link getLink() {
-		return link;
-	}
+    public Link getLink() {
+        return link;
+    }
 
-	public void setLink(Link link) {
-		this.link = link;
-	}
+    public void setLink(Link link) {
+        this.link = link;
+    }
 
-	public Echoarea getArea() {
-		return area;
-	}
+    public Echoarea getArea() {
+        return area;
+    }
 
-	public void setArea(Echoarea area) {
-		this.area = area;
-	}
+    public void setArea(Echoarea area) {
+        this.area = area;
+    }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Subscription{");
+        sb.append("link=").append(link);
+        sb.append(", area=").append(area);
+        sb.append('}');
+        return sb.toString();
+    }
 }

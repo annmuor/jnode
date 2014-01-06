@@ -16,27 +16,35 @@ public final class Logger {
 	public static final int LOG_L1 = 1;
 	public static int Loglevel = LOG_L5;
 
-	private String className;
+	private final String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-			"HH:mm:ss");
+			"yy-MM-dd HH:mm:ss");
 	private static final String LOG_FORMAT = "%s [%08d] %s %s";
 
 	public static Logger getLogger(Class<?> clazz) {
 		String className = clazz.getSimpleName();
-		StringBuilder b = new StringBuilder(20);
-		b.append(className);
-		for (int i = b.length(); i < 20; i++) {
-			b.append(' ');
-		}
-		return new Logger(b.toString());
+        return getLogger(className);
 	}
 
-	private Logger(String className) {
+    public static Logger getLogger(String name) {
+        StringBuilder b = new StringBuilder(20);
+        b.append(name);
+        for (int i = b.length(); i < 20; i++) {
+            b.append(' ');
+        }
+        return new Logger(b.toString());
+    }
+
+    private Logger(String className) {
 		this.className = className;
 	}
 
-	private void log(int _type, String log) {
-		if (Loglevel >= _type) {
+    private boolean isNeedLog(int type){
+        return Loglevel >= type;
+    }
+
+	private void log(int type, String log) {
+		if (isNeedLog(type)) {
 			System.out.println(String.format(LOG_FORMAT, DATE_FORMAT
 					.format(new Date()), Thread.currentThread().getId(),
 					className, log));
@@ -51,11 +59,32 @@ public final class Logger {
 		try {
 			bos.close();
 		} catch (IOException e1) {
+            return "[LOGGING INTERNAL ERROR]" + bos.toString();
 		}
 		return bos.toString();
 	}
 
-	public void l5(String log) {
+    public boolean isNeedLog5() {
+        return isNeedLog(LOG_L5);
+    }
+
+    public boolean isNeedLog4() {
+        return isNeedLog(LOG_L4);
+    }
+
+    public boolean isNeedLog3() {
+        return isNeedLog(LOG_L3);
+    }
+
+    public boolean isNeedLog2() {
+        return isNeedLog(LOG_L2);
+    }
+
+    public boolean isNeedLog1() {
+        return isNeedLog(LOG_L1);
+    }
+
+    public void l5(String log) {
 		log(LOG_L5, log);
 	}
 

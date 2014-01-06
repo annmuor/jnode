@@ -59,7 +59,7 @@ public class RssPosterHelper extends IJscriptHelper {
 		StringBuilder sb = new StringBuilder();
 		try {
 			SyndFeed feed = feedInput.build(new XmlReader(new URL(URL)));
-			if (x.after(feed.getPublishedDate())) {
+			if (feed.getPublishedDate() != null && x.after(feed.getPublishedDate())) {
 				logger.l4("There's no new entries at " + URL);
 				return;
 			}

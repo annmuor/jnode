@@ -16,3 +16,5 @@ jnode-core/.project
 jnode-core/.settings
 .project
 .settings
+.idea
+*.iml

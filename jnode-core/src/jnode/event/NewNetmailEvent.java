@@ -3,7 +3,7 @@ package jnode.event;
 import jnode.dto.Netmail;
 
 public class NewNetmailEvent implements IEvent {
-	private Netmail netmail;
+	private final Netmail netmail;
 
 	public Netmail getNetmail() {
 		return netmail;

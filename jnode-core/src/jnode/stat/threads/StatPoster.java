@@ -20,10 +20,11 @@ public class StatPoster extends TimerTask {
 	private static final String STAT_ENABLE = "stat.enable";
 	private static final String STAT_ECHOAREA = "stat.area";
 	private static final String STAT_POSTERS = "stat.posters";
+    private static final long MILLISEC_IN_DAY = 86400000L;
 
-	public StatPoster() {
+    public StatPoster() {
 		if (getStatisticEnabled()) {
-			posters = new ArrayList<IStatPoster>();
+			posters = new ArrayList<>();
 			{
 				String[] posters = MainHandler
 						.getCurrentInstance()
@@ -39,8 +40,6 @@ public class StatPoster extends TimerTask {
 						instance.init(this);
 						this.posters.add(instance);
 						logger.l2("Poster " + poster + " started");
-					} catch (RuntimeException e) {
-						logger.l1("Unable to load poster " + poster, e);
 					} catch (Exception e) {
 						logger.l1("Unable to load poster " + poster, e);
 					}
@@ -48,12 +47,15 @@ public class StatPoster extends TimerTask {
 			}
 			Calendar calendar = Calendar.getInstance(Locale.US);
 			calendar.set(Calendar.DAY_OF_YEAR,
-					calendar.get(Calendar.DAY_OF_YEAR) + 1);
+					calendar.get(Calendar.DAY_OF_YEAR));
 			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 00);
+			calendar.set(Calendar.MINUTE, 0);
 			calendar.set(Calendar.SECOND, 0);
-			Date date = calendar.getTime();
+            Date date = new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
 			long delay = date.getTime() - new Date().getTime();
+            if (delay < 0){
+                delay = 0;
+            }
 			logger.l3("First stat after " + (delay / 1000)
 					+ " seconds and every 24h after");
 			new Timer().schedule(this, delay, 24 * 3600 * 1000);
@@ -65,9 +67,15 @@ public class StatPoster extends TimerTask {
 		logger.l1("StatPoster activated");
 		Echoarea area = FtnTools.getAreaByName(getTechEchoarea(), null);
 		for (IStatPoster poster : posters) {
-			FtnTools.writeEchomail(area, poster.getSubject(), poster.getText());
-			logger.l3("Posted stat from robot "
-					+ poster.getClass().getCanonicalName());
+            String text = poster.getText();
+            if (text != null && text.length() != 0){
+                FtnTools.writeEchomail(area, poster.getSubject(), text);
+                logger.l3("Posted stat from robot "
+                        + poster.getClass().getCanonicalName());
+            } else {
+                logger.l3("Empty stat from robot "
+                        + poster.getClass().getCanonicalName());
+            }
 		}
 	}
 
@@ -76,7 +84,7 @@ public class StatPoster extends TimerTask {
 				"tech");
 	}
 
-	public boolean getStatisticEnabled() {
+	boolean getStatisticEnabled() {
 		return MainHandler.getCurrentInstance().getBooleanProperty(STAT_ENABLE,
 				true);
 	}

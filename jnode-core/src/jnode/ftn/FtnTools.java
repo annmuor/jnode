@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,12 +64,12 @@ import jnode.robot.IRobot;
  */
 public final class FtnTools {
 	private static final String BINKP_INBOUND = "binkp.inbound";
-	private final static String SEEN_BY = "SEEN-BY:";
-	private final static String PATH = "\001PATH:";
-	public static Charset cp866 = Charset.forName("CP866");
-	private final static String ROUTE_VIA = "\001Via %s "
+	private static final String SEEN_BY = "SEEN-BY:";
+	private static final String PATH = "\001PATH:";
+	public static final Charset CP_866 = Charset.forName("CP866");
+	private static final String ROUTE_VIA = "\001Via %s "
 			+ MainHandler.getVersion() + " %s";
-	public final static DateFormat format = new SimpleDateFormat(
+	public static final DateFormat FORMAT = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
@@ -170,7 +171,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static byte[] substr(String s, int len) {
-		byte[] bytes = s.getBytes(cp866);
+		byte[] bytes = s.getBytes(CP_866);
 
 		if (bytes.length > len) {
 			return ByteBuffer.wrap(bytes, 0, len).array();
@@ -195,7 +196,7 @@ public final class FtnTools {
 		} catch (IOException e) {
 			//
 		}
-		return new String(bos.toByteArray(), cp866);
+		return new String(bos.toByteArray(), CP_866);
 	}
 
 	/**
@@ -212,15 +213,22 @@ public final class FtnTools {
 			if (parts == null || parts.length() < 1 || parts.equals(SEEN_BY)) {
 				continue;
 			} else {
-				String[] part = parts.split("/");
-				int node;
-				if (part.length == 2) {
-					net = Integer.valueOf(part[0]);
-					node = Integer.valueOf(part[1]);
-				} else {
-					node = Integer.valueOf(part[0]);
-				}
-				seen.add(new Ftn2D(net, node));
+
+                try{
+                    String[] part = parts.split("/");
+                    int node;
+                    if (part.length == 2) {
+                        net = Integer.valueOf(part[0]);
+                        node = Integer.valueOf(part[1]);
+                    } else {
+                        node = Integer.valueOf(part[0]);
+                    }
+                    seen.add(new Ftn2D(net, node));
+                } catch (NumberFormatException e){
+                    logger.l2(MessageFormat.format("Error: fail write seen {0} for lines {1}", parts, seenByLines), e);
+                }
+
+
 			}
 		}
 		return seen;
@@ -347,14 +355,44 @@ public final class FtnTools {
 	 */
 	public static List<Ftn2D> read2D(String list2d) {
 		List<Ftn2D> ret = new ArrayList<Ftn2D>();
-		for (String l2d : list2d.split(" ")) {
-			String[] part = l2d.split("/");
-			try {
-				ret.add(new Ftn2D(Integer.valueOf(part[0]), Integer
-						.valueOf(part[1])));
-			} catch (RuntimeException e) {
 
-			}
+        if (list2d == null || list2d.length() == 0 || list2d.trim().length() == 0){
+            return ret;
+        }
+
+        String lastNet = null;
+
+        for (String l2d : list2d.split(" ")) {
+			String[] part = l2d.split("/");
+
+            String net;
+            String node;
+
+            switch (part.length){
+                case 2:
+                    // 5020/841
+                    net = part[0];
+                    node = part[1];
+                    break;
+                case 1:
+                    // 841
+                    net = lastNet;
+                    node = part[0];
+                    break;
+                default:
+                    throw new IllegalArgumentException(MessageFormat.format("fail parse 2d address [{0}] in list [{1}]", l2d, list2d));
+            }
+
+            try {
+                ret.add(Ftn2D.fromString(net, node));
+                lastNet = net;
+            } catch (IllegalArgumentException e){
+                lastNet = null;
+                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - illegal arguments", l2d, list2d), e);
+            } catch(RuntimeException e2){
+                lastNet = null;
+                logger.l1(MessageFormat.format("fail parse 2d address [{0}] in list [{1}] - unexpected error", l2d, list2d), e2);
+            }
 		}
 		return ret;
 	}
@@ -371,7 +409,7 @@ public final class FtnTools {
 			try {
 				ret.add(new FtnAddress(l2d));
 			} catch (RuntimeException e) {
-
+               logger.l2("fail read4D");
 			}
 		}
 		return ret;
@@ -405,7 +443,6 @@ public final class FtnTools {
 	 * Пишем 4d-адреса через разделитель
 	 * 
 	 * @param list
-	 * @param sort
 	 * @return
 	 */
 	public static String write4D(List<FtnAddress> list) {
@@ -446,19 +483,13 @@ public final class FtnTools {
 
 	public static boolean getOptionBooleanDefFalse(Link link, String option) {
 		String s = getOption(link, option);
-		if (s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON")) {
-			return true;
-		}
-		return false;
-	}
+        return s.equalsIgnoreCase("TRUE") || s.equalsIgnoreCase("ON");
+    }
 
 	public static boolean getOptionBooleanDefTrue(Link link, String option) {
 		String s = getOption(link, option);
-		if (s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF")) {
-			return false;
-		}
-		return true;
-	}
+        return !(s.equalsIgnoreCase("FALSE") || s.equalsIgnoreCase("OFF"));
+    }
 
 	public static long getOptionLong(Link link, String option) {
 		String s = getOption(link, option);
@@ -497,8 +528,8 @@ public final class FtnTools {
 			text.append('\n');
 		}
 		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
-				.getInfo().getAddressList().toString(),
-				format.format(new Date())));
+                .getInfo().getAddressList().toString(),
+                FORMAT.format(new Date())));
 		message.setText(text.toString());
 		return message;
 	}
@@ -515,7 +546,7 @@ public final class FtnTools {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
 			InputStream is = message.getInputStream();
-			int len = 0;
+			int len;
 			while ((len = is.available()) > 0) {
 				byte[] buf;
 				if (len > 1024) {
@@ -529,14 +560,14 @@ public final class FtnTools {
 			is.close();
 			fos.close();
 		} else if (filename
-				.matches("^[a-f0-9]{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
+				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
 			ZipInputStream zis = new ZipInputStream(message.getInputStream());
 			ZipEntry ze;
 			while ((ze = zis.getNextEntry()) != null) {
 				if (ze.getName().toLowerCase().matches("^[a-f0-9]{8}\\.pkt$")) {
 					File out = createInboundFile(message.isSecure());
 					FileOutputStream fos = new FileOutputStream(out);
-					int len = 0;
+					int len;
 					while ((len = zis.available()) > 0) {
 						byte[] buf;
 						if (len > 1024) {
@@ -749,7 +780,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Link getRouting(FtnMessage message) {
-		Link routeVia = null;
+		Link routeVia;
 		FtnAddress routeTo = new FtnAddress(message.getToAddr().toString());
 		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
 				"=", routeTo.toString());
@@ -942,8 +973,7 @@ public final class FtnTools {
 	 * Паковка сообщений
 	 * 
 	 * @param messages
-	 * @param to
-	 * @param password
+	 * @param link
 	 * @return
 	 */
 	public static List<Message> pack(List<FtnMessage> messages, Link link) {
@@ -1071,6 +1101,7 @@ public final class FtnTools {
 		try {
 			unpack(message);
 		} catch (IOException e) {
+            logger.l2("fail move to bad", e);
 		}
 	}
 
@@ -1108,7 +1139,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Echoarea getAreaByName(String name, Link link) {
-		Echoarea ret = null;
+		Echoarea ret;
 		name = name.toLowerCase().replace("'", "\\'");
 		ret = ORMManager.INSTANSE.getEchoareaDAO().getFirstAnd("name", "=",
 				name);
@@ -1151,7 +1182,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static Filearea getFileareaByName(String name, Link link) {
-		Filearea ret = null;
+		Filearea ret;
 		name = name.toLowerCase();
 		ret = ORMManager.INSTANSE.getFileareaDAO().getFirstAnd("name", "=",
 				name);
@@ -1187,21 +1218,18 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		if (ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
-				"echoarea_id", "=", area) != null) {
-			return true;
-		}
-		return false;
-	}
+        return ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=", msgid,
+                "echoarea_id", "=", area) != null;
+    }
 
 	/**
 	 * Проверка на дроп нетмейла
 	 * 
-	 * @param netmail
-	 * @param secure
-	 * @return
+	 *
+     * @param netmail
+     * @return
 	 */
-	public static boolean validateNetmail(FtnMessage netmail, boolean secure) {
+	public static boolean validateNetmail(FtnMessage netmail) {
 		boolean validFrom = false;
 		boolean validTo = false;
 		// к нам на узел

@@ -126,6 +126,12 @@ public class Main {
 			}
 		}
 		logger.l1("jNode is working now");
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            @Override
+            public void run() {
+                logger.l1(MainHandler.getVersion() + " shutdown");
+            }
+        });
 	}
 
 	private static final class TosserTask extends TimerTask {

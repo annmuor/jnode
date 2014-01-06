@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
+import jnode.logger.Logger;
 
 /**
  * 
@@ -21,13 +22,14 @@ import jnode.ftn.exception.LastMessageException;
  * 
  */
 public class FtnPkt {
+    private static final Logger logger = Logger.getLogger(FtnMessage.class);
 	private FtnAddress fromAddr;
 	private FtnAddress toAddr;
 	private String password;
 	private Date date;
 	private InputStream is;
 	private boolean close;
-	private static DateFormat format = new SimpleDateFormat(
+	private static final DateFormat FORMAT = new SimpleDateFormat(
 			"yyyy MM dd HH mm ss", Locale.US);
 
 	public FtnAddress getFromAddr() {
@@ -44,10 +46,6 @@ public class FtnPkt {
 
 	public Date getDate() {
 		return date;
-	}
-
-	public static DateFormat getFormat() {
-		return format;
 	}
 
 	public FtnPkt() {
@@ -68,7 +66,7 @@ public class FtnPkt {
 		try {
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
 			os.writeShort(FtnTools.revShort(toAddr.getNode()));
-			String date = format.format(this.date); // here
+			String date = FORMAT.format(this.date); // here
 			{
 				int n = 0;
 				for (String d : date.split(" ")) {
@@ -109,7 +107,7 @@ public class FtnPkt {
 		try {
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
 			os.writeShort(FtnTools.revShort(toAddr.getNode()));
-			String date = format.format(this.date); // here
+			String date = FORMAT.format(this.date); // here
 			{
 				int n = 0;
 				for (String d : date.split(" ")) {
@@ -148,6 +146,7 @@ public class FtnPkt {
 			fos.write(new byte[] { 0, 0 });
 			fos.close();
 		} catch (IOException e) {
+            logger.l2("fail finalz", e);
 		}
 	}
 
@@ -204,7 +203,7 @@ public class FtnPkt {
 			toAddr.setPoint(FtnTools.revShort(is.readShort()));
 			is.skip(4);
 		} catch (IOException e) {
-
+            logger.l2("fail unpack", e);
 		}
 	}
 

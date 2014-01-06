@@ -26,16 +26,16 @@ import jnode.protocol.io.exception.ProtocolException;
  */
 public class Connector {
 	private Socket clientSocket;
-	private ProtocolConnector connector;
+	private final ProtocolConnector connector;
 	private List<Message> messages;
 	private Link link;
 	private int index = 0;
 	private static final Logger logger = Logger.getLogger(Connector.class);
-	private FtnTosser tosser = new FtnTosser();
+	private final FtnTosser tosser = new FtnTosser();
 
 	public Connector(ProtocolConnector connector) throws ProtocolException {
 		this.connector = connector;
-		messages = new ArrayList<Message>();
+		messages = new ArrayList<>();
 	}
 
 	public void setMessages(List<Message> messages) {
@@ -56,13 +56,13 @@ public class Connector {
 	}
 
 	public int onReceived(final Message message) {
-		return tosser.tossIncoming(message, link);
+		return tosser.tossIncoming(message);
 
 	}
 
 	private void doSocket(Socket clientSocket) {
-		InputStream is = null;
-		OutputStream os = null;
+		InputStream is;
+		OutputStream os;
 		boolean success = true;
 		long lastactive = System.currentTimeMillis();
 		try {
@@ -84,7 +84,8 @@ public class Connector {
 					connector.avalible(is);
 					lastactive = System.currentTimeMillis();
 				}
-			} catch (IOException ignore) {
+			} catch (IOException ex) {
+                logger.l2("Exception during doSocket", ex);
 			}
 
 			Frame[] frames = connector.getFrames();
@@ -120,6 +121,7 @@ public class Connector {
 						clientSocket.close();
 					}
 				} catch (IOException e) {
+                    logger.l2("fail close socket", e);
 				}
 				break;
 			}
@@ -146,7 +148,7 @@ public class Connector {
 					connector.getBytesReceived(), connector.getBytesSent());
 		}
 		Notifier.INSTANSE.notify(event);
-		messages = new ArrayList<Message>();
+		messages = new ArrayList<>();
 		index = 0;
 	}
 
@@ -172,7 +174,8 @@ public class Connector {
 		} catch (SocketTimeoutException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
 					.getLinkAddress()), false, false, 0, 0));
-			throw new ProtocolException("Connection timeout");
+			throw new ProtocolException("Connection timeout for " + link
+                    .getLinkAddress());
 
 		} catch (IOException e) {
 			Notifier.INSTANSE.notify(new ConnectionEndEvent(new FtnAddress(link
@@ -184,6 +187,7 @@ public class Connector {
 					clientSocket.close();
 				}
 			} catch (IOException e) {
+                logger.l2("fail close socket", e);
 			}
 		}
 	}

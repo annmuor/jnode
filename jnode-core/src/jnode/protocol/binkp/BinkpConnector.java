@@ -182,7 +182,7 @@ public class BinkpConnector implements ProtocolConnector {
 	/**
 	 * Получаем фрейм из потока
 	 * 
-	 * @param is
+	 * @param in
 	 * @return
 	 */
 	private BinkpFrame recv(InputStream in) {
@@ -205,9 +205,7 @@ public class BinkpConnector implements ProtocolConnector {
 							in.read(data);
 							if (data[data.length - 1] == 0) { // null at the end
 								byte[] datawonull = new byte[data.length - 1];
-								for (int i = 0; i < data.length - 1; i++) {
-									datawonull[i] = data[i];
-								}
+                                System.arraycopy(data, 0, datawonull, 0, data.length - 1);
 								arg = new String(datawonull);
 							} else {
 								arg = new String(data);
@@ -226,6 +224,7 @@ public class BinkpConnector implements ProtocolConnector {
 			}
 		} catch (IOException e) {
 			logger.l2("Frame receiving error", e);
+            return null;
 		}
 		return ret;
 	}
@@ -273,6 +272,7 @@ public class BinkpConnector implements ProtocolConnector {
 											+ algo + ")");
 									break;
 								} catch (NoSuchAlgorithmException e) {
+                                    logger.l2("fail algo ", e);
 								}
 							}
 							if (!useCram) {
@@ -324,6 +324,7 @@ public class BinkpConnector implements ProtocolConnector {
 								}
 
 							} catch (NumberFormatException e) {
+                                logger.l2("fail parse address ", e);
 							}
 						}
 					}
@@ -685,7 +686,7 @@ public class BinkpConnector implements ProtocolConnector {
 
 	@Override
 	public boolean getSuccess() {
-		return connectionState == STATE_ERR ? false : true;
+		return connectionState != STATE_ERR;
 	}
 
 	@Override

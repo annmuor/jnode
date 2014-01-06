@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,9 +56,9 @@ public class FtnTosser {
 	private static final String FILEECHO_ENABLE = "fileecho.enable";
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
-	private Map<String, Integer> tossed = new HashMap<String, Integer>();
-	private Map<String, Integer> bad = new HashMap<String, Integer>();
-	private Set<Link> pollLinks = new HashSet<Link>();
+	private final Map<String, Integer> tossed = new HashMap<String, Integer>();
+	private final Map<String, Integer> bad = new HashMap<String, Integer>();
+	private final Set<Link> pollLinks = new HashSet<Link>();
 
 	/**
 	 * Разбор нетмейла
@@ -71,7 +72,7 @@ public class FtnTosser {
 				return;
 			}
 		}
-		boolean drop = validateNetmail(netmail, secure);
+		boolean drop = validateNetmail(netmail);
 
 		if (drop) {
 			Integer n = bad.get("netmail");
@@ -131,13 +132,21 @@ public class FtnTosser {
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
-		if (isADupe(area, echomail.getMsgid())) {
-			logger.l3("Message " + echomail.getArea() + " "
-					+ echomail.getMsgid() + " is a dupe");
-			Integer n = bad.get(echomail.getArea());
-			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
-			return;
-		}
+
+        // попадаются злобные сообщения без MSGID
+
+        if (echomail.getMsgid() == null){
+            logger.l3("echomai " + echomail + " has null msgid");
+        } else {
+            if (isADupe(area, echomail.getMsgid())) {
+                logger.l3("Message " + echomail.getArea() + " "
+                        + echomail.getMsgid() + " is a dupe");
+                Integer n = bad.get(echomail.getArea());
+                bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+                return;
+            }
+        }
+
 
 		processRewrite(echomail);
 
@@ -176,10 +185,10 @@ public class FtnTosser {
 
 	/**
 	 * Получаем сообщения из бандлов
-	 * 
-	 * @param connector
-	 */
-	public int tossIncoming(Message message, Link link) {
+	 *
+     * @param message сообщение
+     */
+	public int tossIncoming(Message message) {
 		if (message == null) {
 			return 0;
 		}
@@ -507,6 +516,13 @@ public class FtnTosser {
 					.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
 			for (EchomailAwaiting ema : mailToSend) {
 				Echomail mail = ema.getMail();
+
+                if (mail == null){
+                    // консистентность базы, констрейнты? Нет, не слышал
+                    logger.l2(MessageFormat.format("Error: not found echomail for awaiting mail {0}", ema));
+                    continue;
+                }
+
 				Echoarea area = mail.getArea();
 				toRemove.add(mail);
 				Set<Ftn2D> seenby = new HashSet<Ftn2D>(read2D(mail.getSeenBy()));
@@ -528,11 +544,18 @@ public class FtnTosser {
 				List<Subscription> ssubs = ORMManager.INSTANSE
 						.getSubscriptionDAO().getAnd("echoarea_id", "=", area);
 				for (Subscription ssub : ssubs) {
-					Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
-							ssub.getLink().getId());
-					FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
-					Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
-					seenby.add(d2);
+
+                    try
+                    {
+                        Link _sslink = ORMManager.INSTANSE.getLinkDAO().getById(
+                                ssub.getLink().getId());
+                        FtnAddress addr = new FtnAddress(_sslink.getLinkAddress());
+                        Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
+                        seenby.add(d2);
+                    } catch(NullPointerException e){
+                        logger.l1("Bad link for subscriprion " + ssub + " : ignored", e);
+                    }
+
 				}
 
 				FtnMessage message = new FtnMessage();
@@ -586,7 +609,7 @@ public class FtnTosser {
 				try {
 					CRC32 crc32 = new CRC32();
 					FileInputStream fis = new FileInputStream(f);
-					int len = 0;
+					int len;
 					do {
 						byte buf[];
 						len = fis.available();
@@ -601,6 +624,7 @@ public class FtnTosser {
 					tic.setCrc32(crc32.getValue());
 					fis.close();
 				} catch (IOException e) {
+                    logger.l2("fail process tic", e);
 				}
 				tic.setArea(area.getName().toUpperCase());
 				tic.setAreaDesc(area.getDescription());
@@ -618,16 +642,21 @@ public class FtnTosser {
 				for (FileSubscription sub : ORMManager.INSTANSE
 						.getFileSubscriptionDAO().getAnd("filearea_id", "=",
 								area)) {
-					Link l = ORMManager.INSTANSE.getLinkDAO().getById(
-							sub.getLink().getId());
-					seenby.add(new FtnAddress(l.getLinkAddress()));
+                    try
+                    {
+                        Link l = ORMManager.INSTANSE.getLinkDAO().getById(
+                                sub.getLink().getId());
+                        seenby.add(new FtnAddress(l.getLinkAddress()));
+                    } catch (NullPointerException e){
+                        logger.l1("bad link for FileSubscription " + sub + " - ignored", e);
+                    }
 				}
 				List<FtnAddress> sb = new ArrayList<FtnAddress>(seenby);
 				Collections.sort(sb, new Ftn4DComparator());
 				tic.setSeenby(sb);
 				tic.setPath(mail.getPath() + "Path " + getPrimaryFtnAddress()
 						+ " " + System.currentTimeMillis() / 1000 + " "
-						+ format.format(new Date()) + " "
+						+ FORMAT.format(new Date()) + " "
 						+ MainHandler.getVersion() + "\r\n");
 				tic.setRealpath(mail.getFilepath());
 				tics.add(tic);
@@ -644,12 +673,12 @@ public class FtnTosser {
 			for (FileForLink ffl : ffls) {
 				try {
 					File file = new File(ffl.getFilename());
-					Message m = new Message(file.getName(), file.length());
-					m.setInputStream(new FileInputStream(file));
+					Message m = new Message(file);
 					ORMManager.INSTANSE.getFileForLinkDAO().delete("link_id",
 							"=", link, "filename", "=", ffl.getFilename());
 					ret.add(m);
-				} catch (Exception ignore) {
+				} catch (Exception ex) {
+                     logger.l1(MessageFormat.format("Exception during get file {0} for link {1}", ffl, link), ex);
 				}
 			}
 		}

@@ -21,7 +21,7 @@ public class Server extends Thread {
 	private static class ServerClient extends Thread {
 		private static final Logger logger = Logger
 				.getLogger(ServerClient.class);
-		private Socket socket;
+		private final Socket socket;
 
 		public ServerClient(Socket socket) {
 			this.socket = socket;
@@ -48,8 +48,8 @@ public class Server extends Thread {
 
 	}
 
-	private String host;
-	private int port;
+	private final String host;
+	private final int port;
 	private int errors = 0;
 
 	public Server(String host, int port) {
