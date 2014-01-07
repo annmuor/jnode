@@ -25,7 +25,8 @@ public class Watermarks {
         }
     }
 
-    private Map<String, String> internalLoad() throws FileNotFoundException {
+    @SuppressWarnings("unchecked")
+	private Map<String, String> internalLoad() throws FileNotFoundException {
         return new File(datafile).exists() ?
                     (Map<String, String>) XMLSerializer.read(datafile) :
                     new HashMap<String, String>();
