@@ -422,7 +422,6 @@ public final class FtnTools {
 			try {
 				ret.add(new FtnAddress(l2d));
 			} catch (RuntimeException e) {
-				logger.l2("fail read4D");
 			}
 		}
 		return ret;
