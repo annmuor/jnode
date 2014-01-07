@@ -1,7 +1,11 @@
 package jnode.orm;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import jnode.dao.GenericDAO;
 import jnode.dto.*;
+import jnode.logger.Logger;
 
 /**
  * Singleton
@@ -12,237 +16,130 @@ import jnode.dto.*;
 
 public enum ORMManager {
 	INSTANSE;
-	private GenericDAO<Dupe> dupeDAO;
-	private GenericDAO<Echoarea> echoareaDAO;
-	private GenericDAO<Echomail> echomailDAO;
-	private GenericDAO<EchomailAwaiting> echomailAwaitingDAO;
-	private GenericDAO<Filearea> fileareaDAO;
-	private GenericDAO<Filemail> filemailDAO;
-	private GenericDAO<FilemailAwaiting> filemailAwaitingDAO;
-	private GenericDAO<FileSubscription> fileSubscriptionDAO;
-	private GenericDAO<Link> linkDAO;
-	private GenericDAO<LinkOption> linkOptionDAO;
-	private GenericDAO<Netmail> netmailDAO;
-	private GenericDAO<Rewrite> rewriteDAO;
-	private GenericDAO<Robot> robotDAO;
-	private GenericDAO<Route> routeDAO;
-	private GenericDAO<Subscription> subscriptionDAO;
-	private GenericDAO<Jscript> jscriptDAO;
-	private GenericDAO<Schedule> scheduleDAO;
-	private GenericDAO<ScriptHelper> scriptHelperDAO;
-	private GenericDAO<FileForLink> fileForLinkDAO;
+	private static final Logger logger = Logger.getLogger(ORMManager.class);
+	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<Class<?>, GenericDAO<?>>();
 
 	public void start() throws Exception {
-		dupeDAO = new GenericDAO<Dupe>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Dupe.class;
-			}
-		};
-		echoareaDAO = new GenericDAO<Echoarea>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Echoarea.class;
-			}
-		};
-		echomailDAO = new GenericDAO<Echomail>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Echomail.class;
-			}
-		};
-		echomailAwaitingDAO = new GenericDAO<EchomailAwaiting>() {
-
-			@Override
-			protected Class<?> getType() {
-				return EchomailAwaiting.class;
-			}
-		};
-		fileareaDAO = new GenericDAO<Filearea>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Filearea.class;
-			}
-		};
-		filemailDAO = new GenericDAO<Filemail>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Filemail.class;
-			}
-		};
-		filemailAwaitingDAO = new GenericDAO<FilemailAwaiting>() {
-
-			@Override
-			protected Class<?> getType() {
-				return FilemailAwaiting.class;
-			}
-		};
-		fileSubscriptionDAO = new GenericDAO<FileSubscription>() {
-
-			@Override
-			protected Class<?> getType() {
-				return FileSubscription.class;
-			}
-		};
-		linkDAO = new GenericDAO<Link>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Link.class;
-			}
-		};
-		linkOptionDAO = new GenericDAO<LinkOption>() {
-
-			@Override
-			protected Class<?> getType() {
-				return LinkOption.class;
-			}
-		};
-		netmailDAO = new GenericDAO<Netmail>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Netmail.class;
-			}
-		};
-		rewriteDAO = new GenericDAO<Rewrite>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Rewrite.class;
-			}
-		};
-		robotDAO = new GenericDAO<Robot>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Robot.class;
-			}
-		};
-		routeDAO = new GenericDAO<Route>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Route.class;
-			}
-		};
-		subscriptionDAO = new GenericDAO<Subscription>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Subscription.class;
-			}
-		};
-		jscriptDAO = new GenericDAO<Jscript>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Jscript.class;
-			}
-		};
-		scheduleDAO = new GenericDAO<Schedule>() {
-
-			@Override
-			protected Class<?> getType() {
-				return Schedule.class;
-			}
-		};
-		scriptHelperDAO = new GenericDAO<ScriptHelper>() {
-
-			@Override
-			protected Class<?> getType() {
-				return ScriptHelper.class;
-			}
-		};
-		fileForLinkDAO = new GenericDAO<FileForLink>() {
-
-			@Override
-			protected Class<?> getType() {
-				return FileForLink.class;
-			}
-		};
 
 	}
 
+	@Deprecated
 	public GenericDAO<Dupe> getDupeDAO() {
-		return dupeDAO;
+		return get(Dupe.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Echoarea> getEchoareaDAO() {
-		return echoareaDAO;
+		return get(Echoarea.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Echomail> getEchomailDAO() {
-		return echomailDAO;
+		return get(Echomail.class);
 	}
 
+	@Deprecated
 	public GenericDAO<EchomailAwaiting> getEchomailAwaitingDAO() {
-		return echomailAwaitingDAO;
+		return get(EchomailAwaiting.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Filearea> getFileareaDAO() {
-		return fileareaDAO;
+		return get(Filearea.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Filemail> getFilemailDAO() {
-		return filemailDAO;
+		return get(Filemail.class);
 	}
 
+	@Deprecated
 	public GenericDAO<FilemailAwaiting> getFilemailAwaitingDAO() {
-		return filemailAwaitingDAO;
+		return get(FilemailAwaiting.class);
 	}
 
+	@Deprecated
 	public GenericDAO<FileSubscription> getFileSubscriptionDAO() {
-		return fileSubscriptionDAO;
+		return get(FileSubscription.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Link> getLinkDAO() {
-		return linkDAO;
+		return get(Link.class);
 	}
 
+	@Deprecated
 	public GenericDAO<LinkOption> getLinkOptionDAO() {
-		return linkOptionDAO;
+		return get(LinkOption.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Netmail> getNetmailDAO() {
-		return netmailDAO;
+		return get(Netmail.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Rewrite> getRewriteDAO() {
-		return rewriteDAO;
+		return get(Rewrite.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Robot> getRobotDAO() {
-		return robotDAO;
+		return get(Robot.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Route> getRouteDAO() {
-		return routeDAO;
+		return get(Route.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Subscription> getSubscriptionDAO() {
-		return subscriptionDAO;
+		return get(Subscription.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Jscript> getJscriptDAO() {
-		return jscriptDAO;
+		return get(Jscript.class);
 	}
 
+	@Deprecated
 	public GenericDAO<Schedule> getScheduleDAO() {
-		return scheduleDAO;
+		return get(Schedule.class);
 	}
 
+	@Deprecated
 	public GenericDAO<ScriptHelper> getScriptHelperDAO() {
-		return scriptHelperDAO;
+		return get(ScriptHelper.class);
 	}
 
+	@Deprecated
 	public GenericDAO<FileForLink> getFileForLinkDAO() {
-		return fileForLinkDAO;
+		return get(FileForLink.class);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> GenericDAO<T> get(final Class<? extends T> clazz) {
+		GenericDAO<T> ret = (GenericDAO<T>) INSTANSE.genericDAOMap.get(clazz);
+		if (ret == null) {
+			try {
+				ret = new GenericDAO<T>() {
+
+					@Override
+					protected Class<?> getType() {
+						// TODO Auto-generated method stub
+						return clazz;
+					}
+				};
+				INSTANSE.genericDAOMap.put(clazz, ret);
+			} catch (Exception e) {
+				for (int i = 0; i < 10; i++)
+					logger.l1("!!! FATAL !!! Exception while creation DAO for "
+							+ clazz.getCanonicalName());
+				logger.l1("jNode have to shutdow during critical error");
+				System.exit(0);
+			}
+		}
+		return ret;
+	}
 }

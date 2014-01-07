@@ -1,12 +1,12 @@
 package org.jnode.httpd;
 
-import org.jnode.httpd.dao.PointRequestDAO;
 import org.jnode.httpd.dto.PointRequest;
 
 import jnode.dto.Link;
 import jnode.event.IEvent;
 import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
+import jnode.main.SystemInfo;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
@@ -17,6 +17,7 @@ import jnode.orm.ORMManager;
  * 
  */
 import spark.*;
+import static org.jnode.httpd.util.JSONUtil.*;
 
 public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_PORT = "port";
@@ -36,27 +37,32 @@ public class HttpdModule extends JnodeModule {
 	public void start() {
 		Spark.setPort(port);
 		Spark.staticFileLocation("/www");
-		
-		Spark.get(new Route("/self/address/list") {
+
+		Spark.get(new Route("/self") {
 
 			@Override
 			public Object handle(Request req, Response resp) {
 				StringBuilder sb = new StringBuilder();
-				sb.append("[");
-				boolean f = true;
-				for (FtnAddress address : MainHandler.getCurrentInstance()
-						.getInfo().getAddressList()) {
-					if (f) {
-						f = false;
-					} else {
-						sb.append(",");
-					}
-					sb.append("\"" + address.toString() + "\"");
+				SystemInfo info = MainHandler.getCurrentInstance().getInfo();
+				String cb = req.queryParams("cb");
+				if (cb != null) {
+					sb.append(cb + "(");
+				}
+				sb.append("{");
+				sb.append(pair("name", info.getStationName()));
+				sb.append(", " + pair("location", info.getLocation()));
+				sb.append(", " + pair("addresses", info.getAddressList()));
+				sb.append(", " + pair("sysop", info.getSysop()));
+				sb.append(", " + pair("running", MainHandler.getVersion()));
+				sb.append("}");
+				if (cb != null) {
+					sb.append(")");
 				}
 				resp.type("application/json");
 				return sb.toString();
 			}
 		});
+
 		Spark.post(new Route("/point/new") {
 
 			@Override
@@ -79,7 +85,7 @@ public class HttpdModule extends JnodeModule {
 					if (!isPoint) {
 						throw new RuntimeException();
 					}
-					Link test = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
+					Link test = ORMManager.get(Link.class).getFirstAnd(
 							"ftn_address", "=", address.toString());
 					if (test != null) {
 						throw new RuntimeException();
@@ -88,7 +94,7 @@ public class HttpdModule extends JnodeModule {
 					request.setFtnAddress(address.toString());
 					request.setEmail(email);
 					request.setName(name);
-					PointRequestDAO.getSelf().save(request);
+					ORMManager.get(PointRequest.class).save(request);
 					resp.redirect("/newpointwelcome.html");
 				} catch (RuntimeException e) {
 					resp.redirect("/newpoint.html?error=INVALID_POINT");
