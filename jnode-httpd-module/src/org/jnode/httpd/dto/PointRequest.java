@@ -5,13 +5,13 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "httpd_pointrequest")
 public class PointRequest {
-	@DatabaseField(columnName = "id", index = true)
+	@DatabaseField(columnName = "id", generatedId = true)
 	private Long id;
-	@DatabaseField(columnName = "ftn_address")
+	@DatabaseField(columnName = "ftn_address", canBeNull = false)
 	private String ftnAddress;
-	@DatabaseField(columnName = "station_name")
+	@DatabaseField(columnName = "station_name", canBeNull = false)
 	private String name;
-	@DatabaseField(columnName = "email")
+	@DatabaseField(columnName = "email", canBeNull = false)
 	private String email;
 
 	public Long getId() {

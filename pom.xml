@@ -62,5 +62,6 @@
         <module>jnode-xmlrpc-client</module>
         <module>jnode-assembly</module>
         <module>jnode-pointchecker-module</module>
+        <module>jnode-httpd-module</module>
     </modules>
 </project>

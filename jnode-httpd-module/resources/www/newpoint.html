@@ -1,0 +1,31 @@
+<html>
+<head>
+<title>test</title>
+</head>
+<body>
+	<form action="/point/new" method="POST">
+		<table>
+			<tr>
+				<th>Request Address</th>
+				<td><nobr>
+						<select name="node">
+							<option value="2:5020/848">2:5020/848</option>
+							<option value="2:5020/849">2:5020/849</option>
+						</select> . <input type="text" name="point" size="5" />
+					</nobr></td>
+			</tr>
+			<tr>
+				<th>First and Last names</th>
+				<td><input type="text" name="name" /></td>
+			</tr>
+			<tr>
+				<th>Valid email</th>
+				<td><input type="text" name="email" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="submit" value="Request a point" /></td>
+			</tr>
+		</table>
+	</form>
+</body>
+</html>
