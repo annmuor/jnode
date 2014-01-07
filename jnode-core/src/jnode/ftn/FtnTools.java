@@ -1297,7 +1297,7 @@ public final class FtnTools {
 				ret.setReadlevel(0L);
 				ret.setWritelevel(0L);
 				ret.setGroup("");
-				logger.l3("Filearea " + name.toUpperCase() + " created");
+				logger.l3("Filearea " + name + " created");
 				ORMManager.INSTANSE.getFileareaDAO().save(ret);
 				if (link != null) {
 					FileSubscription sub = new FileSubscription();
@@ -1463,11 +1463,11 @@ public final class FtnTools {
 			mail.setFilepath(attach.getAbsolutePath());
 		}
 		ORMManager.INSTANSE.getFilemailDAO().save(mail);
+
 		for (FileSubscription sub : ORMManager.INSTANSE
 				.getFileSubscriptionDAO().getAnd("filearea_id", "=", area)) {
-			FilemailAwaiting fma = new FilemailAwaiting();
-			fma.setLink(sub.getLink());
-			fma.setMail(mail);
+			ORMManager.INSTANSE.getFilemailAwaitingDAO().save(
+					new FilemailAwaiting(sub.getLink(), mail));
 			if (getOptionBooleanDefFalse(sub.getLink(),
 					LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
 				PollQueue.INSTANSE.add(sub.getLink());

@@ -327,8 +327,7 @@ public class FtnTosser {
 									+ File.separator + "bad_" + generateTic()));
 							continue;
 						}
-						Filearea area = getFileareaByName(tic.getArea()
-								.toLowerCase(), source);
+						Filearea area = getFileareaByName(tic.getArea(), source);
 						if (area == null) {
 							logger.l3("Filearea " + tic.getArea()
 									+ " is not avalible for "
