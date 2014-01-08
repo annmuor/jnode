@@ -58,8 +58,8 @@ public class InstallUtil {
 		ORMManager.get(Robot.class).save(filefix);
 		
 		Robot scriptfix = new Robot();
-		filefix.setClassName(ScriptFix.class.getCanonicalName());
-		filefix.setRobot("scriptfix");
+		scriptfix.setClassName(ScriptFix.class.getCanonicalName());
+		scriptfix.setRobot("scriptfix");
 		ORMManager.get(Robot.class).save(scriptfix);
 		
 		logger.l1("[+] Robots created");
