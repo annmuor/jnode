@@ -27,8 +27,8 @@ public class InstallUtil {
 
 	public InstallUtil() {
 		versionDao = ORMManager.get(Version.class);
-		List<Version> versions = versionDao.getOrderLimitAnd(1, "int_at",
-				false);
+		List<Version> versions = versionDao
+				.getOrderLimitAnd(1, "int_at", false);
 		if (versions.size() == 0) {
 			doInstall();
 		} else {
@@ -56,12 +56,12 @@ public class InstallUtil {
 		filefix.setClassName(FileFix.class.getCanonicalName());
 		filefix.setRobot("filefix");
 		ORMManager.get(Robot.class).save(filefix);
-		
+
 		Robot scriptfix = new Robot();
 		scriptfix.setClassName(ScriptFix.class.getCanonicalName());
 		scriptfix.setRobot("scriptfix");
 		ORMManager.get(Robot.class).save(scriptfix);
-		
+
 		logger.l1("[+] Robots created");
 
 		// owner's point
@@ -81,10 +81,6 @@ public class InstallUtil {
 			logger.l1(String.format("\n\tFTN: %s\n\tAka: %s\n\tPassword: %s\n",
 					owner.getLinkAddress(), owner.getLinkName(),
 					owner.getPaketPassword()));
-		}
-
-		{
-			// rewrites for owner's point
 			long nice = 1;
 			Rewrite rw = new Rewrite();
 			rw.setType(Type.NETMAIL);
@@ -108,24 +104,27 @@ public class InstallUtil {
 			}
 			logger.l1("[+] Basic rewrites for owner's point created!");
 		}
+
 		{
-			boolean route = false;
-			List<Link> links = ORMManager.get(Link.class).getAll();
-			for (Link l : links) {
-				FtnAddress a = new FtnAddress(l.getLinkAddress());
-				if (a.getPoint() == 0) { // server side link
-					Route defroute = new Route();
-					defroute.setNice(Long.MAX_VALUE);
-					defroute.setRouteVia(l);
-					ORMManager.get(Route.class).save(defroute);
-					logger.l1("[+] all messages will be routed through "
-							+ l.getLinkAddress());
-					route = true;
-					break;
-				}
-			}
+			boolean route = !ORMManager.get(Route.class).getAll().isEmpty();
 			if (!route) {
-				logger.l1("[-] link for default route now found. Add it manually");
+				List<Link> links = ORMManager.get(Link.class).getAll();
+				for (Link l : links) {
+					FtnAddress a = new FtnAddress(l.getLinkAddress());
+					if (a.getPoint() == 0) { // server side link
+						Route defroute = new Route();
+						defroute.setNice(Long.MAX_VALUE);
+						defroute.setRouteVia(l);
+						ORMManager.get(Route.class).save(defroute);
+						logger.l1("[+] all messages will be routed through "
+								+ l.getLinkAddress());
+						route = true;
+						break;
+					}
+				}
+				if (!route) {
+					logger.l1("[-] link for default route now found. Add it manually");
+				}
 			}
 		}
 
