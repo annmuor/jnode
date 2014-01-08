@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import jnode.ftn.FtnTools;
+import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
@@ -63,6 +64,11 @@ public class Main {
 			}
 		}
 		logger.l1(MainHandler.getVersion() + " starting");
+		// installer
+
+		new InstallUtil();
+
+		// eof
 		if (MainHandler.getCurrentInstance().haveProperty(BINKD_SERVER)) {
 			Thread server = new Server(MainHandler.getCurrentInstance()
 					.getProperty(BINKD_BIND, "0.0.0.0"), MainHandler
@@ -126,12 +132,12 @@ public class Main {
 			}
 		}
 		logger.l1("jNode is working now");
-        Runtime.getRuntime().addShutdownHook(new Thread(){
-            @Override
-            public void run() {
-                logger.l1(MainHandler.getVersion() + " shutdown");
-            }
-        });
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				logger.l1(MainHandler.getVersion() + " shutdown");
+			}
+		});
 	}
 
 	private static final class TosserTask extends TimerTask {

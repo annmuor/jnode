@@ -19,14 +19,15 @@ import jnode.main.SystemInfo;
 import jnode.orm.ORMManager;
 import jnode.robot.AreaFix;
 import jnode.robot.FileFix;
+import jnode.robot.ScriptFix;
 
 public class InstallUtil {
 	private static final Logger logger = Logger.getLogger(InstallUtil.class);
 	private GenericDAO<Version> versionDao;
 
-	public InstallUtil() throws Exception {
+	public InstallUtil() {
 		versionDao = ORMManager.get(Version.class);
-		List<Version> versions = versionDao.getOrderLimitAnd(1, "inst_at",
+		List<Version> versions = versionDao.getOrderLimitAnd(1, "int_at",
 				false);
 		if (versions.size() == 0) {
 			doInstall();
@@ -38,7 +39,7 @@ public class InstallUtil {
 	}
 
 	private void checkForLastVersion() {
-		// TODO Auto-generated method stub
+		// TODO check for version
 
 	}
 
@@ -55,6 +56,12 @@ public class InstallUtil {
 		filefix.setClassName(FileFix.class.getCanonicalName());
 		filefix.setRobot("filefix");
 		ORMManager.get(Robot.class).save(filefix);
+		
+		Robot scriptfix = new Robot();
+		filefix.setClassName(ScriptFix.class.getCanonicalName());
+		filefix.setRobot("scriptfix");
+		ORMManager.get(Robot.class).save(scriptfix);
+		
 		logger.l1("[+] Robots created");
 
 		// owner's point

@@ -26,7 +26,7 @@ import jnode.logger.Logger;
  * 
  */
 public class FtnMessage {
-    private static final Logger logger = Logger.getLogger(FtnMessage.class);
+	private static final Logger logger = Logger.getLogger(FtnMessage.class);
 	public static final int ATTR_PVT = 1;
 	public static final int ATTR_CRASH = 2;
 	public static final int ATTR_RECD = 4;
@@ -221,11 +221,11 @@ public class FtnMessage {
 			unpack(is);
 			is.close();
 		} catch (IOException e) {
-             logger.l2("fail unpack", e);
+			logger.l2("fail unpack", e);
 		}
 
 	}
-	
+
 	public void unpack(InputStream iz) throws LastMessageException {
 		DataInputStream is = new DataInputStream(iz);
 		fromAddr = new FtnAddress();
@@ -327,11 +327,13 @@ public class FtnMessage {
 								preOrigin = true;
 								String orig = m.group(1);
 								Matcher fm = f.matcher(orig);
-								String ftnAddr = "";
 								while (fm.find()) {
-									ftnAddr = fm.group(1);
+									try {
+										fromAddr = new FtnAddress(fm.group(1));
+									} catch (NumberFormatException e) {
+										logger.l3("Bad address in origin");
+									}
 								}
-								this.fromAddr = new FtnAddress(ftnAddr);
 							}
 						}
 						builder.append(line);

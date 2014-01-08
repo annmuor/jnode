@@ -11,7 +11,7 @@ public class TimerPoll extends TimerTask {
 
 	@Override
 	public void run() {
-		for (Link l : ORMManager.INSTANSE.getLinkDAO().getAnd("host", "ne", "-",
+		for (Link l : ORMManager.get(Link.class).getAnd("host", "ne", "-",
 				"port", "ne", 0)) {
 			if (FtnTools.getOptionBooleanDefTrue(l,
 					LinkOption.BOOLEAN_POLL_BY_TIMEOT)) {

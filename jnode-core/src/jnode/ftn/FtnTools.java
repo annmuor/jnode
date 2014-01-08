@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
@@ -481,7 +482,7 @@ public final class FtnTools {
 	 */
 	public static String getOption(Link link, String option) {
 		String value = "";
-		LinkOption opt = ORMManager.INSTANSE.getLinkOptionDAO().getFirstAnd(
+		LinkOption opt = ORMManager.get(LinkOption.class).getFirstAnd(
 				"link_id", "=", link, "name", "=", option.toLowerCase());
 		if (opt != null) {
 			value = opt.getValue();
@@ -772,7 +773,7 @@ public final class FtnTools {
 					.contains(message.getToAddr())) {
 				// if (message.getToAddr().equals(Main.info.getAddress())) {
 				try {
-					Robot robot = ORMManager.INSTANSE.getRobotDAO().getById(
+					Robot robot = ORMManager.get(Robot.class).getById(
 							message.getToName().toLowerCase());
 					if (robot != null) {
 						robotname = robot.getRobot();
@@ -805,17 +806,15 @@ public final class FtnTools {
 	public static Link getRouting(FtnMessage message) {
 		Link routeVia;
 		FtnAddress routeTo = message.getToAddr().clone();
-		routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
-				"=", routeTo.toString());
+		routeVia = getLinkByFtnAddress(routeTo);
 		// check our point
 		if (!isOurPoint(routeTo)) {
 			routeTo.setPoint(0);
-			routeVia = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
-					"ftn_address", "=", routeTo.toString());
+			routeVia = getLinkByFtnAddress(routeTo);
 			// а теперь - по роутингу
 			if (routeVia == null) {
-				List<Route> routes = ORMManager.INSTANSE.getRouteDAO()
-						.getOrderAnd("nice", true);
+				List<Route> routes = ORMManager.get(Route.class).getOrderAnd(
+						"nice", true);
 				for (Route route : routes) {
 					if (completeMask(route, message)) {
 						routeVia = route.getRouteVia();
@@ -825,6 +824,11 @@ public final class FtnTools {
 			}
 		}
 		return routeVia;
+	}
+
+	public static Link getLinkByFtnAddress(FtnAddress routeTo) {
+		return ORMManager.get(Link.class).getFirstAnd("ftn_address", "=",
+				routeTo.toString());
 	}
 
 	public static boolean isOurPoint(FtnAddress routeTo) {
@@ -886,7 +890,7 @@ public final class FtnTools {
 			return;
 		}
 		netmail.setRouteVia(routeVia);
-		ORMManager.INSTANSE.getNetmailDAO().save(netmail);
+		ORMManager.get(Netmail.class).save(netmail);
 		logger.l4("Netmail #" + netmail.getId() + " created");
 		if (FtnTools.getOptionBooleanDefTrue(routeVia,
 				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
@@ -931,7 +935,7 @@ public final class FtnTools {
 			return;
 		}
 		net.setRouteVia(routeVia);
-		ORMManager.INSTANSE.getNetmailDAO().save(net);
+		ORMManager.get(Netmail.class).save(net);
 		logger.l4("Netmail #" + net.getId() + " created");
 	}
 
@@ -1180,8 +1184,7 @@ public final class FtnTools {
 	}
 
 	public static String getOptionForAddr(FtnAddress toAddr, String name) {
-		Link link = ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
-				"=", toAddr.toString());
+		Link link = getLinkByFtnAddress(toAddr);
 		if (link != null) {
 			return getOption(link, name);
 		}
@@ -1211,14 +1214,13 @@ public final class FtnTools {
 	 * @param message
 	 */
 	public static void processRewrite(FtnMessage message) {
-		List<Rewrite> rewrites = ORMManager.INSTANSE.getRewriteDAO()
-				.getOrderAnd(
-						"nice",
-						true,
-						"type",
-						"=",
-						(message.isNetmail()) ? (Rewrite.Type.NETMAIL)
-								: (Rewrite.Type.ECHOMAIL));
+		List<Rewrite> rewrites = ORMManager.get(Rewrite.class).getOrderAnd(
+				"nice",
+				true,
+				"type",
+				"=",
+				(message.isNetmail()) ? (Rewrite.Type.NETMAIL)
+						: (Rewrite.Type.ECHOMAIL));
 		for (Rewrite rewrite : rewrites) {
 			if (FtnTools.completeMask(rewrite, message)) {
 				logger.l5(((message.isNetmail()) ? "NET" : "ECH")
@@ -1241,8 +1243,7 @@ public final class FtnTools {
 	public static Echoarea getAreaByName(String name, Link link) {
 		Echoarea ret;
 		name = name.toLowerCase().replace("'", "\\'");
-		ret = ORMManager.INSTANSE.getEchoareaDAO().getFirstAnd("name", "=",
-				name);
+		ret = ORMManager.get(Echoarea.class).getFirstAnd("name", "=", name);
 		if (ret == null) {
 			if (link == null
 					|| getOptionBooleanDefFalse(link,
@@ -1254,18 +1255,18 @@ public final class FtnTools {
 				ret.setWritelevel(0L);
 				ret.setGroup("");
 				logger.l3("Echoarea " + name.toUpperCase() + " created");
-				ORMManager.INSTANSE.getEchoareaDAO().save(ret);
+				ORMManager.get(Echoarea.class).save(ret);
 				if (link != null) {
 					Subscription sub = new Subscription();
 					sub.setArea(ret);
 					sub.setLink(link);
-					ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
+					ORMManager.get(Subscription.class).save(sub);
 				}
 				Notifier.INSTANSE.notify(new NewEchoareaEvent(name, link));
 			}
 		} else {
 			if (link != null
-					&& ORMManager.INSTANSE.getSubscriptionDAO().getFirstAnd(
+					&& ORMManager.get(Subscription.class).getFirstAnd(
 							"echoarea_id", "=", ret.getId(), "link_id", "=",
 							link.getId()) == null) {
 				ret = null;
@@ -1284,8 +1285,7 @@ public final class FtnTools {
 	public static Filearea getFileareaByName(String name, Link link) {
 		Filearea ret;
 		name = name.toLowerCase();
-		ret = ORMManager.INSTANSE.getFileareaDAO().getFirstAnd("name", "=",
-				name);
+		ret = ORMManager.get(Filearea.class).getFirstAnd("name", "=", name);
 		if (ret == null) {
 			if (link == null
 					|| getOptionBooleanDefFalse(link,
@@ -1297,20 +1297,20 @@ public final class FtnTools {
 				ret.setWritelevel(0L);
 				ret.setGroup("");
 				logger.l3("Filearea " + name + " created");
-				ORMManager.INSTANSE.getFileareaDAO().save(ret);
+				ORMManager.get(Filearea.class).save(ret);
 				if (link != null) {
 					FileSubscription sub = new FileSubscription();
 					sub.setArea(ret);
 					sub.setLink(link);
-					ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
+					ORMManager.get(FileSubscription.class).save(sub);
 				}
 				Notifier.INSTANSE.notify(new NewFileareaEvent(name, link));
 			}
 		} else {
 			if (link != null
-					&& ORMManager.INSTANSE.getFileSubscriptionDAO()
-							.getFirstAnd("filearea_id", "=", ret.getId(),
-									"link_id", "=", link.getId()) == null) {
+					&& ORMManager.get(FileSubscription.class).getFirstAnd(
+							"filearea_id", "=", ret.getId(), "link_id", "=",
+							link.getId()) == null) {
 				ret = null;
 			}
 		}
@@ -1318,8 +1318,8 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		return ORMManager.INSTANSE.getDupeDAO().getFirstAnd("msgid", "=",
-				msgid, "echoarea_id", "=", area) != null;
+		return ORMManager.get(Dupe.class).getFirstAnd("msgid", "=", msgid,
+				"echoarea_id", "=", area) != null;
 	}
 
 	/**
@@ -1335,8 +1335,7 @@ public final class FtnTools {
 		// к нам на узел
 		if (isOurPoint(netmail.getToAddr())) {
 			validTo = true;
-		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
-				"=", netmail.getToAddr().toString()) != null) {
+		} else if (getLinkByFtnAddress(netmail.getToAddr()) != null) {
 			validTo = true;
 		} else {
 			FtnNdlAddress to = NodelistScanner.getInstance().isExists(
@@ -1373,8 +1372,7 @@ public final class FtnTools {
 
 		if (isOurPoint(netmail.getFromAddr())) {
 			validFrom = true;
-		} else if (ORMManager.INSTANSE.getLinkDAO().getFirstAnd("ftn_address",
-				"=", netmail.getFromAddr().toString()) != null) {
+		} else if (getLinkByFtnAddress(netmail.getFromAddr()) != null) {
 			validFrom = true;
 		} else {
 			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
@@ -1415,10 +1413,10 @@ public final class FtnTools {
 		b.append(" * Origin: " + MainHandler.getVersion() + " ("
 				+ getPrimaryFtnAddress().toString() + ")\n");
 		mail.setText(b.toString());
-		ORMManager.INSTANSE.getEchomailDAO().save(mail);
-		for (Subscription s : ORMManager.INSTANSE.getSubscriptionDAO().getAnd(
+		ORMManager.get(Echomail.class).save(mail);
+		for (Subscription s : ORMManager.get(Subscription.class).getAnd(
 				"echoarea_id", "=", area)) {
-			ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
+			ORMManager.get(EchomailAwaiting.class).save(
 					new EchomailAwaiting(s.getLink(), mail));
 		}
 	}
@@ -1461,11 +1459,11 @@ public final class FtnTools {
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
 		}
-		ORMManager.INSTANSE.getFilemailDAO().save(mail);
+		ORMManager.get(Filemail.class).save(mail);
 
-		for (FileSubscription sub : ORMManager.INSTANSE
-				.getFileSubscriptionDAO().getAnd("filearea_id", "=", area)) {
-			ORMManager.INSTANSE.getFilemailAwaitingDAO().save(
+		for (FileSubscription sub : ORMManager.get(FileSubscription.class)
+				.getAnd("filearea_id", "=", area)) {
+			ORMManager.get(FilemailAwaiting.class).save(
 					new FilemailAwaiting(sub.getLink(), mail));
 			if (getOptionBooleanDefFalse(sub.getLink(),
 					LinkOption.BOOLEAN_CRASH_FILEMAIL)) {

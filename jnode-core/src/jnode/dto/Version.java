@@ -10,11 +10,11 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "version")
 public class Version {
-	@DatabaseField(columnDefinition = "maj_ver")
+	@DatabaseField(columnName = "maj_ver")
 	private Long majorVersion;
-	@DatabaseField(columnDefinition = "min_ver")
+	@DatabaseField(columnName = "min_ver")
 	private Long minorVersion;
-	@DatabaseField(columnDefinition = "int_at", dataType = DataType.DATE_LONG)
+	@DatabaseField(columnName = "int_at", dataType = DataType.DATE_LONG)
 	private Date installedAt;
 
 	public Long getMajorVersion() {

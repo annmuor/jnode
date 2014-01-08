@@ -29,7 +29,7 @@ public class FileareaStat implements IStatPoster, IEventHandler {
 		StringBuilder b = new StringBuilder();
 		String filearea = "";
 		Date d = new Date(new Date().getTime() - (24 * 3600 * 1000));
-		for (Filemail m : ORMManager.INSTANSE.getFilemailDAO().getOrderAnd(
+		for (Filemail m : ORMManager.get(Filemail.class).getOrderAnd(
 				"filearea_id", true, "created", ">", d)) {
 			if (!filearea.equalsIgnoreCase(m.getFilearea().getName())) {
 				filearea = m.getFilearea().getName().toUpperCase();

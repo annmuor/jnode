@@ -96,7 +96,7 @@ public class FtnTosser {
 			dbnm.setSubject(netmail.getSubject());
 			dbnm.setText(netmail.getText());
 			dbnm.setAttr(netmail.getAttribute());
-			ORMManager.INSTANSE.getNetmailDAO().save(dbnm);
+			ORMManager.get(Netmail.class).save(dbnm);
 			Notifier.INSTANSE.notify(new NewNetmailEvent(dbnm));
 			Integer n = tossed.get("netmail");
 			tossed.put("netmail", (n == null) ? 1 : n + 1);
@@ -106,8 +106,7 @@ public class FtnTosser {
 								netmail.getFromAddr().toString(), netmail
 										.getToAddr().toString()));
 			} else {
-				routeVia = ORMManager.INSTANSE.getLinkDAO().getById(
-						routeVia.getId());
+				routeVia = ORMManager.get(Link.class).getById(routeVia.getId());
 				logger.l4(String.format("Netmail %s -> %s transferred via %s",
 						netmail.getFromAddr().toString(), netmail.getToAddr()
 								.toString(), routeVia.getLinkAddress()));
@@ -160,11 +159,10 @@ public class FtnTosser {
 		mail.setText(echomail.getText());
 		mail.setSeenBy(write2D(echomail.getSeenby(), true));
 		mail.setPath(write2D(echomail.getPath(), false));
-		ORMManager.INSTANSE.getEchomailDAO().save(mail);
-		for (Subscription sub : ORMManager.INSTANSE.getSubscriptionDAO()
-				.getAnd("echoarea_id", "=", area)) {
+		ORMManager.get(Echomail.class).save(mail);
+		for (Subscription sub : getSubscription(area)) {
 			if (link == null || !sub.getLink().getId().equals(link.getId())) {
-				ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
+				ORMManager.get(EchomailAwaiting.class).save(
 						new EchomailAwaiting(sub.getLink(), mail));
 				pollLinks.add(sub.getLink());
 			}
@@ -174,7 +172,7 @@ public class FtnTosser {
 			Dupe dupe = new Dupe();
 			dupe.setEchoarea(area);
 			dupe.setMsgid(echomail.getMsgid());
-			ORMManager.INSTANSE.getDupeDAO().save(dupe);
+			ORMManager.get(Dupe.class).save(dupe);
 
 		}
 
@@ -231,7 +229,8 @@ public class FtnTosser {
 					}
 					file.delete();
 				} catch (Exception e) {
-					logger.l3("Tossing failed " + file.getAbsolutePath(), e);
+					markAsBad(file, "Tossing failed");
+					e.printStackTrace();
 				}
 			} else if (loname.matches("(s|u)inb\\d*.pkt")) {
 				try {
@@ -239,16 +238,15 @@ public class FtnTosser {
 					logger.l4("Tossing file " + file.getAbsolutePath());
 					FtnPkt pkt = new FtnPkt();
 					pkt.unpack(m.getInputStream());
-					Link link = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
-							"ftn_address", "=", pkt.getFromAddr().toString());
-					boolean secure = loname.charAt(0) == 's';
+					Link link = getLinkByFtnAddress(pkt.getFromAddr());
+					boolean secure = loname.charAt(0) == 's' && link != null;
 					if (secure) {
 						if (!getOptionBooleanDefTrue(link,
 								LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
 							if (!link.getPaketPassword().equalsIgnoreCase(
 									pkt.getPassword())) {
 								logger.l2("Pkt password mismatch - package moved to inbound");
-								moveToBad(pkt);
+								markAsBad(file, "Password mismatch");
 								continue;
 							}
 						}
@@ -263,7 +261,8 @@ public class FtnTosser {
 					}
 					file.delete();
 				} catch (Exception e) {
-					logger.l3("Tossing failed " + file.getAbsolutePath(), e);
+					markAsBad(file, "Tossing failed");
+					e.printStackTrace();
 				}
 			} else if (loname.matches("^[a-z0-9]{8}\\.tic$")) {
 				if (!MainHandler.getCurrentInstance().getBooleanProperty(
@@ -313,27 +312,17 @@ public class FtnTosser {
 						logger.l3("File found as " + filename);
 						if (!MainHandler.getCurrentInstance().getInfo()
 								.getAddressList().contains(tic.getTo())) {
-							file.delete();
-							logger.l3("Tic " + file.getName()
-									+ " is not for us");
+							markAsBad(file, "Destination mismatch");
 							continue;
 						}
-						Link source = ORMManager.INSTANSE.getLinkDAO()
-								.getFirstAnd("ftn_address", "=",
-										tic.getFrom().toString());
+						Link source = getLinkByFtnAddress(tic.getFrom());
 						if (source == null) {
-							logger.l3("Link " + tic.getFrom() + " not found");
-							file.renameTo(new File(getInbound()
-									+ File.separator + "bad_" + generateTic()));
+							markAsBad(file, "Source address not found");
 							continue;
 						}
 						Filearea area = getFileareaByName(tic.getArea(), source);
 						if (area == null) {
-							logger.l3("Filearea " + tic.getArea()
-									+ " is not avalible for "
-									+ source.getLinkAddress());
-							file.renameTo(new File(getInbound()
-									+ File.separator + "bad_" + generateTic()));
+							markAsBad(file, "Filearea is not avalible");
 							continue;
 						}
 						new File(getFileechoPath() + File.separator
@@ -355,12 +344,14 @@ public class FtnTosser {
 						mail.setPath(tic.getPath());
 						mail.setSeenby(write4D(tic.getSeenby()));
 						mail.setCreated(new Date());
-						ORMManager.INSTANSE.getFilemailDAO().save(mail);
-						for (FileSubscription sub : ORMManager.INSTANSE
-								.getFileSubscriptionDAO().getAnd("filearea_id",
-										"=", area, "link_id", "!=", source)) {
-
-							ORMManager.INSTANSE.getFilemailAwaitingDAO().save(
+						ORMManager.get(Filemail.class).save(mail);
+						for (FileSubscription sub : getSubscription(area)) {
+							if (source != null) {
+								if (sub.getLink().getId() == source.getId()) {
+									continue;
+								}
+							}
+							ORMManager.get(FilemailAwaiting.class).save(
 									new FilemailAwaiting(sub.getLink(), mail));
 							if (getOptionBooleanDefFalse(sub.getLink(),
 									LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
@@ -369,7 +360,7 @@ public class FtnTosser {
 						}
 						Notifier.INSTANSE.notify(new NewFilemailEvent(mail));
 					} else {
-						logger.l3("File " + tic.getFile()
+						logger.l4("File " + tic.getFile()
 								+ " not found in inbound, waiting");
 						continue;
 					}
@@ -383,8 +374,7 @@ public class FtnTosser {
 				try {
 					address.setNet(Integer.parseInt(loname.substring(0, 4), 16));
 					address.setNode(Integer.parseInt(loname.substring(4, 8), 16));
-					Link l = ORMManager.INSTANSE.getLinkDAO().getFirstAnd(
-							"ftn_address", "=", address.toString());
+					Link l = getLinkByFtnAddress(address);
 					if (l != null) {
 						try {
 							BufferedReader br = new BufferedReader(
@@ -397,8 +387,8 @@ public class FtnTosser {
 										FileForLink ffl = new FileForLink();
 										ffl.setLink(l);
 										ffl.setFilename(name);
-										ORMManager.INSTANSE.getFileForLinkDAO()
-												.save(ffl);
+										ORMManager.get(FileForLink.class).save(
+												ffl);
 									} else {
 										logger.l2("File from ?lo not exists: "
 												+ name);
@@ -407,21 +397,26 @@ public class FtnTosser {
 							}
 							br.close();
 						} catch (Exception e) {
-							logger.l2("Unable to read .?lo for files list", e);
+							markAsBad(file, "Unable to read files in ?lo");
 						}
 						poll.add(l);
 					}
 				} catch (NumberFormatException e) {
-					logger.l3("?LO file " + loname + " is invalid");
+					markAsBad(file, "?LO file is invalid");
 				}
 				file.delete();
 
 			}
 		}
 		for (Link l : poll) {
-			PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO().getById(
-					l.getId()));
+			PollQueue.INSTANSE.add(ORMManager.get(Link.class)
+					.getById(l.getId()));
 		}
+	}
+
+	private void markAsBad(File file, String message) {
+		logger.l2("File " + file.getName() + " is bad: " + message);
+		file.renameTo(new File(file.getAbsolutePath() + ".bad"));
 	}
 
 	public static String getFileechoPath() {
@@ -446,8 +441,8 @@ public class FtnTosser {
 
 		for (Link l : pollLinks) {
 			if (getOptionBooleanDefFalse(l, LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
-				PollQueue.INSTANSE.add(ORMManager.INSTANSE.getLinkDAO()
-						.getById(l.getId()));
+				PollQueue.INSTANSE.add(ORMManager.get(Link.class).getById(
+						l.getId()));
 			}
 		}
 		tossed.clear();
@@ -469,8 +464,7 @@ public class FtnTosser {
 		List<FtnTIC> tics = new ArrayList<FtnTIC>();
 		List<Message> ret = new ArrayList<Message>();
 		try {
-			List<Netmail> netmails = ORMManager.INSTANSE.getNetmailDAO()
-					.getAnd("send", "=", false, "route_via", "=", link);
+			List<Netmail> netmails = getMail(link);
 
 			if (!netmails.isEmpty()) {
 				for (Netmail netmail : netmails) {
@@ -492,7 +486,7 @@ public class FtnTosser {
 						}
 					}
 					netmail.setSend(true);
-					ORMManager.INSTANSE.getNetmailDAO().update(netmail);
+					ORMManager.get(Netmail.class).update(netmail);
 				}
 			}
 		} catch (Exception e) {
@@ -501,8 +495,7 @@ public class FtnTosser {
 		// echomail
 		{
 			List<Echomail> toRemove = new ArrayList<Echomail>();
-			List<EchomailAwaiting> mailToSend = ORMManager.INSTANSE
-					.getEchomailAwaitingDAO().getAnd("link_id", "=", link);
+			List<EchomailAwaiting> mailToSend = getEchoMail(link);
 			for (EchomailAwaiting ema : mailToSend) {
 				Echomail mail = ema.getMail();
 
@@ -532,13 +525,12 @@ public class FtnTosser {
 				}
 				seenby.add(link2d);
 
-				List<Subscription> ssubs = ORMManager.INSTANSE
-						.getSubscriptionDAO().getAnd("echoarea_id", "=", area);
+				List<Subscription> ssubs = getSubscription(area);
 				for (Subscription ssub : ssubs) {
 
 					try {
-						Link _sslink = ORMManager.INSTANSE.getLinkDAO()
-								.getById(ssub.getLink().getId());
+						Link _sslink = ORMManager.get(Link.class).getById(
+								ssub.getLink().getId());
 						FtnAddress addr = new FtnAddress(
 								_sslink.getLinkAddress());
 						Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
@@ -568,15 +560,14 @@ public class FtnTosser {
 
 			}
 			if (!toRemove.isEmpty()) {
-				ORMManager.INSTANSE.getEchomailAwaitingDAO().delete("link_id",
-						"=", link, "echomail_id", "in", toRemove);
+				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
+						link, "echomail_id", "in", toRemove);
 			}
 		}
 		// fileechoes
 		{
 			List<Filemail> toRemove = new ArrayList<Filemail>();
-			List<FilemailAwaiting> filemail = ORMManager.INSTANSE
-					.getFilemailAwaitingDAO().getAnd("link_id", "=", link);
+			List<FilemailAwaiting> filemail = getFileMail(link);
 			for (FilemailAwaiting awmail : filemail) {
 				Filemail mail = awmail.getMail();
 				toRemove.add(mail);
@@ -631,11 +622,9 @@ public class FtnTosser {
 						.getInfo().getAddressList()) {
 					seenby.add(address);
 				}
-				for (FileSubscription sub : ORMManager.INSTANSE
-						.getFileSubscriptionDAO().getAnd("filearea_id", "=",
-								area)) {
+				for (FileSubscription sub : getSubscription(area)) {
 					try {
-						Link l = ORMManager.INSTANSE.getLinkDAO().getById(
+						Link l = ORMManager.get(Link.class).getById(
 								sub.getLink().getId());
 						seenby.add(new FtnAddress(l.getLinkAddress()));
 					} catch (NullPointerException e) {
@@ -654,20 +643,20 @@ public class FtnTosser {
 				tics.add(tic);
 			}
 			if (!toRemove.isEmpty()) {
-				ORMManager.INSTANSE.getFilemailAwaitingDAO().delete("link_id",
-						"=", link, "filemail_id", "in", toRemove);
+				ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
+						link, "filemail_id", "in", toRemove);
 			}
 		}
 		// files for link
 		{
-			List<FileForLink> ffls = ORMManager.INSTANSE.getFileForLinkDAO()
-					.getAnd("link_id", "eq", link);
+			List<FileForLink> ffls = ORMManager.get(FileForLink.class).getAnd(
+					"link_id", "eq", link);
 			for (FileForLink ffl : ffls) {
 				try {
 					File file = new File(ffl.getFilename());
 					Message m = new Message(file);
-					ORMManager.INSTANSE.getFileForLinkDAO().delete("link_id",
-							"=", link, "filename", "=", ffl.getFilename());
+					ORMManager.get(FileForLink.class).delete("link_id", "=",
+							link, "filename", "=", ffl.getFilename());
 					ret.add(m);
 				} catch (Exception ex) {
 					logger.l1(MessageFormat.format(
@@ -732,5 +721,31 @@ public class FtnTosser {
 			}
 		}
 		return ret;
+	}
+
+	private static List<Netmail> getMail(Link link) {
+		return ORMManager.get(Netmail.class).getAnd("send", "=", false,
+				"route_via", "=", link);
+	}
+
+	private static List<EchomailAwaiting> getEchoMail(Link link) {
+		return ORMManager.get(EchomailAwaiting.class).getAnd("link_id", "=",
+				link);
+	}
+
+	private static List<Subscription> getSubscription(Echoarea area) {
+		return ORMManager.get(Subscription.class).getAnd("echoarea_id", "=",
+				area);
+	}
+
+	private static List<FilemailAwaiting> getFileMail(Link link) {
+		List<FilemailAwaiting> filemail = ORMManager
+				.get(FilemailAwaiting.class).getAnd("link_id", "=", link);
+		return filemail;
+	}
+
+	private static List<FileSubscription> getSubscription(Filearea area) {
+		return ORMManager.get(FileSubscription.class).getAnd("filearea_id",
+				"=", area);
 	}
 }

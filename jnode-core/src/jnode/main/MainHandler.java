@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import jnode.install.DefaultVersion;
+
 /**
  * Хранение конфигурации
  * 
@@ -49,7 +51,7 @@ public class MainHandler {
 	}
 
 	public static String getVersion() {
-		return "jNode 0.6-SNAPSHOT";
+		return "jNode ver. " + new DefaultVersion().toString();
 	}
 
 }

@@ -3,9 +3,13 @@ package jnode.orm;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+
 import jnode.dao.GenericDAO;
 import jnode.dto.*;
 import jnode.logger.Logger;
+import jnode.main.MainHandler;
 
 /**
  * Singleton
@@ -16,11 +20,20 @@ import jnode.logger.Logger;
 
 public enum ORMManager {
 	INSTANSE;
+
+	private final static String JDBC_URL = "jdbc.url";
+	private final static String JDBC_USER = "jdbc.user";
+	private final static String JDBC_PASS = "jdbc.pass";
+
 	private static final Logger logger = Logger.getLogger(ORMManager.class);
 	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<Class<?>, GenericDAO<?>>();
+	private ConnectionSource source;
 
 	public void start() throws Exception {
-
+		source = new JdbcConnectionSource(MainHandler.getCurrentInstance()
+				.getProperty(JDBC_URL, ""), MainHandler.getCurrentInstance()
+				.getProperty(JDBC_USER, ""), MainHandler.getCurrentInstance()
+				.getProperty(JDBC_PASS, ""));
 	}
 
 	@Deprecated
@@ -136,10 +149,20 @@ public enum ORMManager {
 				for (int i = 0; i < 10; i++)
 					logger.l1("!!! FATAL !!! Exception while creation DAO for "
 							+ clazz.getCanonicalName());
-				logger.l1("jNode have to shutdow during critical error");
+				logger.l1("jNode have to shutdow during critical error", e);
 				System.exit(0);
 			}
 		}
 		return ret;
+	}
+
+	public static ConnectionSource getSource() throws Exception {
+		if (INSTANSE.source != null) {
+			return INSTANSE.source;
+		}
+		synchronized (INSTANSE) {
+			INSTANSE.start();
+			return INSTANSE.source;
+		}
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Date;
 import com.j256.ormlite.dao.GenericRawResults;
 
 import jnode.dto.Echoarea;
+import jnode.dto.Echomail;
 import jnode.event.IEvent;
 import jnode.event.IEventHandler;
 import jnode.event.NewEchoareaEvent;
@@ -32,25 +33,23 @@ public class EchoareaStat implements IStatPoster, IEventHandler {
 
 		Long before = new Date().getTime() - (24 * 3600 * 1000);
 		Long after = new Date().getTime();
-		GenericRawResults<String[]> results = ORMManager.INSTANSE
-				.getEchomailDAO()
+		GenericRawResults<String[]> results = ORMManager
+				.get(Echomail.class)
 				.getRaw(String
 						.format("SELECT a.name,a.description,count(e.id) AS count FROM echomail e"
 								+ " LEFT JOIN echoarea a ON (e.echoarea_id=a.id) WHERE e.date >= %d AND e.date <= %d"
 								+ " GROUP BY a.name,a.description ORDER BY count DESC",
 								before, after));
 
-        ReportBuilder builder = new ReportBuilder();
-        builder.setColumns(Arrays.asList("Area", "Count", "Description"));
-        builder.setColLength(Arrays.asList(35, 5, 35));
+		ReportBuilder builder = new ReportBuilder();
+		builder.setColumns(Arrays.asList("Area", "Count", "Description"));
+		builder.setColLength(Arrays.asList(35, 5, 35));
 
 		for (String[] res : results) {
 
-            builder.printLine(res[0],
-                    res[2],
-                    res[1]);
+			builder.printLine(res[0], res[2], res[1]);
 
-        }
+		}
 		return builder.getText().toString();
 	}
 

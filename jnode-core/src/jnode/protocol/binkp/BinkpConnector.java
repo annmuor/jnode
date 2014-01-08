@@ -28,7 +28,6 @@ import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
-import jnode.orm.ORMManager;
 import jnode.protocol.io.Connector;
 import jnode.protocol.io.Frame;
 import jnode.protocol.io.Message;
@@ -316,38 +315,29 @@ public class BinkpConnector implements ProtocolConnector {
 									"([^\\S]*([1-5]:\\d{1,5}/\\d{1,5}\\.?\\d{0,5})(@fido[a-z]*)?)",
 									Pattern.CASE_INSENSITIVE);
 					Matcher m = ftn.matcher(frame.getArg());
+					List<FtnAddress> testOk = new ArrayList<>();
 					while (m.find()) {
-						String sFtn = m.group(2);
-						this.link = ORMManager.INSTANSE.getLinkDAO()
-								.getFirstAnd("ftn_address", "=", sFtn);
+						FtnAddress test = new FtnAddress(m.group(2));
+						this.link = FtnTools.getLinkByFtnAddress(test);
 						if (link != null) {
-							authorized = true;
 							secure = true;
+							authorized = true;
+							testOk.add(test);
 							break;
-						}
-					}
-					if (!authorized) {
-						m = ftn.matcher(frame.getArg());
-						while (m.find()) {
-							try {
-								FtnAddress address = new FtnAddress(m.group(2));
-								FtnNdlAddress node = NodelistScanner
-										.getInstance().isExists(address);
-								if (node != null) {
-									authorized = true;
-									secure = false;
-									this.link = new Link();
-									link.setLinkAddress(address.toString());
-									break;
-								}
-
-							} catch (NumberFormatException e) {
-								logger.l2("fail parse address ", e);
+						} else {
+							FtnNdlAddress node = NodelistScanner.getInstance()
+									.isExists(test);
+							if (node != null) {
+								testOk.add(test);
+								authorized = true;
 							}
 						}
 					}
-
 					if (authorized) {
+						if (link == null) {
+							link = new Link();
+							link.setLinkAddress(testOk.get(0).toString());
+						}
 						password = (secure) ? (link.getProtocolPassword() != null) ? link
 								.getProtocolPassword() : "-"
 								: "-";
@@ -357,7 +347,6 @@ public class BinkpConnector implements ProtocolConnector {
 						}
 						connectionState = (incoming) ? STATE_WAITPWD
 								: STATE_WAITOK;
-
 					} else {
 						error("unknown m_addr");
 					}

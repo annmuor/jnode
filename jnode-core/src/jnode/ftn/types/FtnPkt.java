@@ -22,7 +22,7 @@ import jnode.logger.Logger;
  * 
  */
 public class FtnPkt {
-    private static final Logger logger = Logger.getLogger(FtnMessage.class);
+	private static final Logger logger = Logger.getLogger(FtnMessage.class);
 	private FtnAddress fromAddr;
 	private FtnAddress toAddr;
 	private String password;
@@ -146,7 +146,7 @@ public class FtnPkt {
 			fos.write(new byte[] { 0, 0 });
 			fos.close();
 		} catch (IOException e) {
-            logger.l2("fail finalz", e);
+			logger.l2("fail finalz", e);
 		}
 	}
 
@@ -154,57 +154,53 @@ public class FtnPkt {
 		return new byte[] { 0, 0 };
 	}
 
-	public void unpack(InputStream iz) {
+	public void unpack(InputStream iz) throws IOException {
 		unpack(iz, true);
 	}
 
-	public void unpack(InputStream iz, boolean close) {
+	public void unpack(InputStream iz, boolean close) throws IOException {
 		this.is = iz;
 		this.close = close;
 		DataInputStream is = new DataInputStream(iz);
 		fromAddr = new FtnAddress();
 		toAddr = new FtnAddress();
-		try {
-			fromAddr.setNode(FtnTools.revShort(is.readShort()));
-			toAddr.setNode(FtnTools.revShort(is.readShort()));
-			{
-				short date[] = new short[6];
-				for (int i = 0; i < 6; i++) {
-					date[i] = FtnTools.revShort(is.readShort());
-				}
-				try {
-					Calendar calendar = Calendar.getInstance();
-					calendar.set(date[0], date[1], date[2], date[3], date[4],
-							date[5]);
-					this.date = calendar.getTime();
-				} catch (Exception e) {
-					this.date = new Date(0);
-				}
+		fromAddr.setNode(FtnTools.revShort(is.readShort()));
+		toAddr.setNode(FtnTools.revShort(is.readShort()));
+		{
+			short date[] = new short[6];
+			for (int i = 0; i < 6; i++) {
+				date[i] = FtnTools.revShort(is.readShort());
 			}
-			is.skip(4);
-			fromAddr.setNet(FtnTools.revShort(is.readShort()));
-			toAddr.setNet(FtnTools.revShort(is.readShort()));
-			is.skip(2);
-			{
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				for (int i = 0; i < 8; i++) {
-					int c = is.read();
-					if (c != 0) {
-						bos.write(c);
-					}
-				}
-				bos.close();
-				password = new String(bos.toByteArray());
+			try {
+				Calendar calendar = Calendar.getInstance();
+				calendar.set(date[0], date[1], date[2], date[3], date[4],
+						date[5]);
+				this.date = calendar.getTime();
+			} catch (Exception e) {
+				this.date = new Date(0);
 			}
-			is.skip(12);
-			fromAddr.setZone(FtnTools.revShort(is.readShort()));
-			toAddr.setZone(FtnTools.revShort(is.readShort()));
-			fromAddr.setPoint(FtnTools.revShort(is.readShort()));
-			toAddr.setPoint(FtnTools.revShort(is.readShort()));
-			is.skip(4);
-		} catch (IOException e) {
-            logger.l2("fail unpack", e);
 		}
+		is.skip(4);
+		fromAddr.setNet(FtnTools.revShort(is.readShort()));
+		toAddr.setNet(FtnTools.revShort(is.readShort()));
+		is.skip(2);
+		{
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			for (int i = 0; i < 8; i++) {
+				int c = is.read();
+				if (c != 0) {
+					bos.write(c);
+				}
+			}
+			bos.close();
+			password = new String(bos.toByteArray());
+		}
+		is.skip(12);
+		fromAddr.setZone(FtnTools.revShort(is.readShort()));
+		toAddr.setZone(FtnTools.revShort(is.readShort()));
+		fromAddr.setPoint(FtnTools.revShort(is.readShort()));
+		toAddr.setPoint(FtnTools.revShort(is.readShort()));
+		is.skip(4);
 	}
 
 	public FtnMessage getNextMessage() {

@@ -19,7 +19,7 @@ public class FtnAddress implements Serializable {
 	protected int node;
 	protected int point;
 
-	public FtnAddress(String addr) {
+	public FtnAddress(String addr) throws NumberFormatException {
 		Pattern p = Pattern
 				.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
 		Matcher m = p.matcher(addr);
@@ -37,7 +37,7 @@ public class FtnAddress implements Serializable {
 				point = 0;
 			}
 		} else {
-			throw new NumberFormatException();
+			throw new NumberFormatException(addr + " is invalid ftn address");
 		}
 	}
 

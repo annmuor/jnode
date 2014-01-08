@@ -32,22 +32,28 @@ public class AreaFix extends AbstractRobot {
 	private static final Pattern ADD_RESCAN = Pattern.compile(
 			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
 
-    @Override
+	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
 		Link link = getAndCheckLink(fmsg);
-        if (link == null){
-            return;
-        }
+		if (link == null) {
+			return;
+		}
 
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			line = line.toLowerCase();
 			if (HELP.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} help", getRobotName()), help());
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} help", getRobotName()),
+						help());
 			} else if (LIST.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} list", getRobotName()), list(link));
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} list", getRobotName()),
+						list(link));
 			} else if (QUERY.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} query", getRobotName()), query(link));
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} query", getRobotName()),
+						query(link));
 			} else {
 				Matcher m = REM.matcher(line);
 				if (m.matches()) {
@@ -79,7 +85,9 @@ public class AreaFix extends AbstractRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			FtnTools.writeReply(fmsg, MessageFormat.format("{0} reply", getRobotName()), reply.toString());
+			FtnTools.writeReply(fmsg,
+					MessageFormat.format("{0} reply", getRobotName()),
+					reply.toString());
 		}
 	}
 
@@ -88,7 +96,7 @@ public class AreaFix extends AbstractRobot {
 	 * 
 	 * @return
 	 */
-    protected String help() {
+	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
@@ -111,8 +119,8 @@ public class AreaFix extends AbstractRobot {
 		sb.append("Legend: * - subscribed\n\n========== List of echoareas ==========\n");
 		String[] groups = FtnTools.getOptionStringArray(link,
 				LinkOption.SARRAY_LINK_GROUPS);
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO()
-				.getOrderAnd("name", true);
+		List<Echoarea> areas = ORMManager.get(Echoarea.class).getOrderAnd(
+				"name", true);
 		for (Echoarea area : areas) {
 			boolean denied = true;
 			if (!"".equals(area.getGroup())) {
@@ -128,9 +136,9 @@ public class AreaFix extends AbstractRobot {
 			if (denied) {
 				continue;
 			}
-			Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
-					.getFirstAnd("echoarea_id", "=", area.getId(), "link_id",
-							"=", link.getId());
+			Subscription sub = ORMManager.get(Subscription.class).getFirstAnd(
+					"echoarea_id", "=", area.getId(), "link_id", "=",
+					link.getId());
 
 			if (sub != null) {
 				sb.append("* ");
@@ -159,8 +167,8 @@ public class AreaFix extends AbstractRobot {
 	private String query(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("========== List of subscribed areas ==========\n");
-		GenericRawResults<String[]> echoes = ORMManager.INSTANSE
-				.getEchoareaDAO()
+		GenericRawResults<String[]> echoes = ORMManager
+				.get(Echoarea.class)
 				.getRaw(String
 						.format("SELECT a.name, a.description from echoarea a"
 								+ " LEFT JOIN subscription s on (a.id=s.echoarea_id)"
@@ -185,14 +193,14 @@ public class AreaFix extends AbstractRobot {
 		String like = area.replace("*", "%");
 		String[] grps = FtnTools.getOptionStringArray(link,
 				LinkOption.SARRAY_LINK_GROUPS);
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
-				"name", "~", like);
+		List<Echoarea> areas = ORMManager.get(Echoarea.class).getAnd("name",
+				"~", like);
 		if (areas.isEmpty()) {
 			sb.append(area + " not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
+				Subscription sub = ORMManager.get(Subscription.class)
 						.getFirstAnd("echoarea_id", "=", earea.getId(),
 								"link_id", "=", link.getId());
 				if (sub != null) {
@@ -215,7 +223,7 @@ public class AreaFix extends AbstractRobot {
 						sub = new Subscription();
 						sub.setArea(earea);
 						sub.setLink(link);
-						ORMManager.INSTANSE.getSubscriptionDAO().save(sub);
+						ORMManager.get(Subscription.class).save(sub);
 						sb.append(" subscribed");
 					}
 				}
@@ -229,22 +237,22 @@ public class AreaFix extends AbstractRobot {
 	private String rem(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
-				"name", "~", like);
+		List<Echoarea> areas = ORMManager.get(Echoarea.class).getAnd("name",
+				"~", like);
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
+				Subscription sub = ORMManager.get(Subscription.class)
 						.getFirstAnd("echoarea_id", "=", earea.getId(),
 								"link_id", "=", link.getId());
 				if (sub == null) {
 					sb.append(" is not subscribed");
 				} else {
-					ORMManager.INSTANSE.getSubscriptionDAO().delete("link_id",
-							"=", link, "echoarea_id", "=", earea);
+					ORMManager.get(Subscription.class).delete("link_id", "=",
+							link, "echoarea_id", "=", earea);
 					sb.append(" unsubscribed");
 				}
 				sb.append('\n');
@@ -257,28 +265,28 @@ public class AreaFix extends AbstractRobot {
 	private String rescan(Link link, String area, int num) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Echoarea> areas = ORMManager.INSTANSE.getEchoareaDAO().getAnd(
-				"name", "~", like);
+		List<Echoarea> areas = ORMManager.get(Echoarea.class).getAnd("name",
+				"~", like);
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
 			for (Echoarea earea : areas) {
 				sb.append(earea.getName());
-				Subscription sub = ORMManager.INSTANSE.getSubscriptionDAO()
+				Subscription sub = ORMManager.get(Subscription.class)
 						.getFirstAnd("echoarea_id", "=", earea.getId(),
 								"link_id", "=", link.getId());
 				if (sub == null) {
 					sb.append(" is not subscribed");
 				} else {
-					List<Echomail> mails = ORMManager.INSTANSE.getEchomailDAO()
+					List<Echomail> mails = ORMManager.get(Echomail.class)
 							.getOrderLimitAnd(num, "id", false, "echoarea_id",
 									"=", earea);
-                    for(int i = mails.size() - 1; i >=0; --i){
-                        Echomail mail = mails.get(i);
-                        ORMManager.INSTANSE.getEchomailAwaitingDAO().save(
-                                new EchomailAwaiting(link, mail));
-                    }
+					for (int i = mails.size() - 1; i >= 0; --i) {
+						Echomail mail = mails.get(i);
+						ORMManager.get(EchomailAwaiting.class).save(
+								new EchomailAwaiting(link, mail));
+					}
 					sb.append(" rescanned " + mails.size() + " messages");
 				}
 				sb.append('\n');
@@ -288,19 +296,21 @@ public class AreaFix extends AbstractRobot {
 		return sb.toString();
 	}
 
-    @Override
-    protected String getRobotName() {
-        return "AreaFix";
-    }
+	@Override
+	protected String getRobotName() {
+		return "AreaFix";
+	}
 
-    @Override
-    protected boolean isEnabled(Link link) {
-        return link != null && FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_AREAFIX);
-    }
+	@Override
+	protected boolean isEnabled(Link link) {
+		return link != null
+				&& FtnTools.getOptionBooleanDefTrue(link,
+						LinkOption.BOOLEAN_AREAFIX);
+	}
 
-    @Override
-    protected String getPasswordOption() {
-        return LinkOption.STRING_AREAFIX_PWD;
-    }
+	@Override
+	protected String getPasswordOption() {
+		return LinkOption.STRING_AREAFIX_PWD;
+	}
 
 }

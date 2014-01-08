@@ -35,19 +35,25 @@ public class FileFix extends AbstractRobot {
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
 		Link link = getAndCheckLink(fmsg);
-        if (link == null){
-            return;
-        }
+		if (link == null) {
+			return;
+		}
 
 		StringBuilder reply = new StringBuilder();
 		for (String line : fmsg.getText().split("\n")) {
 			line = line.toLowerCase();
 			if (HELP.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} help", getRobotName()), help());
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} help", getRobotName()),
+						help());
 			} else if (LIST.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} list", getRobotName()), list(link));
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} list", getRobotName()),
+						list(link));
 			} else if (QUERY.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg, MessageFormat.format("{0} query", getRobotName()), query(link));
+				FtnTools.writeReply(fmsg,
+						MessageFormat.format("{0} query", getRobotName()),
+						query(link));
 			} else {
 				Matcher m = REM.matcher(line);
 				if (m.matches()) {
@@ -64,7 +70,9 @@ public class FileFix extends AbstractRobot {
 			}
 		}
 		if (reply.length() > 0) {
-			FtnTools.writeReply(fmsg, MessageFormat.format("{0} reply", getRobotName()), reply.toString());
+			FtnTools.writeReply(fmsg,
+					MessageFormat.format("{0} reply", getRobotName()),
+					reply.toString());
 		}
 	}
 
@@ -73,7 +81,7 @@ public class FileFix extends AbstractRobot {
 	 * 
 	 * @return
 	 */
-    protected String help() {
+	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
 				+ "%LIST - list of avalible fileareas\n"
 				+ "%QUERY - list of subscribed fileareas\n"
@@ -94,8 +102,8 @@ public class FileFix extends AbstractRobot {
 		sb.append("Legend: * - subscribed\n\n========== List of fileareas ==========\n");
 		String[] groups = FtnTools.getOptionStringArray(link,
 				LinkOption.SARRAY_LINK_GROUPS);
-		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO()
-				.getOrderAnd("name", true);
+		List<Filearea> areas = ORMManager.get(Filearea.class).getOrderAnd(
+				"name", true);
 		for (Filearea area : areas) {
 			boolean denied = true;
 			if (!"".equals(area.getGroup())) {
@@ -111,7 +119,7 @@ public class FileFix extends AbstractRobot {
 			if (denied) {
 				continue;
 			}
-			FileSubscription sub = ORMManager.INSTANSE.getFileSubscriptionDAO()
+			FileSubscription sub = ORMManager.get(FileSubscription.class)
 					.getFirstAnd("filearea_id", "=", area.getId(), "link_id",
 							"=", link.getId());
 
@@ -142,8 +150,8 @@ public class FileFix extends AbstractRobot {
 	private String query(Link link) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("========== List of subscribed fileareas ==========\n");
-		GenericRawResults<String[]> echoes = ORMManager.INSTANSE
-				.getFileareaDAO()
+		GenericRawResults<String[]> echoes = ORMManager
+				.get(Filearea.class)
 				.getRaw(String
 						.format("SELECT a.name,a.description FROM filesubscription s"
 								+ " RIGHT JOIN filearea a on (a.id=s.filearea_id)"
@@ -168,17 +176,16 @@ public class FileFix extends AbstractRobot {
 		String like = area.replace("*", "%");
 		String[] grps = FtnTools.getOptionStringArray(link,
 				LinkOption.SARRAY_LINK_GROUPS);
-		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO().getAnd(
-				"name", "~", like);
+		List<Filearea> areas = ORMManager.get(Filearea.class).getAnd("name",
+				"~", like);
 		if (areas.isEmpty()) {
 			sb.append(area + " not found");
 		} else {
 			for (Filearea earea : areas) {
 				sb.append(earea.getName());
-				FileSubscription sub = ORMManager.INSTANSE
-						.getFileSubscriptionDAO().getFirstAnd("filearea_id",
-								"=", earea.getId(), "link_id", "=",
-								link.getId());
+				FileSubscription sub = ORMManager.get(FileSubscription.class)
+						.getFirstAnd("filearea_id", "=", earea.getId(),
+								"link_id", "=", link.getId());
 				if (sub != null) {
 					sb.append(" already subscribed");
 				} else {
@@ -199,7 +206,7 @@ public class FileFix extends AbstractRobot {
 						sub = new FileSubscription();
 						sub.setArea(earea);
 						sub.setLink(link);
-						ORMManager.INSTANSE.getFileSubscriptionDAO().save(sub);
+						ORMManager.get(FileSubscription.class).save(sub);
 						sb.append(" subscribed");
 					}
 				}
@@ -213,23 +220,22 @@ public class FileFix extends AbstractRobot {
 	private String rem(Link link, String area) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String like = area.replace("*", "%");
-		List<Filearea> areas = ORMManager.INSTANSE.getFileareaDAO().getAnd(
-				"name", "~", like);
+		List<Filearea> areas = ORMManager.get(Filearea.class).getAnd("name",
+				"~", like);
 		if (areas.isEmpty()) {
 			sb.append(area);
 			sb.append(" not found");
 		} else {
 			for (Filearea earea : areas) {
 				sb.append(earea.getName());
-				FileSubscription sub = ORMManager.INSTANSE
-						.getFileSubscriptionDAO().getFirstAnd("filearea_id",
-								"=", earea.getId(), "link_id", "=",
-								link.getId());
+				FileSubscription sub = ORMManager.get(FileSubscription.class)
+						.getFirstAnd("filearea_id", "=", earea.getId(),
+								"link_id", "=", link.getId());
 				if (sub == null) {
 					sb.append(" is not subscribed");
 				} else {
-					ORMManager.INSTANSE.getFileSubscriptionDAO().delete(
-							"link_id", "=", link, "filearea_id", "=", earea);
+					ORMManager.get(FileSubscription.class).delete("link_id",
+							"=", link, "filearea_id", "=", earea);
 					sb.append(" unsubscribed");
 				}
 				sb.append('\n');
@@ -239,19 +245,21 @@ public class FileFix extends AbstractRobot {
 		return sb.toString();
 	}
 
-    @Override
-    protected String getRobotName() {
-        return "FileFix";
-    }
+	@Override
+	protected String getRobotName() {
+		return "FileFix";
+	}
 
-    @Override
-    protected boolean isEnabled(Link link) {
-        return link != null && FtnTools.getOptionBooleanDefTrue(link, LinkOption.BOOLEAN_FILEFIX);
-    }
+	@Override
+	protected boolean isEnabled(Link link) {
+		return link != null
+				&& FtnTools.getOptionBooleanDefTrue(link,
+						LinkOption.BOOLEAN_FILEFIX);
+	}
 
-    @Override
-    protected String getPasswordOption() {
-        return LinkOption.STRING_FILEFIX_PWD;
-    }
+	@Override
+	protected String getPasswordOption() {
+		return LinkOption.STRING_FILEFIX_PWD;
+	}
 
 }

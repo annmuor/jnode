@@ -10,4 +10,10 @@ public class DefaultVersion extends Version {
 		setMinorVersion(0L);
 		setInstalledAt(new Date());
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%d.%d", getMajorVersion(), getMinorVersion());
+	}
+
 }
