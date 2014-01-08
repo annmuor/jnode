@@ -97,7 +97,7 @@ public class ListCommandProcessor implements CommandProcessor {
 	}
 
 	private List<String> listEchoareas(String name, int limit) {
-		GenericDAO<Echoarea> echoDAO = ORMManager.INSTANSE.getEchoareaDAO();
+		GenericDAO<Echoarea> echoDAO = ORMManager.get(Echoarea.class);
 		if (name != null) {
 			name = name.replace('*', '%');
 		}
@@ -117,9 +117,8 @@ public class ListCommandProcessor implements CommandProcessor {
 	}
 
 	private List<String> listLinks(String ftn_address, int limit) {
-		GenericDAO<Link> linkDAO = ORMManager.INSTANSE.getLinkDAO();
-		GenericDAO<LinkOption> linkOptionDAO = ORMManager.INSTANSE
-				.getLinkOptionDAO();
+		GenericDAO<Link> linkDAO = ORMManager.get(Link.class);
+		GenericDAO<LinkOption> linkOptionDAO = ORMManager.get(LinkOption.class);
 		if (ftn_address != null) {
 			ftn_address = ftn_address.replace('*', '%');
 		}
@@ -157,8 +156,8 @@ public class ListCommandProcessor implements CommandProcessor {
 
 	private List<String> listRouting(String via, int limit) {
 		List<Route> routing = null;
-		GenericDAO<Route> routeDao = ORMManager.INSTANSE.getRouteDAO();
-		GenericDAO<Link> linkDAO = ORMManager.INSTANSE.getLinkDAO();
+		GenericDAO<Route> routeDao = ORMManager.get(Route.class);
+		GenericDAO<Link> linkDAO = ORMManager.get(Link.class);
 		if (via != null) {
 			Link link = linkDAO.getFirstAnd("ftn_address", "eq", via);
 			routing = (limit != 0) ? routeDao.getOrderLimitAnd(limit, "nice",
@@ -182,10 +181,9 @@ public class ListCommandProcessor implements CommandProcessor {
 	}
 
 	private List<String> listSubscription(String ftn, String echo, int limit) {
-		GenericDAO<Link> linkDAO = ORMManager.INSTANSE.getLinkDAO();
-		GenericDAO<Echoarea> echoDAO = ORMManager.INSTANSE.getEchoareaDAO();
-		GenericDAO<Subscription> subDAO = ORMManager.INSTANSE
-				.getSubscriptionDAO();
+		GenericDAO<Link> linkDAO = ORMManager.get(Link.class);
+		GenericDAO<Echoarea> echoDAO = ORMManager.get(Echoarea.class);
+		GenericDAO<Subscription> subDAO = ORMManager.get(Subscription.class);
 		List<Object> va_args = new ArrayList<Object>();
 		if (ftn != null) {
 			Link link = linkDAO.getFirstAnd("ftn_address", "eq", ftn);
