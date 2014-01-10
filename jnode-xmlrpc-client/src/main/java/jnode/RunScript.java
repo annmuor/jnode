@@ -1,6 +1,8 @@
 package jnode;
 
 
+import jnode.impl.ScripterProxy;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -135,7 +137,7 @@ public class RunScript extends JFrame {
 
         @Override
         protected Void doInBackground() throws Exception {
-            result = ClientProxy.runScript(getJTextField().getText());
+            result = ScripterProxy.runScript(getJTextField().getText());
             return null;
         }
 

@@ -63,12 +63,12 @@ public class XmlRpcServerModule extends JnodeModule {
             return;
         }
 
-        while (true) {
+        while (!Thread.interrupted()) {
             try {
                 logger.l5("Still alive, next report after 1 hour");
                 Thread.sleep(60 * 60 * 1000);
             } catch (InterruptedException e) {
-                logger.l1("Interrupted");
+                Thread.currentThread().interrupt();
                 break;
             }
         }
