@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ormlite.version>4.47</ormlite.version>
+        <ormlite.version>4.48</ormlite.version>
         <java.compiler.version>1.7</java.compiler.version>
     </properties>
 
@@ -60,8 +60,8 @@
         <module>jnode-xmlrpc-server</module>
         <module>jnode-xmlrpc-common</module>
         <module>jnode-xmlrpc-client</module>
-        <module>jnode-assembly</module>
         <module>jnode-pointchecker-module</module>
         <module>jnode-httpd-module</module>
+        <module>jnode-assembly</module>
     </modules>
 </project>
