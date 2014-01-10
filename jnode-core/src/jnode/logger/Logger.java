@@ -18,7 +18,7 @@ public final class Logger {
 
 	private final String className;
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-			"yy-MM-dd HH:mm:ss");
+			"dd-MM-yyyy HH:mm:ss");
 	private static final String LOG_FORMAT = "%s [%08d] %s %s";
 
 	public static Logger getLogger(Class<?> clazz) {
