@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import jnode.ftn.FtnTools;
+import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
@@ -44,8 +45,9 @@ public class Main {
 		try {
 			new MainHandler(args[0]);
 		} catch (IOException e) {
+			GUIConfigurator.main(args);
 			logger.l1("Bad configuration", e);
-			System.exit(-1);
+			return;
 		}
 		try {
 			ORMManager.INSTANSE.start();
@@ -69,13 +71,13 @@ public class Main {
 		new InstallUtil();
 
 		// eof
-		if (MainHandler.getCurrentInstance().haveProperty(BINKD_SERVER)) {
+		if (MainHandler.getCurrentInstance().getBooleanProperty(BINKD_SERVER, true)) {
 			Thread server = new Server(MainHandler.getCurrentInstance()
 					.getProperty(BINKD_BIND, "0.0.0.0"), MainHandler
 					.getCurrentInstance().getIntegerProperty(BINKD_PORT, 24554));
 			server.start();
 		}
-		if (MainHandler.getCurrentInstance().haveProperty(BINKD_CLIENT)) {
+		if (MainHandler.getCurrentInstance().getBooleanProperty(BINKD_CLIENT, true)) {
 			logger.l4("Started client ( period "
 					+ MainHandler.getCurrentInstance().getIntegerProperty(
 							POLL_PERIOD, 0) + " seconds )");

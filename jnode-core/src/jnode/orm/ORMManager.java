@@ -1,5 +1,6 @@
 package jnode.orm;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,19 +22,23 @@ import jnode.main.MainHandler;
 public enum ORMManager {
 	INSTANSE;
 
-	private final static String JDBC_URL = "jdbc.url";
-	private final static String JDBC_USER = "jdbc.user";
-	private final static String JDBC_PASS = "jdbc.pass";
+	public final static String JDBC_URL = "jdbc.url";
+	public final static String JDBC_USER = "jdbc.user";
+	public final static String JDBC_PASS = "jdbc.pass";
 
 	private static final Logger logger = Logger.getLogger(ORMManager.class);
 	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<Class<?>, GenericDAO<?>>();
 	private ConnectionSource source;
 
 	public void start() throws Exception {
+		try {
 		source = new JdbcConnectionSource(MainHandler.getCurrentInstance()
 				.getProperty(JDBC_URL, ""), MainHandler.getCurrentInstance()
 				.getProperty(JDBC_USER, ""), MainHandler.getCurrentInstance()
 				.getProperty(JDBC_PASS, ""));
+		} catch(SQLException e) {
+			throw new Exception("Exception in source creation", e);
+		}
 	}
 
 	@Deprecated

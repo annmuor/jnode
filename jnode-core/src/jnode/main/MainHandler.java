@@ -13,16 +13,25 @@ import jnode.install.DefaultVersion;
  * 
  */
 public class MainHandler {
-
 	private final Properties config;
 	private static MainHandler instance = null;
 	private SystemInfo info;
 
-	MainHandler(String configFile) throws IOException {
+	public MainHandler(String configFile) throws IOException {
 		this.config = new Properties();
 		this.config.load(new FileInputStream(configFile));
 		MainHandler.instance = this;
 		info = new SystemInfo(this);
+	}
+
+	public MainHandler(Properties properties) {
+		this.config = properties;
+		MainHandler.instance = this;
+		info = new SystemInfo(this);
+	}
+
+	public void setProperty(String key, String value) {
+		config.setProperty(key, value);
 	}
 
 	public String getProperty(String property, String def) {
@@ -35,6 +44,13 @@ public class MainHandler {
 
 	public boolean getBooleanProperty(String property, Boolean def) {
 		String value = getProperty(property, def.toString());
+		try {
+			int x = Integer.valueOf(value);
+			if (x > 0) {
+				return true;
+			}
+		} catch (NumberFormatException ignore) {
+		}
 		return (value.matches("^([tT][rR][uU][eE]|1)$"));
 	}
 
