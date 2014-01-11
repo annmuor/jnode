@@ -1,5 +1,6 @@
 package jnode;
 
+import jnode.impl.EchomailToolsImpl;
 import jnode.impl.ScripterImpl;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcRequest;
@@ -30,6 +31,7 @@ public class MainServlet extends XmlRpcServlet {
 
         PropertyHandlerMapping phm = new PropertyHandlerMapping();
         phm.addHandler(Scripter.class.getName(), ScripterImpl.class);
+        phm.addHandler(EchomailTools.class.getName(), EchomailToolsImpl.class);
 
         AbstractReflectiveHandlerMapping.AuthenticationHandler handler =
                 new AbstractReflectiveHandlerMapping.AuthenticationHandler() {

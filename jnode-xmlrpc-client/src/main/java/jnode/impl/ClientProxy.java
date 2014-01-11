@@ -1,10 +1,8 @@
-package jnode;
+package jnode.impl;
 
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
-import org.apache.xmlrpc.client.util.ClientFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,21 +15,7 @@ import java.util.Properties;
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
  */
 public class ClientProxy {
-    public static String runScript(String id) {
-
-        try {
-            ClientFactory factory = new ClientFactory(getXmlRpcClient());
-            Scripter scripter = (Scripter) factory.newInstance(Scripter.class);
-            return scripter.run(id);
-
-        } catch (MalformedURLException e) {
-            return e.getMessage();
-        } catch (XmlRpcException e) {
-            return e.getMessage();
-        }
-    }
-
-    private static XmlRpcClient getXmlRpcClient() throws MalformedURLException {
+    static XmlRpcClient getXmlRpcClient() throws MalformedURLException {
 
         Properties properties = new Properties();
 
