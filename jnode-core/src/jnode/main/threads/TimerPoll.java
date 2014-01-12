@@ -15,7 +15,7 @@ public class TimerPoll extends TimerTask {
 				"port", "ne", 0)) {
 			if (FtnTools.getOptionBooleanDefTrue(l,
 					LinkOption.BOOLEAN_POLL_BY_TIMEOT)) {
-				PollQueue.INSTANSE.add(l);
+				PollQueue.getSelf().add(l);
 			}
 		}
 	}

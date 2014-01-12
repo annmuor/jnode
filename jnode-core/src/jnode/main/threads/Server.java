@@ -18,7 +18,7 @@ import jnode.protocol.io.exception.ProtocolException;
 public class Server extends Thread {
 	private static final Logger logger = Logger.getLogger(Server.class);
 
-	private static class ServerClient extends Thread {
+	private static class ServerClient implements Runnable {
 		private static final Logger logger = Logger
 				.getLogger(ServerClient.class);
 		private final Socket socket;
@@ -63,12 +63,11 @@ public class Server extends Thread {
 		logger.l4("Server listens on " + host + ":" + port);
 		try {
 
-			ServerSocket socket = new ServerSocket(port, 0,
+			ServerSocket socket = new ServerSocket(port, 5,
 					Inet4Address.getByName(host));
 			while (!socket.isClosed() && socket.isBound()) {
 				Socket clientSocket = socket.accept();
-				new ServerClient(clientSocket).start();
-
+				ThreadPool.execute(new ServerClient(clientSocket));
 			}
 			socket.close();
 		} catch (IOException e) {

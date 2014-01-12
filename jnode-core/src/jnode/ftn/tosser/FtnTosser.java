@@ -112,7 +112,7 @@ public class FtnTosser {
 								.toString(), routeVia.getLinkAddress()));
 				if (getOptionBooleanDefTrue(routeVia,
 						LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-					PollQueue.INSTANSE.add(routeVia);
+					PollQueue.getSelf().add(routeVia);
 				}
 			}
 		}
@@ -161,7 +161,10 @@ public class FtnTosser {
 		mail.setPath(write2D(echomail.getPath(), false));
 		ORMManager.get(Echomail.class).save(mail);
 		for (Subscription sub : getSubscription(area)) {
-			if (link == null || !sub.getLink().getId().equals(link.getId())) {
+			if (link == null
+					|| !sub.getLink().equals(link)
+					&& !getOptionBooleanDefFalse(sub.getLink(),
+							LinkOption.BOOLEAN_PAUSE)) {
 				ORMManager.get(EchomailAwaiting.class).save(
 						new EchomailAwaiting(sub.getLink(), mail));
 				pollLinks.add(sub.getLink());
@@ -351,11 +354,15 @@ public class FtnTosser {
 									continue;
 								}
 							}
-							ORMManager.get(FilemailAwaiting.class).save(
-									new FilemailAwaiting(sub.getLink(), mail));
-							if (getOptionBooleanDefFalse(sub.getLink(),
-									LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
-								poll.add(sub.getLink());
+							if (!getOptionBooleanDefFalse(sub.getLink(),
+									LinkOption.BOOLEAN_PAUSE)) {
+								ORMManager.get(FilemailAwaiting.class).save(
+										new FilemailAwaiting(sub.getLink(),
+												mail));
+								if (getOptionBooleanDefFalse(sub.getLink(),
+										LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+									poll.add(sub.getLink());
+								}
 							}
 						}
 						Notifier.INSTANSE.notify(new NewFilemailEvent(mail));
@@ -409,7 +416,7 @@ public class FtnTosser {
 			}
 		}
 		for (Link l : poll) {
-			PollQueue.INSTANSE.add(ORMManager.get(Link.class)
+			PollQueue.getSelf().add(ORMManager.get(Link.class)
 					.getById(l.getId()));
 		}
 	}
@@ -441,7 +448,7 @@ public class FtnTosser {
 
 		for (Link l : pollLinks) {
 			if (getOptionBooleanDefFalse(l, LinkOption.BOOLEAN_CRASH_ECHOMAIL)) {
-				PollQueue.INSTANSE.add(ORMManager.get(Link.class).getById(
+				PollQueue.getSelf().add(ORMManager.get(Link.class).getById(
 						l.getId()));
 			}
 		}

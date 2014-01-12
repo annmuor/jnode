@@ -924,7 +924,7 @@ public final class FtnTools {
 		logger.l4("Netmail #" + netmail.getId() + " created");
 		if (FtnTools.getOptionBooleanDefTrue(routeVia,
 				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-			PollQueue.INSTANSE.add(routeVia);
+			PollQueue.getSelf().add(routeVia);
 		}
 
 	}
@@ -1497,7 +1497,7 @@ public final class FtnTools {
 					new FilemailAwaiting(sub.getLink(), mail));
 			if (getOptionBooleanDefFalse(sub.getLink(),
 					LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
-				PollQueue.INSTANSE.add(sub.getLink());
+				PollQueue.getSelf().add(sub.getLink());
 			}
 		}
 	}

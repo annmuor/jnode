@@ -12,6 +12,7 @@ import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
 import jnode.main.threads.NetmailFallback;
 import jnode.main.threads.PollQueue;
+import jnode.main.threads.ThreadPool;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
 import jnode.main.threads.TosserQueue;
@@ -89,6 +90,7 @@ public class Main {
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							POLL_PERIOD, 0) * 1000);
 		}
+		new ThreadPool(10);
 		Timer mainTimer = new Timer();
 		logger.l4("Started PollerTask");
 		mainTimer.schedule(new PollerTask(), 11000, 10000);
@@ -160,7 +162,7 @@ public class Main {
 	private static final class PollerTask extends TimerTask {
 		@Override
 		public void run() {
-			PollQueue.INSTANSE.poll();
+			PollQueue.getSelf().poll();
 		}
 
 	}
