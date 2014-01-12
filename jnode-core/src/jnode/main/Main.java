@@ -10,6 +10,7 @@ import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
+import jnode.main.threads.NetmailFallback;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TimerPoll;
 import jnode.main.threads.Server;
@@ -88,12 +89,14 @@ public class Main {
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							POLL_PERIOD, 0) * 1000);
 		}
-		logger.l4("Started PollQueue");
-		new Timer().schedule(new PollerTask(), 10000, 10000);
-		logger.l4("Started TossQueue");
-		new Timer().schedule(new TosserTask(), 10000, 10000);
-		new StatPoster();
+		Timer mainTimer = new Timer();
+		logger.l4("Started PollerTask");
+		mainTimer.schedule(new PollerTask(), 11000, 10000);
+		logger.l4("Started TosserTask");
+		mainTimer.schedule(new TosserTask(), 10000, 10000);
 		logger.l4("Started StatPoster");
+		mainTimer.schedule(new NetmailFallback(), 9000,3600000);
+		new StatPoster(mainTimer);
 		new JscriptExecutor();
 		logger.l4("Started JscriptExecutor");
 		{

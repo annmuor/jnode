@@ -47,4 +47,56 @@ public class Version {
 				FtnTools.FORMAT.format(installedAt));
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((majorVersion == null) ? 0 : majorVersion.hashCode());
+		result = prime * result
+				+ ((minorVersion == null) ? 0 : minorVersion.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Version other = (Version) obj;
+		if (majorVersion == null) {
+			if (other.majorVersion != null)
+				return false;
+		} else if (!majorVersion.equals(other.majorVersion))
+			return false;
+		if (minorVersion == null) {
+			if (other.minorVersion != null)
+				return false;
+		} else if (!minorVersion.equals(other.minorVersion))
+			return false;
+		return true;
+	}
+	
+	public boolean equals(String ver) {
+		if (ver != null) {
+			String[] vera = ver.split("\\.");
+			if (vera.length == 2) {
+				try {
+					if (Long.valueOf(vera[0]).longValue() == getMajorVersion()
+							.longValue()
+							&& Long.valueOf(vera[1]).longValue() == getMinorVersion()
+									.longValue()) {
+						return true;
+					}
+				} catch (NumberFormatException ignore) {
+				}
+			}
+		}
+		return false;
+	}
+	
+
 }

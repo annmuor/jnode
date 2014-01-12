@@ -67,7 +67,7 @@ public class MainHandler {
 	}
 
 	public static String getVersion() {
-		return "jNode ver. " + new DefaultVersion().toString();
+		return "jNode ver. " + DefaultVersion.getSelf();
 	}
 
 }

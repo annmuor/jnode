@@ -22,7 +22,7 @@ public class StatPoster extends TimerTask {
 	private static final String STAT_POSTERS = "stat.posters";
     private static final long MILLISEC_IN_DAY = 86400000L;
 
-    public StatPoster() {
+    public StatPoster(Timer timer) {
 		if (getStatisticEnabled()) {
 			posters = new ArrayList<>();
 			{
@@ -58,7 +58,7 @@ public class StatPoster extends TimerTask {
             }
 			logger.l3("First stat after " + (delay / 1000)
 					+ " seconds and every 24h after");
-			new Timer().schedule(this, delay, 24 * 3600 * 1000);
+			timer.schedule(this, delay, 24 * 3600 * 1000);
 		}
 	}
 

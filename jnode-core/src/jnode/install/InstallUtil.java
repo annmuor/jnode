@@ -1,5 +1,6 @@
 package jnode.install;
 
+import java.util.Date;
 import java.util.List;
 
 import jnode.dao.GenericDAO;
@@ -34,12 +35,19 @@ public class InstallUtil {
 		} else {
 			Version ver = versions.get(0);
 			logger.l1("You have installed " + ver.toString());
-			checkForLastVersion();
+			checkForLastVersion(ver);
 		}
 	}
 
-	private void checkForLastVersion() {
-		// TODO check for version
+	private void checkForLastVersion(Version ver) {
+		logger.l1(String.format("Upgrading from %s", ver.toString()));
+		List<String> queryList = DefaultVersion.updateFromVersion(ver);
+		for(String query : queryList) {
+			ORMManager.get(Version.class).executeRaw(query);
+		}
+		ver.setInstalledAt(new Date());
+		ORMManager.get(Version.class).save(ver);
+		logger.l1(String.format("Upgraded to %s", ver.toString()));
 
 	}
 
@@ -146,7 +154,7 @@ public class InstallUtil {
 				logger.l1("[+] created local echoarea " + local.getName());
 			}
 		}
-		ORMManager.get(Version.class).save(new DefaultVersion());
+		ORMManager.get(Version.class).save(DefaultVersion.getSelf());
 		logger.l1("Installation completed!");
 	}
 }

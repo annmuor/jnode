@@ -826,6 +826,36 @@ public final class FtnTools {
 		return routeVia;
 	}
 
+	public static Link getRoutingFallback(FtnMessage message,
+			Link previousRouteVia) {
+		Link routeVia;
+		FtnAddress routeTo = message.getToAddr().clone();
+		routeVia = getLinkByFtnAddress(routeTo);
+		if (!isOurPoint(routeTo)) {
+			routeTo.setPoint(0);
+			routeVia = getLinkByFtnAddress(routeTo);
+		}
+		if (routeVia != null) { // direct to our link's point or our point
+			return routeVia;
+		}
+
+		List<Route> routes = ORMManager.get(Route.class).getOrderAnd("nice",
+				true);
+		for (Route route : routes) {
+			if (completeMask(route, message)) {
+				if (route.getRouteVia().equals(previousRouteVia)) {
+					continue;
+				}
+				routeVia = route.getRouteVia();
+				break;
+			}
+		}
+		if (routeVia == null) {
+			routeVia = previousRouteVia;
+		}
+		return routeVia;
+	}
+
 	public static Link getLinkByFtnAddress(FtnAddress routeTo) {
 		return ORMManager.get(Link.class).getFirstAnd("ftn_address", "=",
 				routeTo.toString());

@@ -313,4 +313,13 @@ public abstract class GenericDAO<T> {
 		}
 	}
 
+	public void executeRaw(String query) {
+		try {
+			getDao().executeRawNoArgs(query);
+		} catch (SQLException e) {
+			logger.l1("SQL Exception in executeRaw", e);
+			logger.l1(MessageFormat.format("we worked with {0}", query));
+		}
+	}
+
 }
