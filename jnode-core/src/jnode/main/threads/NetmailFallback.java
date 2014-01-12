@@ -31,7 +31,8 @@ public class NetmailFallback extends TimerTask {
 			return;
 		}
 		for (Netmail netmail : expiredNetmail) {
-			FtnMessage msg = new FtnMessage();
+			
+			FtnMessage msg = FtnTools.netmailToFtnMessage(netmail);
 			msg.setToAddr(new FtnAddress(netmail.getToFTN()));
 			Link routeVia = FtnTools.getRoutingFallback(msg,
 					netmail.getRouteVia());
