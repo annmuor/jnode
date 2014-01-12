@@ -73,7 +73,7 @@
         <dependency>
             <groupId>jnode</groupId>
             <artifactId>jnode-core</artifactId>
-            <version>0.6-SNAPSHOT</version>
+            <version>1.0</version>
             <type>jar</type>
         </dependency>
         <dependency>

@@ -26,7 +26,7 @@ public class NetmailFallback extends TimerTask {
 	public void run() {
 		Date date = new Date(new Date().getTime() - 3600000L); // 1 hour ago
 		List<Netmail> expiredNetmail = ORMManager.get(Netmail.class).getAnd(
-				"lastModified", "<", date);
+				"lastmodified", "<", date);
 		if (expiredNetmail.isEmpty()) {
 			return;
 		}
