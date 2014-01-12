@@ -91,7 +91,7 @@ public class BinkpConnector implements ProtocolConnector {
 		binkp1 = false;
 		recv = false;
 		send = false;
-		secure = true;
+		secure = false;
 	}
 
 	private void greet() {
@@ -337,7 +337,6 @@ public class BinkpConnector implements ProtocolConnector {
 						if (link == null) {
 							link = new Link();
 							link.setLinkAddress(testOk.get(0).toString());
-							secure = false;
 						}
 						password = (secure) ? (link.getProtocolPassword() != null) ? link
 								.getProtocolPassword() : "-"
