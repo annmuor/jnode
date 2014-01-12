@@ -211,7 +211,7 @@ public class FtnTosser {
 	 * Разбор файлов в папке inbound
 	 */
 	public synchronized void tossInboundDirectory() {
-		logger.l4("Start tossInboundDirectory()");
+		logger.l5("Start tossInboundDirectory()");
 		Set<Link> poll = new HashSet<Link>();
 		File inbound = new File(getInbound());
 		for (File file : inbound.listFiles()) {

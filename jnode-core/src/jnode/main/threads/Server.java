@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import jnode.logger.Logger;
 import jnode.protocol.binkp.BinkpConnector;
@@ -19,8 +20,6 @@ public class Server extends Thread {
 	private static final Logger logger = Logger.getLogger(Server.class);
 
 	private static class ServerClient implements Runnable {
-		private static final Logger logger = Logger
-				.getLogger(ServerClient.class);
 		private final Socket socket;
 
 		public ServerClient(Socket socket) {
@@ -63,11 +62,16 @@ public class Server extends Thread {
 		logger.l4("Server listens on " + host + ":" + port);
 		try {
 
-			ServerSocket socket = new ServerSocket(port, 5,
+			ServerSocket socket = new ServerSocket(port, 0,
 					Inet4Address.getByName(host));
+			socket.setSoTimeout(10000);
 			while (!socket.isClosed() && socket.isBound()) {
-				Socket clientSocket = socket.accept();
-				ThreadPool.execute(new ServerClient(clientSocket));
+				try {
+					Socket clientSocket = socket.accept();
+					clientSocket.setSoTimeout(10000);
+					ThreadPool.execute(new ServerClient(clientSocket));
+				} catch (SocketTimeoutException e) {
+				}
 			}
 			socket.close();
 		} catch (IOException e) {

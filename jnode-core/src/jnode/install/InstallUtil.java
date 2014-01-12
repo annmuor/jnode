@@ -40,14 +40,15 @@ public class InstallUtil {
 	}
 
 	private void checkForLastVersion(Version ver) {
-		logger.l1(String.format("Upgrading from %s", ver.toString()));
 		List<String> queryList = DefaultVersion.updateFromVersion(ver);
-		for(String query : queryList) {
-			ORMManager.get(Version.class).executeRaw(query);
+		if (!queryList.isEmpty()) {
+			for (String query : queryList) {
+				ORMManager.get(Version.class).executeRaw(query);
+			}
+			ver.setInstalledAt(new Date());
+			ORMManager.get(Version.class).save(ver);
+			logger.l1(String.format("Upgraded to %s", ver.toString()));
 		}
-		ver.setInstalledAt(new Date());
-		ORMManager.get(Version.class).save(ver);
-		logger.l1(String.format("Upgraded to %s", ver.toString()));
 
 	}
 

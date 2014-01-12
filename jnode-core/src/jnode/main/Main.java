@@ -35,6 +35,7 @@ public class Main {
 	private static final String BINKD_PORT = "binkp.port";
 	private static final String BINKD_CLIENT = "binkp.client";
 	private static final String BINKD_SERVER = "binkp.server";
+	private static final String BINKD_THREADS = "binkp.threads";
 	private static final String LOG_LEVEL = "log.level";
 	private static final String MODULES = "modules";
 
@@ -90,7 +91,8 @@ public class Main {
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							POLL_PERIOD, 0) * 1000);
 		}
-		new ThreadPool(10);
+		int nThreads = MainHandler.getCurrentInstance().getIntegerProperty(BINKD_THREADS, 10);
+		new ThreadPool(nThreads);
 		Timer mainTimer = new Timer();
 		logger.l4("Started PollerTask");
 		mainTimer.schedule(new PollerTask(), 11000, 10000);

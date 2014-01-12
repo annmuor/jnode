@@ -13,7 +13,7 @@ public interface ProtocolConnector {
 
 	public void initIncoming(Connector connector);
 
-	public void avalible(InputStream is);
+	public int avalible(InputStream is);
 
 	public Frame[] getFrames();
 

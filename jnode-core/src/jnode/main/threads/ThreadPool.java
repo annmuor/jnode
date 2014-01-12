@@ -11,19 +11,20 @@ public class ThreadPool {
 	private LinkedList<Runnable> queue;
 
 	public ThreadPool(int numThreads) {
+		queue = new LinkedList<>();
 		threads = new ThreadRunner[numThreads];
 		for (int i = 0; i < numThreads; i++) {
 			threads[i] = new ThreadRunner();
 			threads[i].start();
 		}
-		queue = new LinkedList<>();
-		logger.l1("Thread pool (" + numThreads + " threads) started");
+		logger.l3("Thread pool (" + numThreads + " threads) started");
 		self = this;
 	}
 
 	public static void execute(Runnable r) {
 		if (self != null) {
 			synchronized (self.queue) {
+				logger.l5("+ 1 task to queue");
 				self.queue.addLast(r);
 				self.queue.notify();
 			}
@@ -31,9 +32,13 @@ public class ThreadPool {
 	}
 
 	private class ThreadRunner extends Thread {
+		public ThreadRunner() {
+			logger.l5("Created ThreadRunner id " + getId());
+		}
 
 		@Override
 		public void run() {
+			Runnable r;
 			while (true) {
 				synchronized (queue) {
 					while (queue.isEmpty()) {
@@ -42,12 +47,12 @@ public class ThreadPool {
 						} catch (InterruptedException ignore) {
 						}
 					}
-					try {
-						Runnable r = queue.removeFirst();
-						r.run();
-					} catch (RuntimeException e) {
-						logger.l1("Runtime exception in thread " + getId(), e);
-					}
+					r = queue.removeFirst();
+				}
+				try {
+					r.run();
+				} catch (RuntimeException e) {
+					logger.l1("Runtime exception in thread " + getId(), e);
 				}
 			}
 

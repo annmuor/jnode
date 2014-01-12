@@ -15,8 +15,18 @@ import jnode.protocol.io.exception.ProtocolException;
  * @author kreon
  * 
  */
-public enum PollQueue {
-	INSTANSE;
+public class PollQueue {
+	private static PollQueue self;
+
+	public static PollQueue getSelf() {
+		if (self == null) {
+			synchronized (PollQueue.class) {
+				self = new PollQueue();
+			}
+		}
+		return self;
+	}
+
 	private static final Logger logger = Logger.getLogger(PollQueue.class);
 	private Set<Link> queue;
 
@@ -24,14 +34,14 @@ public enum PollQueue {
 		queue = new HashSet<Link>();
 	}
 
-	public void poll() {
+	public synchronized void poll() {
 		if (queue.size() > 0) {
 			logger.l4("PollQueue contains " + queue.size()
 					+ " nodes, making poll");
 			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
 			queue = new HashSet<Link>();
 			for (Link link : currentQueue) {
-				new Poll(link).start();
+				ThreadPool.execute(new Poll(link));
 			}
 		}
 	}
@@ -42,7 +52,7 @@ public enum PollQueue {
 		}
 	}
 
-	private static class Poll extends Thread {
+	private static class Poll implements Runnable {
 		private static final Logger logger = Logger.getLogger(Poll.class);
 		private final Link link;
 

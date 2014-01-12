@@ -86,8 +86,9 @@ public class Connector {
 		while (!clientSocket.isClosed()) {
 			try {
 				if (is.available() > 0) {
-					connector.avalible(is);
-					lastactive = System.currentTimeMillis();
+					if (connector.avalible(is) > 0) {
+						lastactive = System.currentTimeMillis();
+					}
 				}
 			} catch (IOException ex) {
 				logger.l2("Exception during doSocket", ex);
@@ -167,7 +168,7 @@ public class Connector {
 			logger.l2(link.getLinkAddress() + " is in busy map, skipping");
 			return;
 		}
-		
+
 		this.link = link;
 		connector.reset();
 		connector.initOutgoing(this);

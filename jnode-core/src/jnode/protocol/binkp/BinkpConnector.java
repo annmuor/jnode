@@ -247,25 +247,25 @@ public class BinkpConnector implements ProtocolConnector {
 	}
 
 	@Override
-	public void avalible(InputStream is) {
+	public int avalible(InputStream is) {
 		Pattern cram = Pattern.compile("^CRAM-([-A-Z0-9]+)-([a-f0-9]+)$");
 		BinkpFrame frame = recv(is);
 		if (frame == null) {
-			return;
+			return 0;
 		}
 		logger.l5("Received frame: " + frame.toString());
 		if (connectionState < STATE_TRANSFER && !frame.isCommand()) {
 			error("Unknown frame");
-			return;
+			return 1;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_ERR)) {
 			error("remote told: " + new String(frame.getData()));
-			return;
+			return 1;
 		}
 		if (frame.isCommand() && frame.getCommand().equals(BinkpCommand.M_BSY)) {
 			logger.l3("Remote is busy");
 			connectionState = STATE_END;
-			return;
+			return 1;
 		}
 		/**
 		 * M_NUL или M_ADR
@@ -428,7 +428,7 @@ public class BinkpConnector implements ProtocolConnector {
 					if (m.matches()) {
 						frames.add(new BinkpFrame(BinkpCommand.M_GET, m
 								.group(1) + " 0"));
-						return;
+						return 1;
 					}
 					m = p[0].matcher(arg);
 					if (m.matches()) {
@@ -454,7 +454,7 @@ public class BinkpConnector implements ProtocolConnector {
 						logger.l3(String.format("Receiving file: %s (%d)",
 								currentMessage.getMessageName(),
 								currentMessage.getMessageLength()));
-						return;
+						return 1;
 					}
 				} else if (frame.getCommand().equals(BinkpCommand.M_EOB)) {
 					reob = true;
@@ -538,6 +538,7 @@ public class BinkpConnector implements ProtocolConnector {
 				}
 			}
 		}
+		return 1;
 	}
 
 	@Override

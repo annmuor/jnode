@@ -26,6 +26,7 @@ public class LinkOption {
 	public static final String BOOLEAN_AREAFIX = "areafix";
 	public static final String BOOLEAN_FILEFIX = "filefix";
     public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
+    public static final String BOOLEAN_PAUSE = "pause";
 	public static final String LONG_LINK_LEVEL = "level";
 	public static final String SARRAY_LINK_GROUPS = "groups";
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";
@@ -57,6 +58,7 @@ public class LinkOption {
 		options.put("areafixpwd", "-afixpwd");
 		options.put("filefixpwd", "-ffixpwd");
 		options.put("ouraka", "-oaka");
+		options.put("pause", "-pause");
 		return options;
 	}
 
