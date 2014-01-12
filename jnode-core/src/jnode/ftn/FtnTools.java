@@ -828,17 +828,12 @@ public final class FtnTools {
 
 	public static Link getRoutingFallback(FtnMessage message,
 			Link previousRouteVia) {
-		Link routeVia;
+		Link routeVia = null;
 		FtnAddress routeTo = message.getToAddr().clone();
-		routeVia = getLinkByFtnAddress(routeTo);
-		if (!isOurPoint(routeTo)) {
-			routeTo.setPoint(0);
-			routeVia = getLinkByFtnAddress(routeTo);
+		if (isOurPoint(routeTo)) {
+			return null;
 		}
-		if (routeVia != null) { // direct to our link's point or our point
-			return routeVia;
-		}
-
+		// direct link can be down for us - use cross way
 		List<Route> routes = ORMManager.get(Route.class).getOrderAnd("nice",
 				true);
 		for (Route route : routes) {
