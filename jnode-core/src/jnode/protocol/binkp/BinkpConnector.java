@@ -607,8 +607,8 @@ public class BinkpConnector implements ProtocolConnector {
 			int avalible;
 			while ((avalible = message.getInputStream().available()) > 0) {
 				byte[] buf;
-				if (avalible > 32767) {
-					buf = new byte[32767];
+				if (avalible > 1400) { // MTU 1500 ?
+					buf = new byte[1400];
 				} else {
 					buf = new byte[avalible];
 				}
