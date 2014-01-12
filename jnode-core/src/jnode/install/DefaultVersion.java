@@ -34,7 +34,7 @@ public class DefaultVersion extends Version {
 	public static List<String> updateFromVersion(Version ver) {
 		List<String> ret = new ArrayList<>();
 		if(ver.equals("1.0")) {
-			ret.add("ALTER TABLE netmail ADD lastModified BIGINT NOT NULL DEFAULT 0;");
+			ret.add("ALTER TABLE netmail ADD last_modified BIGINT NOT NULL DEFAULT 0;");
 			ver.setMinorVersion(1L);
 		}
 //		if(ver.equals("1.1")) {

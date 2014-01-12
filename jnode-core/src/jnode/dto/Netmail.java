@@ -35,7 +35,7 @@ public class Netmail {
 	private boolean send;
 	@DatabaseField(columnName = "attr", canBeNull = false, defaultValue = "256", dataType = DataType.INTEGER)
 	private int attr;
-	@DatabaseField(columnName="lastModified",dataType=DataType.DATE_LONG)
+	@DatabaseField(columnName="last_modified",dataType=DataType.DATE_LONG)
 	private Date lastModified = new Date();
 
 	public Long getId() {
