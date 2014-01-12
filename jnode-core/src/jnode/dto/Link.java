@@ -113,11 +113,6 @@ public class Link {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (linkAddress == null) {
-			if (other.linkAddress != null)
-				return false;
-		} else if (!linkAddress.equals(other.linkAddress))
-			return false;
 		return true;
 	}
 
