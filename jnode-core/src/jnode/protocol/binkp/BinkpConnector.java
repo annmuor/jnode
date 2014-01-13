@@ -39,7 +39,9 @@ import jnode.protocol.io.ProtocolConnector;
  * 
  */
 public class BinkpConnector implements ProtocolConnector {
-	private static final int MAX_PACKET_SIZE = 1000;
+	private final static String BINKP_SIZE = "binkp.size";
+	private int MAX_PACKET_SIZE = MainHandler.getCurrentInstance()
+			.getIntegerProperty(BINKP_SIZE, 1400);
 	private static final DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(BinkpConnector.class);
