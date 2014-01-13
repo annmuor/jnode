@@ -33,7 +33,7 @@ public final class SystemInfo {
 
 		String[] addra = handler.getProperty(INFO_ADDRESS, "2:9999/9999")
 				.replaceAll("[^\\/0-9,:\\.]", "").split(",");
-		addressList = new ArrayList<FtnAddress>();
+		addressList = new ArrayList<>();
 		for (String address : addra) {
 			addressList.add(new FtnAddress(address));
 		}

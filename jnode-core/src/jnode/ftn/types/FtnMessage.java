@@ -288,15 +288,19 @@ public class FtnMessage {
 							if (m.matches()) {
 								String kluge = m.group(1);
 								String arg = m.group(2);
-								if (kluge.equals("INTL")) {
-									String tmp[] = arg.split(" ");
-									toAddr = new FtnAddress(tmp[0]);
-									fromAddr = new FtnAddress(tmp[1]);
-								} else if (kluge.equals("TOPT")) {
-									toAddr.setPoint(new Integer(arg));
-								} else if (kluge.equals("FMPT")) {
-									fromAddr.setPoint(new Integer(arg));
-								}
+                                switch (kluge) {
+                                    case "INTL":
+                                        String tmp[] = arg.split(" ");
+                                        toAddr = new FtnAddress(tmp[0]);
+                                        fromAddr = new FtnAddress(tmp[1]);
+                                        break;
+                                    case "TOPT":
+                                        toAddr.setPoint(new Integer(arg));
+                                        break;
+                                    case "FMPT":
+                                        fromAddr.setPoint(new Integer(arg));
+                                        break;
+                                }
 								continue;
 							}
 						}
@@ -346,14 +350,10 @@ public class FtnMessage {
 			} else {
 				throw new LastMessageException("2.0 is not out version");
 			}
-		} catch (IOException e) {
-			throw new LastMessageException(e);
-		} catch (ParseException e) {
-			throw new LastMessageException(e);
-		} catch (LastMessageException e) {
+		} catch (IOException | LastMessageException | ParseException e) {
 			throw new LastMessageException(e);
 		}
-	}
+    }
 
 	@Override
 	public String toString() {

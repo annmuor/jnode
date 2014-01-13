@@ -131,8 +131,6 @@ public class Main {
 								}
 							}).start();
 							logger.l2("Module " + className + " started");
-						} catch (RuntimeException e) {
-							logger.l2("Module " + className + " failed", e);
 						} catch (Exception e) {
 							logger.l2("Module " + className + " failed", e);
 						}

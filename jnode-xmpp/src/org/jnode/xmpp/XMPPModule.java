@@ -6,7 +6,7 @@ import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 
 public class XMPPModule extends JnodeModule {
-	private XMPPClient client;
+	private final XMPPClient client;
 	private static final Logger logger = Logger.getLogger(XMPPModule.class);
 
 	public XMPPModule(String configFile) throws JnodeModuleException {

@@ -7,8 +7,8 @@ import jnode.logger.Logger;
 public class ThreadPool {
 	private static ThreadPool self;
 	private static final Logger logger = Logger.getLogger(ThreadPool.class);
-	private ThreadRunner[] threads;
-	private LinkedList<Runnable> queue;
+	private final ThreadRunner[] threads;
+	private final LinkedList<Runnable> queue;
 
 	public ThreadPool(int numThreads) {
 		queue = new LinkedList<>();

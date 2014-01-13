@@ -11,7 +11,6 @@ import org.apache.xmlrpc.webserver.XmlRpcServlet;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Properties;
 
 /**
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
