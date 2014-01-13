@@ -39,6 +39,7 @@ import jnode.protocol.io.ProtocolConnector;
  * 
  */
 public class BinkpConnector implements ProtocolConnector {
+	private static final int MAX_PACKET_SIZE = 1000;
 	private static final DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(BinkpConnector.class);
@@ -607,8 +608,8 @@ public class BinkpConnector implements ProtocolConnector {
 			int avalible;
 			while ((avalible = message.getInputStream().available()) > 0) {
 				byte[] buf;
-				if (avalible > 1400) { // MTU 1500 ?
-					buf = new byte[1400];
+				if (avalible > MAX_PACKET_SIZE) { // MTU 1500 ?
+					buf = new byte[MAX_PACKET_SIZE];
 				} else {
 					buf = new byte[avalible];
 				}

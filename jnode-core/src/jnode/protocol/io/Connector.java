@@ -100,6 +100,7 @@ public class Connector {
 					try {
 						logger.l5("Sent frame: " + frame);
 						os.write(frame.getBytes());
+						os.flush();
 						lastactive = System.currentTimeMillis();
 					} catch (IOException e) {
 						try {

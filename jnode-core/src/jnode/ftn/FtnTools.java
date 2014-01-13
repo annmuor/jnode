@@ -6,8 +6,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -1494,6 +1498,32 @@ public final class FtnTools {
 					LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
 				PollQueue.getSelf().add(sub.getLink());
 			}
+		}
+	}
+
+	public static String md5(String protocolPassword) {
+		MessageDigest mdEnc;
+		try {
+			mdEnc = MessageDigest.getInstance("MD5");
+			mdEnc.update(protocolPassword.getBytes(), 0,
+					protocolPassword.length());
+			String md5 = new BigInteger(1, mdEnc.digest()).toString(16);
+			return "MD5-"+md5;
+		} catch (NoSuchAlgorithmException e) {
+			return "PLAIN-"+protocolPassword;
+		}
+
+	}
+	
+	public static byte[] objectToBytes(Object object) {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream os = new ObjectOutputStream(bos);
+			os.writeObject(object);
+			os.close();
+			return bos.toByteArray();
+		} catch (IOException e) {
+			return null;
 		}
 	}
 }
