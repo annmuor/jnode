@@ -86,7 +86,7 @@ public class Connector {
 		while (!clientSocket.isClosed()) {
 			try {
 				if (is.available() > 0) {
-					if (connector.avalible(is) > 0) {
+					if (connector.availible(is) > 0) {
 						lastactive = System.currentTimeMillis();
 					}
 				}

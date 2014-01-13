@@ -250,7 +250,7 @@ public class BinkpConnector implements ProtocolConnector {
 	}
 
 	@Override
-	public int avalible(InputStream is) {
+	public int availible(InputStream is) {
 		Pattern cram = Pattern.compile("^CRAM-([-A-Z0-9]+)-([a-f0-9]+)$");
 		BinkpFrame frame = recv(is);
 		if (frame == null) {
@@ -607,13 +607,13 @@ public class BinkpConnector implements ProtocolConnector {
 		logger.l3(String.format("Sending file: %s (%d)",
 				message.getMessageName(), message.getMessageLength()));
 		try {
-			int avalible;
-			while ((avalible = message.getInputStream().available()) > 0) {
+			int availible;
+			while ((availible = message.getInputStream().available()) > 0) {
 				byte[] buf;
-				if (avalible > MAX_PACKET_SIZE) { // MTU 1500 ?
+				if (availible > MAX_PACKET_SIZE) { // MTU 1500 ?
 					buf = new byte[MAX_PACKET_SIZE];
 				} else {
-					buf = new byte[avalible];
+					buf = new byte[availible];
 				}
 				message.getInputStream().read(buf);
 				frames.add(new BinkpFrame(buf));

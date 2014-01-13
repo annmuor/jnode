@@ -83,7 +83,7 @@ public class FileFix extends AbstractRobot {
 	 */
 	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
-				+ "%LIST - list of avalible fileareas\n"
+				+ "%LIST - list of availible fileareas\n"
 				+ "%QUERY - list of subscribed fileareas\n"
 				+ "+file.area - subscribe echo.area\n"
 				+ "-file.area - unsibscribe echo.area";

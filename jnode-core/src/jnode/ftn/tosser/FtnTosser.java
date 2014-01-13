@@ -127,7 +127,7 @@ public class FtnTosser {
 		Echoarea area = getAreaByName(echomail.getArea(), link);
 		if (area == null) {
 			logger.l3("Echoarea " + echomail.getArea()
-					+ " is not avalible for " + link.getLinkAddress());
+					+ " is not availible for " + link.getLinkAddress());
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -325,7 +325,7 @@ public class FtnTosser {
 						}
 						Filearea area = getFileareaByName(tic.getArea(), source);
 						if (area == null) {
-							markAsBad(file, "Filearea is not avalible");
+							markAsBad(file, "Filearea is not availible");
 							continue;
 						}
 						new File(getFileechoPath() + File.separator
@@ -585,7 +585,7 @@ public class FtnTosser {
 				File f = new File(mail.getFilepath());
 
 				if (!f.canRead()) {
-					logger.l3("File unavalible");
+					logger.l3("File unavailible");
 					continue;
 				}
 
