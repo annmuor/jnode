@@ -1420,35 +1420,39 @@ public final class FtnTools {
 	}
 
 	public static void writeEchomail(Echoarea area, String subject, String text) {
-		Echomail mail = new Echomail();
-		mail.setFromFTN(getPrimaryFtnAddress().toString());
-		mail.setFromName(MainHandler.getCurrentInstance().getInfo()
-				.getStationName());
-		mail.setArea(area);
-		mail.setDate(new Date());
-		mail.setPath("");
-		mail.setSeenBy("");
-		mail.setToName("All");
-		mail.setSubject(subject);
-		StringBuilder b = new StringBuilder();
-		b.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
-				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
-				MainHandler.getVersion(), MainHandler.getVersion()));
-		b.append(text);
-		b.append("\n--- "
-				+ MainHandler.getCurrentInstance().getInfo().getStationName()
-				+ "\n");
-		b.append(" * Origin: " + MainHandler.getVersion() + " ("
-				+ getPrimaryFtnAddress().toString() + ")\n");
-		mail.setText(b.toString());
-		ORMManager.get(Echomail.class).save(mail);
-		for (Subscription s : ORMManager.get(Subscription.class).getAnd(
-				"echoarea_id", "=", area)) {
-			ORMManager.get(EchomailAwaiting.class).save(
-					new EchomailAwaiting(s.getLink(), mail));
-		}
+        writeEchomail(area, subject, text, MainHandler.getCurrentInstance().getInfo()
+                .getStationName(), "All");
 	}
+
+    public static void writeEchomail(Echoarea area, String subject, String text, String fromName, String toName) {
+        Echomail mail = new Echomail();
+        mail.setFromFTN(getPrimaryFtnAddress().toString());
+        mail.setFromName(fromName);
+        mail.setArea(area);
+        mail.setDate(new Date());
+        mail.setPath("");
+        mail.setSeenBy("");
+        mail.setToName(toName);
+        mail.setSubject(subject);
+        StringBuilder b = new StringBuilder();
+        b.append(String.format(
+                "\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
+                getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
+                MainHandler.getVersion(), MainHandler.getVersion()));
+        b.append(text);
+        b.append("\n--- "
+                + MainHandler.getCurrentInstance().getInfo().getStationName()
+                + "\n");
+        b.append(" * Origin: " + MainHandler.getVersion() + " ("
+                + getPrimaryFtnAddress().toString() + ")\n");
+        mail.setText(b.toString());
+        ORMManager.get(Echomail.class).save(mail);
+        for (Subscription s : ORMManager.get(Subscription.class).getAnd(
+                "echoarea_id", "=", area)) {
+            ORMManager.get(EchomailAwaiting.class).save(
+                    new EchomailAwaiting(s.getLink(), mail));
+        }
+    }
 
 	public static FtnAddress getPrimaryFtnAddress() {
 		return MainHandler.getCurrentInstance().getInfo().getAddressList()
