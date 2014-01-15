@@ -24,24 +24,46 @@ public class EchomailToolsImpl implements EchomailTools {
 
         logger.l5("writeEchomail areaname = [" + areaname + "], subject = [" + subject + "], text = [" + text + "]");
 
-        if (isEmpty(areaname)){
-            throw new XmlRpcException("empty areaname not allowed");
-        }
-        if (isEmpty(subject)){
-            throw new XmlRpcException("empty subject not allowed");
-        }
-        if (isEmpty(text)){
-            throw new XmlRpcException("empty text not allowed");
-        }
+        check(areaname, "areaname");
+        check(subject, "subject");
+        check(text, "text");
 
+        Echoarea area = getEchoarea(areaname);
+
+        FtnTools.writeEchomail(area, subject, text);
+
+        return "";
+    }
+
+    @Override
+    public String writeEchomail(String areaname, String subject, String text, String fromName, String toName) throws XmlRpcException {
+        System.out.println("areaname = [" + areaname + "], subject = [" + subject + "], text = [" + text + "], fromName = [" + fromName + "], toName = [" + toName + "]");
+
+        check(areaname, "areaname");
+        check(subject, "subject");
+        check(text, "text");
+        check(fromName, "fromName");
+        check(toName, "toName");
+
+        Echoarea area = getEchoarea(areaname);
+
+        FtnTools.writeEchomail(area, subject, text, fromName, toName);
+
+        return "";
+    }
+
+    private static Echoarea getEchoarea(String areaname) throws XmlRpcException {
         Echoarea area = FtnTools.getAreaByName(areaname,
                 null);
         if (area == null){
             throw new XmlRpcException(MessageFormat.format("echoarea \"{0}\" not found", areaname));
         }
+        return area;
+    }
 
-        FtnTools.writeEchomail(area, subject, text);
-
-        return "";
+    private static void check(String value, String name) throws XmlRpcException {
+        if (isEmpty(value)){
+            throw new XmlRpcException(MessageFormat.format("empty {0} not allowed", name));
+        }
     }
 }

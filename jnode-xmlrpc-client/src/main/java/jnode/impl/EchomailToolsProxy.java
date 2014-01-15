@@ -20,10 +20,20 @@ public final class EchomailToolsProxy {
             jnode.EchomailTools echomailTools = (EchomailTools) factory.newInstance(EchomailTools.class);
             return echomailTools.writeEchomail(areaname, subject, body);
         } catch (MalformedURLException | XmlRpcException e) {
-            e.printStackTrace();
             return e.getMessage();
         }
 
     }
 
+    public static String writeEchomail(String areaname, String subject, String body, String fromName, String toName) {
+
+        try {
+            ClientFactory factory = new ClientFactory(ClientProxy.getXmlRpcClient());
+            jnode.EchomailTools echomailTools = (EchomailTools) factory.newInstance(EchomailTools.class);
+            return echomailTools.writeEchomail(areaname, subject, body, fromName, toName);
+        } catch (MalformedURLException | XmlRpcException e) {
+            return e.getMessage();
+        }
+
+    }
 }
