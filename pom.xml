@@ -51,17 +51,46 @@
             </plugin>
         </plugins>
     </build>
-
-    <modules>
-        <module>jnode-core</module>
-        <module>jnode-httpd-module</module>
-        <module>jnode-pointchecker-module</module>
-        <module>jnode-rss</module>
-        <module>jnode-xmpp</module>
-        <module>jnode-dumb-module</module>
-        <module>jnode-xmlrpc-server</module>
-        <module>jnode-xmlrpc-common</module>
-        <module>jnode-xmlrpc-client</module>
-        <module>jnode-assembly</module>
-    </modules>
+<profiles>
+    <profile>
+        <id>stable</id>
+        <modules>
+        	<module>jnode-core</module>
+        	<module>jnode-httpd-module</module>
+        	<module>jnode-rss</module>
+        	<module>jnode-dumb-module</module>
+        	<module>jnode-xmpp</module>
+        	<module>jnode-pointchecker-module</module>
+        </modules>
+    </profile>
+    <profile>
+        <id>xmlrpc</id>
+        <modules>
+            <module>jnode-core</module>
+            <module>jnode-xmlrpc-server</module>
+        	<module>jnode-xmlrpc-common</module>
+        	<module>jnode-xmlrpc-client</module>
+        	<module>jnode-assembly</module>
+        </modules>
+    </profile>
+    <profile>
+        <id>all</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <modules>
+        	<module>jnode-core</module>
+        	<module>jnode-httpd-module</module>
+        	<module>jnode-rss</module>
+        	<module>jnode-dumb-module</module>
+        	<module>jnode-xmpp</module>
+        	<module>jnode-pointchecker-module</module>
+        	<module>jnode-core</module>
+            <module>jnode-xmlrpc-server</module>
+        	<module>jnode-xmlrpc-common</module>
+        	<module>jnode-xmlrpc-client</module>
+        	<module>jnode-assembly</module>
+        </modules>
+    </profile>
+</profiles>
 </project>
