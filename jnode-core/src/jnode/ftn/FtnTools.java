@@ -552,6 +552,25 @@ public final class FtnTools {
 	}
 
 	/**
+	 * Конвертер
+	 * 
+	 * @param mail
+	 * @return
+	 */
+	public static Netmail ftnMessageToNetmail(FtnMessage mail) {
+		Netmail netmail = new Netmail();
+		netmail.setAttr(mail.getAttribute());
+		netmail.setDate(mail.getDate());
+		netmail.setFromFTN(mail.getFromAddr().toString());
+		netmail.setFromName(mail.getFromName());
+		netmail.setToFTN(mail.getToAddr().toString());
+		netmail.setToName(mail.getToName());
+		netmail.setSubject(mail.getSubject());
+		netmail.setText(mail.getText());
+		return netmail;
+	}
+
+	/**
 	 * Распаковка из зип-архива
 	 * 
 	 * @param message
@@ -881,20 +900,7 @@ public final class FtnTools {
 	 */
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
 		FtnAddress from = getPrimaryFtnAddress();
-		Netmail netmail = new Netmail();
-		netmail.setFromFTN(from.toString());
-		netmail.setFromName(MainHandler.getCurrentInstance().getInfo()
-				.getStationName());
-		netmail.setToFTN(fmsg.getFromAddr().toString());
-		netmail.setToName(fmsg.getFromName());
-		netmail.setSubject(subject);
-		netmail.setDate(new Date());
 		StringBuilder sb = new StringBuilder();
-		sb.append(String
-				.format("\001REPLY: %s\n\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
-						fmsg.getMsgid(), from.toString(), generate8d(),
-						MainHandler.getVersion(), MainHandler.getVersion(),
-						netmail.getToName()));
 		sb.append(text);
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
@@ -907,25 +913,9 @@ public final class FtnTools {
 					.replaceAll("---", "+++")
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
-		sb.append("========== Original message ==========\n\n--- "
-				+ MainHandler.getVersion() + "\n");
-		netmail.setText(sb.toString());
-		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(new FtnAddress(from.toString()));
-		ret.setToAddr(fmsg.getFromAddr());
-		Link routeVia = getRouting(ret);
-		if (routeVia == null) {
-			logger.l2("Routing for reply not found" + fmsg.getMsgid());
-			return;
-		}
-		netmail.setRouteVia(routeVia);
-		ORMManager.get(Netmail.class).save(netmail);
-		logger.l4("Netmail #" + netmail.getId() + " created");
-		if (FtnTools.getOptionBooleanDefTrue(routeVia,
-				LinkOption.BOOLEAN_CRASH_NETMAIL)) {
-			PollQueue.getSelf().add(routeVia);
-		}
-
+		sb.append("========== Original message ==========\n");
+		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
+				fmsg.getFromName(), subject, text);
 	}
 
 	/**
@@ -940,32 +930,38 @@ public final class FtnTools {
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
 			String fromName, String toName, String subject, String text) {
-		Netmail net = new Netmail();
-		net.setDate(new Date());
-		net.setFromName(fromName);
-		net.setToName(toName);
-		net.setFromFTN(from.toString());
-		net.setToFTN(to.toString());
-		net.setSubject(subject);
+		FtnMessage message = new FtnMessage();
+
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format(
 				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
 				from.toString(), generate8d(), MainHandler.getVersion(),
-				MainHandler.getVersion(), net.getToName()));
+				MainHandler.getVersion(), toName));
 		sb.append(text);
 		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
-		net.setText(sb.toString());
-		FtnMessage ret = new FtnMessage();
-		ret.setFromAddr(from);
-		ret.setToAddr(to);
-		Link routeVia = getRouting(ret);
+		message.setToAddr(to);
+		message.setFromAddr(from);
+		message.setToName(toName);
+		message.setFromName(fromName);
+		message.setSubject(subject);
+		message.setText(sb.toString());
+		message.setNetmail(true);
+		message.setAttribute(0);
+		processRewrite(message);
+		Link routeVia = getRouting(message);
 		if (routeVia == null) {
 			logger.l2("Routing not found for " + to);
-			return;
 		}
+		Netmail net = ftnMessageToNetmail(message);
 		net.setRouteVia(routeVia);
 		ORMManager.get(Netmail.class).save(net);
 		logger.l4("Netmail #" + net.getId() + " created");
+		if (routeVia != null) {
+			if (FtnTools.getOptionBooleanDefTrue(routeVia,
+					LinkOption.BOOLEAN_CRASH_NETMAIL)) {
+				PollQueue.getSelf().add(routeVia);
+			}
+		}
 	}
 
 	private static File createOutboundFile(Link link) {
@@ -1420,39 +1416,49 @@ public final class FtnTools {
 	}
 
 	public static void writeEchomail(Echoarea area, String subject, String text) {
-        writeEchomail(area, subject, text, MainHandler.getCurrentInstance().getInfo()
-                .getStationName(), "All");
+		writeEchomail(area, subject, text, MainHandler.getCurrentInstance()
+				.getInfo().getStationName(), "All");
 	}
 
-    public static void writeEchomail(Echoarea area, String subject, String text, String fromName, String toName) {
-        Echomail mail = new Echomail();
-        mail.setFromFTN(getPrimaryFtnAddress().toString());
-        mail.setFromName(fromName);
-        mail.setArea(area);
-        mail.setDate(new Date());
-        mail.setPath("");
-        mail.setSeenBy("");
-        mail.setToName(toName);
-        mail.setSubject(subject);
-        StringBuilder b = new StringBuilder();
-        b.append(String.format(
-                "\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
-                getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
-                MainHandler.getVersion(), MainHandler.getVersion()));
-        b.append(text);
-        b.append("\n--- "
-                + MainHandler.getCurrentInstance().getInfo().getStationName()
-                + "\n");
-        b.append(" * Origin: " + MainHandler.getVersion() + " ("
-                + getPrimaryFtnAddress().toString() + ")\n");
-        mail.setText(b.toString());
-        ORMManager.get(Echomail.class).save(mail);
-        for (Subscription s : ORMManager.get(Subscription.class).getAnd(
-                "echoarea_id", "=", area)) {
-            ORMManager.get(EchomailAwaiting.class).save(
-                    new EchomailAwaiting(s.getLink(), mail));
-        }
-    }
+	/**
+	 * Эхомейл
+	 * 
+	 * @param area
+	 * @param subject
+	 * @param text
+	 * @param fromName
+	 * @param toName
+	 */
+	public static void writeEchomail(Echoarea area, String subject,
+			String text, String fromName, String toName) {
+		Echomail mail = new Echomail();
+		mail.setFromFTN(getPrimaryFtnAddress().toString());
+		mail.setFromName(fromName);
+		mail.setArea(area);
+		mail.setDate(new Date());
+		mail.setPath("");
+		mail.setSeenBy("");
+		mail.setToName(toName);
+		mail.setSubject(subject);
+		StringBuilder b = new StringBuilder();
+		b.append(String.format(
+				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
+				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
+				MainHandler.getVersion(), MainHandler.getVersion()));
+		b.append(text);
+		b.append("\n--- "
+				+ MainHandler.getCurrentInstance().getInfo().getStationName()
+				+ "\n");
+		b.append(" * Origin: " + MainHandler.getVersion() + " ("
+				+ getPrimaryFtnAddress().toString() + ")\n");
+		mail.setText(b.toString());
+		ORMManager.get(Echomail.class).save(mail);
+		for (Subscription s : ORMManager.get(Subscription.class).getAnd(
+				"echoarea_id", "=", area)) {
+			ORMManager.get(EchomailAwaiting.class).save(
+					new EchomailAwaiting(s.getLink(), mail));
+		}
+	}
 
 	public static FtnAddress getPrimaryFtnAddress() {
 		return MainHandler.getCurrentInstance().getInfo().getAddressList()
@@ -1512,13 +1518,13 @@ public final class FtnTools {
 			mdEnc.update(protocolPassword.getBytes(), 0,
 					protocolPassword.length());
 			String md5 = new BigInteger(1, mdEnc.digest()).toString(16);
-			return "MD5-"+md5;
+			return "MD5-" + md5;
 		} catch (NoSuchAlgorithmException e) {
-			return "PLAIN-"+protocolPassword;
+			return "PLAIN-" + protocolPassword;
 		}
 
 	}
-	
+
 	public static byte[] objectToBytes(Object object) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		try {

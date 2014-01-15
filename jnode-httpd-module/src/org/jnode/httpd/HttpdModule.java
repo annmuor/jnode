@@ -1,9 +1,12 @@
 package org.jnode.httpd;
 
 import jnode.event.IEvent;
+import jnode.ftn.FtnTools;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
+import jnode.orm.ORMManager;
 
+import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
 import org.jnode.httpd.routes.html.LinkOptionRoute;
 import org.jnode.httpd.routes.html.LinkRoute;
@@ -35,7 +38,9 @@ public class HttpdModule extends JnodeModule {
 
 	@Override
 	public void start() {
+
 		Spark.setPort(port);
+
 		Spark.staticFileLocation("/www");
 
 		Spark.before(new SecureFilter("/secure/*"));
@@ -49,5 +54,23 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new LinkOptionsRoute("/secure/linkoptions"));
 
 		Spark.post(new LinkOptionRoute("/secure/linkoption"));
+
+		try {
+			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
+			if (admin == null) {
+				admin = new WebAdmin();
+				admin.setUsername("admin");
+				String password = FtnTools.generate8d();
+				admin.setPassword(FtnTools.md5(password));
+				ORMManager.get(WebAdmin.class).save(admin);
+				// write netmail to primary address
+				FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
+						FtnTools.getPrimaryFtnAddress(), "HTTPD Module",
+						"Sysop of Node", "Web password",
+						"You can login to jNode site with those credentials: admin:"
+								+ password + "\n");
+			}
+		} catch (RuntimeException e) {
+		}
 	}
 }
