@@ -1,0 +1,19 @@
+table th {
+	border: 2px solid black;
+	text-align: center;
+}
+
+table td {
+	border: 1px solid gray;
+	text-align: center;
+}
+
+.info {
+	width: 500px;
+}
+
+.center {
+	margin-left: auto;
+	margin-right: auto;
+}
+

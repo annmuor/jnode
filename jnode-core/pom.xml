@@ -15,12 +15,14 @@
 		<dependency>
 			<groupId>com.j256.ormlite</groupId>
 			<artifactId>ormlite-jdbc</artifactId>
-			<version>${ormlite.version}</version>
+			<version>4.48</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.j256.ormlite</groupId>
 			<artifactId>ormlite-core</artifactId>
-			<version>${ormlite.version}</version>
+			<version>4.48</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

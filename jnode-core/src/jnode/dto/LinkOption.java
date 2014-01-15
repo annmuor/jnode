@@ -25,8 +25,8 @@ public class LinkOption {
 	public static final String BOOLEAN_POLL_BY_TIMEOT = "pollbytimeout";
 	public static final String BOOLEAN_AREAFIX = "areafix";
 	public static final String BOOLEAN_FILEFIX = "filefix";
-    public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
-    public static final String BOOLEAN_PAUSE = "pause";
+	public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
+	public static final String BOOLEAN_PAUSE = "pause";
 	public static final String LONG_LINK_LEVEL = "level";
 	public static final String SARRAY_LINK_GROUPS = "groups";
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";
@@ -77,12 +77,22 @@ public class LinkOption {
 		return ret;
 	}
 
+	@DatabaseField(columnName = "id", generatedId = true)
+	private Long id;
 	@DatabaseField(columnName = "link_id", foreign = true, canBeNull = false, uniqueIndexName = "lopt_idx")
 	private Link link;
 	@DatabaseField(columnName = "name", canBeNull = false, uniqueIndexName = "lopt_idx")
 	private String option;
 	@DatabaseField(columnName = "value", canBeNull = false, dataType = DataType.LONG_STRING)
 	private String value;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Link getLink() {
 		return link;
