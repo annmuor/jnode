@@ -939,6 +939,7 @@ public final class FtnTools {
 				MainHandler.getVersion(), toName));
 		sb.append(text);
 		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
+		message.setDate(new Date());
 		message.setToAddr(to);
 		message.setFromAddr(from);
 		message.setToName(toName);
