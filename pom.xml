@@ -54,14 +54,14 @@
 
     <modules>
         <module>jnode-core</module>
+        <module>jnode-httpd-module</module>
+        <module>jnode-pointchecker-module</module>
         <module>jnode-rss</module>
         <module>jnode-xmpp</module>
         <module>jnode-dumb-module</module>
         <module>jnode-xmlrpc-server</module>
         <module>jnode-xmlrpc-common</module>
         <module>jnode-xmlrpc-client</module>
-        <module>jnode-pointchecker-module</module>
-        <module>jnode-httpd-module</module>
         <module>jnode-assembly</module>
     </modules>
 </project>
