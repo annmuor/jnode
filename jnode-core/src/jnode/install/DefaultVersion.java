@@ -25,7 +25,7 @@ public class DefaultVersion extends Version {
 
 	private DefaultVersion() {
 		setMajorVersion(1L);
-		setMinorVersion(0L);
+		setMinorVersion(2L);
 		setInstalledAt(new Date());
 	}
 
