@@ -21,15 +21,18 @@ public class SelfRoute extends JsRoute {
 
 	@Override
 	public Object _handle(Request req, Response resp) {
-		StringBuilder sb = new StringBuilder();
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
-		sb.append("{");
-		sb.append(pair("name", info.getStationName()));
-		sb.append(", " + pair("location", info.getLocation()));
-		sb.append(", " + pair("addresses", info.getAddressList()));
-		sb.append(", " + pair("sysop", info.getSysop()));
-		sb.append(", " + pair("running", MainHandler.getVersion()));
-		sb.append("}");
-		return sb.toString();
+		return String.format("{%s, %s, %s, %s, %s, %s}",
+				pair("name", info.getStationName()),
+				pair("location", info.getLocation()),
+				pair("addresses", info.getAddressList()),
+				pair("sysop", info.getSysop()),
+				pair("version", MainHandler.getVersion()), pair("os", getOS()));
+	}
+
+	private String getOS() {
+		return System.getProperty("os.name") + " "
+				+ System.getProperty("os.version") + " ("
+				+ System.getProperty("os.arch") + ")";
 	}
 }

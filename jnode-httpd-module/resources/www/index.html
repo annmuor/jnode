@@ -1,71 +1,56 @@
-<html>
-<head>
-<title>jNode server info</title>
-<script src="/js/jnode.js" type="text/javascript"></script>
-<link rel="stylesheet" type="text/css" href="/css/jnode.css" />
-</head>
-<body>
-	<div class="center">
-		<h2>System Info</h2>
-		<table class="info">
-			<tr>
-				<th>Station Name</th>
-				<td id="_name"></td>
-			</tr>
-			<tr>
-				<th>Station Location</th>
-				<td id="_location"></td>
-			</tr>
-			<tr>
-				<th>Sysop's Name</th>
-				<td id="_sysop"></td>
-			</tr>
-			<tr>
-				<th>FTN Address(es)</th>
-				<td id="_addrlist"></td>
-			</tr>
+<? include=/header.html ?>
+<div class="center">
+	<table class="info">
+		<tr>
+			<th colspan="2">System info</th>
+		</tr>
+		<tr>
+			<th>Station Name</th>
+			<td id="_name"></td>
+		</tr>
+		<tr>
+			<th>Station Location</th>
+			<td id="_location"></td>
+		</tr>
+		<tr>
+			<th>Sysop's Name</th>
+			<td id="_sysop"></td>
+		</tr>
+		<tr>
+			<th>FTN Address(es)</th>
+			<td id="_addrlist"></td>
+		</tr>
 
-			<tr>
-				<th>Running version</th>
-				<td id="_version"></td>
-			</tr>
+		<tr>
+			<th>Version</th>
+			<td id="_version"></td>
+		</tr>
 
-		</table>
-	</div>
+		<tr>
+			<th>OS</th>
+			<td id="_os"></td>
+		</tr>
+	</table>
+</div>
 
-	<p>Public links
-	<ul>
-		<li><a href="/requestlink.html">Request a link</a></li>
-		<li><a href="/requestpoint.html">Request a point</a></li>
-	</ul>
-
-	<p>Secured links
-	<ul>
-		<li><a href="/secure/links.html">Configure links</a></li>
-		<li><a href="/secure/echoes.html">Configure echoareas</a></li>
-		<li><a href="/secure/fechoes.html">Configure fileareas</a></li>
-	</ul>
-
-
-
-	<script type="text/javascript">
-		function _self(info) {
-			_fill("_name", info.name);
-			_fill("_location", info.location);
-			_fill("_sysop", info.sysop);
-			_fill("_version", info.running);
-			for (i = 0; i < info.addresses.length; i++) {
-				_fill("_addrlist", " " + info.addresses[i]);
-			}
+<script type="text/javascript">
+	function _self(info) {
+		_fill("_name", info.name);
+		_fill("_location", info.location);
+		_fill("_sysop", info.sysop);
+		_fill("_version", info.version);
+		_fill("_os", info.os);
+		for (i = 0; i < info.addresses.length; i++) {
+			_fill("_addrlist", " " + info.addresses[i]);
 		}
-		function _links(links) {
-			for (i = 0; i < links.length; i++) {
-				_fill("_links", "<tr><td>" + links[i].name + "</td><td>"
-						+ links[i].addr + "</td><td>" + links[i].host + ":"
-						+ links[i].port + "</td></tr>");
-			}
+	}
+	function _links(links) {
+		for (i = 0; i < links.length; i++) {
+			_fill("_links", "<tr><td>" + links[i].name + "</td><td>"
+					+ links[i].addr + "</td><td>" + links[i].host + ":"
+					+ links[i].port + "</td></tr>");
 		}
-		_jrun("/self", "_self");
-	</script>
-</body>
-</html>
+	}
+	_jrun("/self", "_self");
+</script>
+<? include=/footer.html ?>

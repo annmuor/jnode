@@ -2,21 +2,18 @@ package org.jnode.httpd.routes.html;
 
 import jnode.dto.Link;
 import jnode.ftn.types.FtnAddress;
-import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
 public class LinkRoute extends Route {
-	private final static Logger logger = Logger.getLogger(LinkRoute.class);
 	public LinkRoute(String path) {
 		super(path);
 	}
 
 	@Override
 	public Object handle(Request req, Response resp) {
-		logger.l1("query params: " + req.queryParams());
 		String _id = req.queryParams("id");
 		String name = req.queryParams("name");
 		String _ftn = req.queryParams("addr");
@@ -45,7 +42,6 @@ public class LinkRoute extends Route {
 			ORMManager.get(Link.class).saveOrUpdate(l);
 			resp.header("Location", "/secure/links.html");
 		} catch (RuntimeException e) {
-			logger.l1("error", e);
 			resp.header("Location", "/secure/links.html?error="+e.getMessage());
 		}
 		halt(302);

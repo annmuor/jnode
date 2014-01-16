@@ -21,22 +21,24 @@ public class JSONUtil {
 
 			@Override
 			public String convert(Link object) {
-				return String
-						.format("{\"id\":%d,\"name\":\"%s\", \"addr\":\"%s\", \"host\":\"%s\", \"port\":%d, \"password\":\"%s\", \"pktpassword\":\"%s\"}",
-								object.getId(), object.getLinkName(),
-								object.getLinkAddress(),
-								object.getProtocolHost(),
-								object.getProtocolPort(),
-								object.getProtocolPassword(),
-								object.getPaketPassword());
+				return String.format("{%s, %s, %s, %s, %s, %s, %s}",
+						pair("id", object.getId()),
+						pair("name", object.getLinkName()),
+						pair("addr", object.getLinkAddress()),
+						pair("host", object.getProtocolHost()),
+						pair("port", object.getProtocolPort()),
+						pair("password", object.getProtocolPassword()),
+						pair("pktpassword", object.getPaketPassword()));
 			}
 		});
 		map.put(LinkOption.class, new JSONConverter<LinkOption>() {
 
 			@Override
 			public String convert(LinkOption object) {
-				return String.format("{\"name\":\"%s\", \"value\":\"%s\"}",
-						object.getOption(), object.getValue());
+				return String.format("{%s, %s}",
+						pair("name", object.getOption()),
+						pair("value", object.getValue()));
+
 			}
 		});
 		return map;

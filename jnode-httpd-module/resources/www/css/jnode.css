@@ -1,19 +1,94 @@
-table th {
-	border: 2px solid black;
-	text-align: center;
+table.info th {
+	border: 1px solid black;
+	color: #f0f0f0;
+	font-weight: bold;
+	background-color: #606060;
 }
 
-table td {
-	border: 1px solid gray;
-	text-align: center;
+table.info td {
+	border: 1px solid black;
+	color: #000000;
+	font-style: italic;
+	background-color: #c0c0c0;
 }
 
-.info {
+table.info {
 	width: 500px;
 }
 
 .center {
 	margin-left: auto;
 	margin-right: auto;
+	text-align: center;
 }
 
+ul.css-menu-1 {
+	list-style: none
+}
+
+ul.css-menu-1 li {
+	display: inline
+}
+
+ul.css-menu-1 li a {
+	font-family: Tahoma, Geneva, sans-serif;
+	text-decoration: none;
+	background: #404040;
+	font-weight: bold;
+	color: #f0f0f0;
+	padding: 6px 10px 6px 10px
+}
+
+ul.css-menu-1 li a:hover {
+	padding: 6px 10px 6px 10px;
+	font-weight: bold;
+	background: #707070;
+	color: #a0a0a0;
+}
+
+ul.css-menu-1 li a.selected {
+	background: #555555
+}
+
+a.css-link-1 {
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	background: #d0d0d0;
+	font-weight: bold;
+	color: #000000;
+	border: 1px solid black;
+}
+
+}
+table.links {
+	width: 800px;
+}
+
+table.links th {
+	border: 1px solid black;
+	color: #f0f0f0;
+	font-weight: bold;
+	background-color: #606060;
+}
+
+table.links td {
+	border: 1px solid black;
+	color: #000000;
+	font-style: italic;
+	background-color: #c0c0c0;
+}
+
+table.links td input {
+	border: 1px solid black;
+	color: #000000;
+	font-weight: bold;
+	background-color: #d0d0d0;
+}
+
+.button {
+	border: 1px solid black;
+	color: #000000;
+	font-weight: bold;
+	background-color: #d0d0d0;
+}

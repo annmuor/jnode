@@ -1,0 +1,41 @@
+<? include=/header.html ?>
+<? include=/secure/menu.html ?>
+
+<table class="info">
+	<tr>
+		<th colspan="2">System Health Status</th>
+	</tr>
+	<tr>
+		<th>Active threads</th>
+		<td id="_threads"></td>
+	</tr>
+
+	<tr>
+		<th>Number of CPU</th>
+		<td id="_cpu"></td>
+	</tr>
+	<tr>
+		<th>Memory: max/total/free</th>
+		<td id="_mem"></td>
+	</tr>
+</table>
+<script>
+	function _health(h) {
+		_clear("_threads");
+		_clear("_cpu");
+		_clear("_mem");
+
+		_fill("_threads", h.threads);
+		_fill("_cpu", h.cores);
+		var mem = h.maxmem + " MB/" + h.totalmem + " MB/" + h.freemem + " MB";
+		_fill("_mem", mem);
+	}
+
+	function health() {
+		_jrun("/secure/health", "_health");
+		setTimeout("health()", 30000);
+	}
+
+	health();
+</script>
+<? include=/footer.html ?>

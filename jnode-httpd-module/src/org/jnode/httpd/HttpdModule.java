@@ -8,11 +8,15 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
+import org.jnode.httpd.routes.html.MainRoute;
 import org.jnode.httpd.routes.html.LinkOptionRoute;
 import org.jnode.httpd.routes.html.LinkRoute;
+import org.jnode.httpd.routes.js.HealthRoute;
 import org.jnode.httpd.routes.js.LinkOptionsRoute;
 import org.jnode.httpd.routes.js.LinksRoute;
 import org.jnode.httpd.routes.js.SelfRoute;
+
+
 
 /**
  * HttpdModule - модуль, слушающий порт и отдающий странички
@@ -44,7 +48,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.staticFileLocation("/www");
 
 		Spark.before(new SecureFilter("/secure/*"));
-
+		
 		Spark.get(new SelfRoute("/self"));
 
 		Spark.get(new LinksRoute("/secure/links"));
@@ -54,6 +58,11 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new LinkOptionsRoute("/secure/linkoptions"));
 
 		Spark.post(new LinkOptionRoute("/secure/linkoption"));
+		
+		Spark.get(new HealthRoute("/secure/health"));
+		
+		// final
+		Spark.get(new MainRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
@@ -64,13 +73,22 @@ public class HttpdModule extends JnodeModule {
 				admin.setPassword(FtnTools.md5(password));
 				ORMManager.get(WebAdmin.class).save(admin);
 				// write netmail to primary address
-				FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
-						FtnTools.getPrimaryFtnAddress(), "HTTPD Module",
-						"Sysop of Node", "Web password",
-						"You can login to jNode site with those credentials: admin:"
+				FtnTools.writeNetmail(
+						FtnTools.getPrimaryFtnAddress(),
+						FtnTools.getPrimaryFtnAddress(),
+						"HTTPD Module",
+						"Sysop of Node",
+						"Web password",
+						"You can login to jNode site with those credentials:\n  > login: admin\n > password "
 								+ password + "\n");
 			}
 		} catch (RuntimeException e) {
+		}
+	}
+	
+	public static void main(String [] args) {
+		for(String prop : System.getProperties().stringPropertyNames()) {
+			System.out.println(prop+"="+System.getProperty(prop));
 		}
 	}
 }
