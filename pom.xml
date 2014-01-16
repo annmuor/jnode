@@ -85,8 +85,7 @@
         	<module>jnode-dumb-module</module>
         	<module>jnode-xmpp</module>
         	<module>jnode-pointchecker-module</module>
-        	<module>jnode-core</module>
-            <module>jnode-xmlrpc-server</module>
+            	<module>jnode-xmlrpc-server</module>
         	<module>jnode-xmlrpc-common</module>
         	<module>jnode-xmlrpc-client</module>
         	<module>jnode-assembly</module>
