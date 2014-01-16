@@ -1,3 +1,16 @@
 <? include=/header.html ?>
-Under construction
+<form action="/linkrequest/new" method="post">
+	<table class="info">
+		<tr>
+			<th>FTN Address</th>
+			<td><input type="text" size="16" name="addr" /></td>
+		</tr>
+		<tr>
+			<th>Host:port</th>
+			<td><input type="text" size="10" name="host" />:<input
+				type="text" size="5" name="port" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="_s" value="Proccess" class="button" />
+</form>
 <? include=/footer.html ?>

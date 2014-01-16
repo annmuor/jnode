@@ -8,15 +8,14 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
-import org.jnode.httpd.routes.html.MainRoute;
 import org.jnode.httpd.routes.html.LinkOptionRoute;
+import org.jnode.httpd.routes.html.LinkRequestRoute;
 import org.jnode.httpd.routes.html.LinkRoute;
+import org.jnode.httpd.routes.html.MainRoute;
 import org.jnode.httpd.routes.js.HealthRoute;
 import org.jnode.httpd.routes.js.LinkOptionsRoute;
 import org.jnode.httpd.routes.js.LinksRoute;
 import org.jnode.httpd.routes.js.SelfRoute;
-
-
 
 /**
  * HttpdModule - модуль, слушающий порт и отдающий странички
@@ -48,7 +47,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.staticFileLocation("/www");
 
 		Spark.before(new SecureFilter("/secure/*"));
-		
+
 		Spark.get(new SelfRoute("/self"));
 
 		Spark.get(new LinksRoute("/secure/links"));
@@ -58,9 +57,11 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new LinkOptionsRoute("/secure/linkoptions"));
 
 		Spark.post(new LinkOptionRoute("/secure/linkoption"));
-		
+
 		Spark.get(new HealthRoute("/secure/health"));
-		
+		// link request
+		Spark.post(new LinkRequestRoute());
+
 		// final
 		Spark.get(new MainRoute());
 
@@ -85,10 +86,10 @@ public class HttpdModule extends JnodeModule {
 		} catch (RuntimeException e) {
 		}
 	}
-	
-	public static void main(String [] args) {
-		for(String prop : System.getProperties().stringPropertyNames()) {
-			System.out.println(prop+"="+System.getProperty(prop));
+
+	public static void main(String[] args) {
+		for (String prop : System.getProperties().stringPropertyNames()) {
+			System.out.println(prop + "=" + System.getProperty(prop));
 		}
 	}
 }
