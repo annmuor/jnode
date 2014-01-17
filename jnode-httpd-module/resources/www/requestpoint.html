@@ -1,3 +1,37 @@
 <? include=/header.html ?>
-Under construction
+<form action="/pointrequest" method="post">
+	<table class="info">
+		<tr>
+			<th>What point would you like to assign?</th>
+			<td><nobr>
+					<select id="_node" name="node">
+					</select>. <input type="text" size="5" name="point" />
+				</nobr></td>
+		</tr>
+		<tr>
+			<th>First name:</th>
+			<td><input type="text" size="20" name="fname" /></td>
+		</tr>
+		<tr>
+			<th>Last name:</th>
+			<td><input type="text" size="20" name="lname" /></td>
+		</tr>
+		<tr>
+			<th>Email:</th>
+			<td><input type="text" size="20" name="email" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="_s" value="Proccess" class="button" />
+</form>
+
+<script>
+	function _fill_node(info) {
+		for (i = 0; i < info.addresses.length; i++) {
+
+			_fill("_node", "<option value=\""+info.addresses[i]+"\">"
+					+ info.addresses[i] + "</option>");
+		}
+	}
+	_jrun("/self", "_fill_node");
+</script>
 <? include=/footer.html ?>

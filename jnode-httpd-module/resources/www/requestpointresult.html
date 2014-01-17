@@ -1,0 +1,33 @@
+<? include=/header.html ?>
+<span id="_text" class="info"></span>
+<BR />
+<BR />
+<a class="button" href="javascript:history.go(-1)">Back</a>
+<script>
+	var code = _getParameterByName("code");
+	var text = "We've sent your request to sysop. Please wait for answer.";
+	var error = false;
+	if (code) {
+		error = true;
+		if (code == "NOTNODE") {
+			text = "You specified wrong node";
+		} else if (code == "NOTPOINT") {
+			text = "You specified wrong point number";
+		} else if (code == "EXISTS") {
+			text = "This point/pointrequest already exists";
+		} else if (code == "NOTNAME") {
+			text = "You specified invalid name";
+		} else if (code == "NOTEMAIL") {
+			text = "You specified invalid email";
+		} else if (code == "ERROR") {
+			text = "Some known error occured. Sorry, we don't know what happened :(";
+		} else {
+			text = "Some unknown error occured. Our apologies!";
+		}
+	}
+	if (error) {
+		_fill("_text", "Error: ");
+	}
+	_fill("_text", text);
+</script>
+<? include=/footer.html ?>
