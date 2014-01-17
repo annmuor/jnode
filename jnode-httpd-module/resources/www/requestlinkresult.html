@@ -1,0 +1,45 @@
+<? include=/header.html ?>
+<span id="_text" class="info"></span>
+<BR />
+<BR />
+<a class="button" href="javascript:history.go(-1)">Back</a>
+<script>
+	var code = _getParameterByName("code");
+	var text = "Check your netmail for futher steps.";
+	var error = false;
+	if (code) {
+		if (code == "PASSWORD") {
+			var password = _getParameterByName("password");
+			if (password) {
+				text = "You are welcome to connect to node; Your password is: "
+						+ password;
+			} else {
+				text = "Sorry, we lost your password :(";
+			}
+		} else {
+			error = true;
+			if (code == "INET") {
+				text = "We can not connect the host you specified";
+			} else if (code == "FTN") {
+				text = "FTN address you specified is invalid";
+			} else if (code == "NODELIST") {
+				text = "FTN address you specified not exists in Nodelist";
+			} else if (code == "POINT") {
+				text = "FTN address you specified is a point address";
+			} else if (code == "EXISTS") {
+				text = "FTN address you specified is already linked with us";
+			} else if (code == "ERROR") {
+				text = "Some known error occured. Sorry, we don't know what happened :(";
+			} else if (code == "NOKEY") {
+				text = "Activation key or Request Id is invalud";
+			} else {
+				text = "Some unknown error occured. Our apologies!";
+			}
+		}
+	}
+	if (error) {
+		_fill("_text", "Error: ");
+	}
+	_fill("_text", text);
+</script>
+<? include=/footer.html ?>

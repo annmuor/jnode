@@ -1,9 +1,8 @@
 package org.jnode.httpd.routes.html;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-
-import org.jnode.httpd.dto.LinkRequest;
 
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
@@ -12,6 +11,9 @@ import jnode.main.MainHandler;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
+
+import org.jnode.httpd.dto.LinkRequest;
+
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -25,63 +27,67 @@ public class LinkRequestRoute extends Route {
 	@Override
 	public Object handle(Request req, Response resp) {
 		String type = req.params(":type");
-		String ret = "";
+		String code = null;
 		if (!"confirm".equals(type)) {
 			String addr = req.queryParams("addr");
 			String host = req.queryParams("host");
 			String port = req.queryParams("port");
 			if (addr != null && host != null && port != null) {
+				LinkRequest lr = new LinkRequest();
 				try {
 					FtnAddress ftn = new FtnAddress(addr);
-					FtnNdlAddress ndl = NodelistScanner.getInstance().isExists(
-							ftn);
-					boolean exists = (ndl != null);
-					Integer iport = Integer.valueOf(port);
-					boolean connected = false;
-					if (!exists) {
-						ret += "Your ftn is not exists in nodelist";
-					}
-					if ("-".equals(host) || iport.intValue() == 0) {
-						connected = true;
-						host = "-";
-						iport = 0;
+					if (ftn.getPoint() != 0) {
+						code = "POINT";
 					} else {
-						try {
-							Socket sock = new Socket(host, iport);
-							sock.close();
-							connected = true;
-						} catch (IOException e) {
-							ret += host
-									+ ":"
-									+ iport
-									+ " is not allowed to connect to; Use -:0 instead if you are PVT node";
+						FtnNdlAddress ndl = NodelistScanner.getInstance()
+								.isExists(ftn);
+						boolean exists = (ndl != null);
+						if (!exists) {
+							code = "NODELIST";
+						} else {
+							String name = (ndl.getName() != null) ? ndl
+									.getName().replace('_', ' ') : addr;
+							lr.setName(name);
+							lr.setAddress(addr);
 						}
 					}
-					if (connected && exists) {
-						String name = ndl.getName() != null ? ndl.getName().replace('_', ' ') : addr;
-						// create link and send netmail
-						LinkRequest lr = new LinkRequest();
-						lr.setAddress(addr);
+				} catch (NumberFormatException e) {
+					code = "FTN";
+				}
+				if (code == null) { // next step
+					try {
+						Integer iport = Integer.valueOf(port);
+						if ("-".equals(host) || iport.intValue() == 0) {
+							host = "-";
+							iport = 0;
+						} else {
+							Socket sock = new Socket();
+							sock.connect(new InetSocketAddress(host, iport),
+									10000);
+							sock.close();
+						}
 						lr.setHost(host);
 						lr.setPort(iport);
-						lr.setName(name);
-						synchronized (LinkRequest.class) {
-							LinkRequest lr2 = ORMManager.get(LinkRequest.class)
-									.getFirstAnd("address", "=", addr);
-							if (lr2 == null) {
-								String akey = FtnTools.generate8d();
-								lr.setAkey(akey);
-								ORMManager.get(LinkRequest.class).save(lr);
-								writeKey(lr);
-								ret = "Check you netmail for future instructions";
-							}
+					} catch (IOException | NumberFormatException e) {
+						code = "INET";
+					}
+				}
+				if (code == null) { // next step
+					synchronized (LinkRequest.class) {
+						LinkRequest lr2 = ORMManager.get(LinkRequest.class)
+								.getFirstAnd("address", "=", addr);
+						if (lr2 == null) {
+							String akey = FtnTools.generate8d();
+							lr.setAkey(akey);
+							ORMManager.get(LinkRequest.class).save(lr);
+							writeKey(lr);
+						} else {
+							code = "EXISTS";
 						}
 					}
-				} catch (RuntimeException e) {
-					ret += "Invalid request (e)";
 				}
 			} else {
-				ret += "Invalid request";
+				code = "ERROR";
 			}
 		} else {
 			String akey = req.queryParams("key");
@@ -105,29 +111,22 @@ public class LinkRequestRoute extends Route {
 							ORMManager.get(Link.class).save(link);
 							ORMManager.get(LinkRequest.class).delete(lr);
 							writeGreets(link);
-							ret = "Your connection/packet password is "
-									+ password
-									+ "; You are welcome to test your connection now :-)";
+							code = "PASSWORD&password=" + password;
 						} else {
-							ret = "Sorry, this link already exists in database";
+							code = "EXISTS";
 						}
 					}
 				} else {
-					ret = "Invalid request's id or key";
+					code = "NOKEY";
 				}
 			} catch (RuntimeException e) {
-				ret = "Invalid request";
+				code = "ERROR";
 			}
 		}
-		return html(ret);
-	}
-
-	private String html(String string) {
-		return "<html><head><title>jNode::Web</title></head><body>Response: "
-				+ string
-				+ "<BR/><a href=\"/index.html\">Main page</a><BR/><hr width=\"100%\" />"
-				+ "<small>Powered by <a href=\"https://github.com/kreon/jnode\">jNode</a></small>"
-				+ "</body></html>";
+		resp.header("Location", "/requestlinkresult.html"
+				+ ((code != null) ? "?code=" + code : ""));
+		halt(302);
+		return null;
 	}
 
 	private void writeGreets(Link link) {
