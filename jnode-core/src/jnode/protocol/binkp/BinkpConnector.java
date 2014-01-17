@@ -79,8 +79,8 @@ public class BinkpConnector implements ProtocolConnector {
 	private List<Message> sent;
 
 	public void reset() {
-		sent = new ArrayList<Message>();
-		frames = new ArrayList<Frame>();
+		sent = new ArrayList<>();
+		frames = new ArrayList<>();
 		useCram = false;
 		connector = null;
 		link = null;

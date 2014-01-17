@@ -31,15 +31,15 @@ public class PollQueue {
 	private Set<Link> queue;
 
 	private PollQueue() {
-		queue = new HashSet<Link>();
+		queue = new HashSet<>();
 	}
 
 	public synchronized void poll() {
 		if (queue.size() > 0) {
 			logger.l4("PollQueue contains " + queue.size()
 					+ " nodes, making poll");
-			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
-			queue = new HashSet<Link>();
+			ArrayList<Link> currentQueue = new ArrayList<>(queue);
+			queue = new HashSet<>();
 			for (Link link : currentQueue) {
 				ThreadPool.execute(new Poll(link));
 			}

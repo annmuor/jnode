@@ -162,8 +162,8 @@ public class PointCheckerModule extends JnodeModule {
 	private boolean check(String fileName, byte[] data, boolean multi)
 			throws IOException {
 		StringBuffer errors = new StringBuffer();
-		List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
-		List<Long> points = new ArrayList<Long>();
+		List<FtnNdlAddress> bosses = new ArrayList<>();
+		List<Long> points = new ArrayList<>();
 
 		Pattern pBoss = Pattern.compile("^Boss,(" + bossRegExp + ")$");
 		Pattern pPoint = Pattern
