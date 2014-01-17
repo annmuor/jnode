@@ -33,7 +33,7 @@ public class SecureFilter extends Filter {
 		String authBase64 = req.headers("Authorization");
 		if (authBase64 != null) {
 			Boolean test = cache.get(authBase64);
-			if (test != null && test.booleanValue()) {
+			if (test != null && test) {
 				authenticated = true;
 			} else {
 				try {
