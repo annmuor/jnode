@@ -467,7 +467,7 @@ public class BinkpAsyncConnector implements Runnable {
 				transferringMessage.delete();
 				transferringMessage = null;
 			} else {
-				logger.l3("M_GOT for message we haven't sent");
+				logger.l3("M_GOT for file we haven't sent: " +arg);
 			}
 		} else {
 			logger.l4("M_GOT while message was not sent");
