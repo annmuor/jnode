@@ -25,7 +25,7 @@ public class PollQueue {
 
 	public synchronized void add(Link link) {
 		if (link.getProtocolPort() > 0 && !"-".equals(link.getProtocolHost())) {
-			if (queue.contains(link)) {
+			if (!queue.contains(link)) {
 				queue.addLast(link);
 				this.notify();
 			}

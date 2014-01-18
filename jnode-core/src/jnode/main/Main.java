@@ -69,7 +69,7 @@ public class Main {
 
 		new InstallUtil();
 
-		int nThreads = 2+MainHandler.getCurrentInstance().getIntegerProperty(
+		int nThreads = 2 + MainHandler.getCurrentInstance().getIntegerProperty(
 				BINKD_THREADS, 10);
 		new ThreadPool(nThreads);
 
@@ -78,13 +78,12 @@ public class Main {
 
 		ThreadPool.execute(new BinkpAsyncClientPool());
 
-		new Timer()
+		Timer mainTimer = new Timer();
+		mainTimer
 				.schedule(new TimerPoll(), MainHandler.getCurrentInstance()
 						.getIntegerProperty(POLL_DELAY, 0) * 1000, MainHandler
 						.getCurrentInstance()
 						.getIntegerProperty(POLL_PERIOD, 0) * 1000);
-		Timer mainTimer = new Timer();
-
 		logger.l4("Started TosserTask");
 		mainTimer.schedule(new TosserTask(), 10000, 10000);
 		logger.l4("Started StatPoster");

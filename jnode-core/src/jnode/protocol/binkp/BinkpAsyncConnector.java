@@ -40,6 +40,7 @@ import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
+import jnode.main.threads.ThreadPool;
 import jnode.ndl.NodelistScanner;
 import jnode.protocol.io.Message;
 
@@ -110,7 +111,7 @@ public class BinkpAsyncConnector implements Runnable {
 			logger.l1(String.format("Connecting to %s:%d", host, port));
 			SocketChannel socket = SocketChannel.open();
 			socket.connect(new InetSocketAddress(host, port));
-			return new BinkpAsyncConnector(socket, false);
+			return new BinkpAsyncConnector(socket, true);
 		} catch (IOException e) {
 			logger.l1("Connect error", e);
 			return null;
@@ -189,7 +190,6 @@ public class BinkpAsyncConnector implements Runnable {
 						if (sent_bytes + recv_bytes == 0 || binkp1_0) {
 							finish();
 						} else {
-							System.out.println("RESET");
 							flag_leob = false;
 							flag_reob = false;
 							sent_bytes = 0;
@@ -363,6 +363,9 @@ public class BinkpAsyncConnector implements Runnable {
 				m_skip(frame.getArg());
 				break;
 
+			case M_BSY:
+				m_bsy(frame.getArg());
+
 			default:
 				break;
 			}
@@ -416,6 +419,11 @@ public class BinkpAsyncConnector implements Runnable {
 
 	}
 
+	private void m_bsy(String arg) {
+		logger.l3("Remote is busy: " + arg);
+		throw new ConnectionEndException();
+	}
+
 	private void rerror(String string) {
 		logger.l2("Remote error: " + string);
 		connectionState = STATE_ERROR;
@@ -467,6 +475,13 @@ public class BinkpAsyncConnector implements Runnable {
 
 	private void m_file(String arg) {
 		receivingMessage = createMessage(arg);
+		long free_space = new File(FtnTools.getInbound()).getFreeSpace();
+		if (receivingMessage.getMessageLength() > free_space) {
+			frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
+					getString(receivingMessage)));
+			receivingMessage = null;
+			logger.l1("No enogth free space in inbound for receiving file");
+		}
 		if (!arg.split(" ")[3].equals("0")) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_GET, getString(
 					receivingMessage, 0)));
@@ -475,6 +490,12 @@ public class BinkpAsyncConnector implements Runnable {
 			try {
 				currentFile = File.createTempFile("temp", "jnode",
 						staticTempDirectory);
+				free_space = currentFile.getFreeSpace();
+				if (receivingMessage.getMessageLength() > free_space) {
+					logger.l1("No enogth free space in tmp for receiving file");
+					currentFile.delete();
+					throw new IOException();
+				}
 				currentOS = new FileOutputStream(currentFile);
 			} catch (IOException e) {
 				currentFile = null;
@@ -644,6 +665,10 @@ public class BinkpAsyncConnector implements Runnable {
 		if (flag_leob) {
 			return;
 		}
+
+		if (transferringMessage != null) {
+			return;
+		}
 		if (messages.isEmpty()) {
 			if (foreignLink != null) {
 				messages.addAll(FtnTosser.getMessagesForLink(foreignLink));
@@ -659,7 +684,7 @@ public class BinkpAsyncConnector implements Runnable {
 		if (messages.isEmpty()) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
 			flag_leob = true;
-		} else if (transferringMessage == null) {
+		} else {
 			transferringMessage = messages.removeFirst();
 			sendMessage(transferringMessage, 0, staticBufMaxSize);
 		}
@@ -672,7 +697,12 @@ public class BinkpAsyncConnector implements Runnable {
 	}
 
 	private void greet() {
-
+		// check if busy
+		if (ThreadPool.isBusy()) {
+			frames.addLast(new BinkpFrame(BinkpCommand.M_BSY,
+					"Too much connections"));
+			throw new ConnectionEndException();
+		}
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
 		ourAddress.addAll(info.getAddressList());
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "SYS "

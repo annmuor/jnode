@@ -31,6 +31,13 @@ public class ThreadPool {
 		}
 	}
 
+	public static boolean isBusy() {
+		if (self != null) {
+			return (self.queue.size() > self.threads.length);
+		}
+		return true;
+	}
+
 	private class ThreadRunner extends Thread {
 		public ThreadRunner() {
 			logger.l5("Created ThreadRunner id " + getId());
