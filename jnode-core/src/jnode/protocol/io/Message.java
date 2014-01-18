@@ -15,7 +15,7 @@ public class Message {
 	private String messageName;
 	private InputStream inputStream;
 	private boolean secure = true;
-	private Long unixtime = new Date().getTime();
+	private Long unixtime = new Date().getTime()/1000L;
 	private File file;
 
 	public Message(File file) throws Exception {
