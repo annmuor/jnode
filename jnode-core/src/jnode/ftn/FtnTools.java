@@ -874,9 +874,18 @@ public final class FtnTools {
 		return routeVia;
 	}
 
-	public static Link getLinkByFtnAddress(FtnAddress routeTo) {
+	public static Link getLinkByFtnAddress(FtnAddress addr) {
 		return ORMManager.get(Link.class).getFirstAnd("ftn_address", "=",
-				routeTo.toString());
+				addr.toString());
+	}
+
+	public static Link getLinkByFtnAddress(List<FtnAddress> addrs) {
+		List<String> saddrs = new ArrayList<>();
+		for (FtnAddress a : addrs) {
+			saddrs.add(a.toString());
+		}
+		return ORMManager.get(Link.class).getFirstAnd("ftn_address", "in",
+				saddrs);
 	}
 
 	public static boolean isOurPoint(FtnAddress routeTo) {

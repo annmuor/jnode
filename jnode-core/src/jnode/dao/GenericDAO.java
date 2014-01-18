@@ -77,45 +77,53 @@ public abstract class GenericDAO<T> {
 				first = false;
 			}
 			String w = args[i + 1].toString();
-            switch (w) {
-                case "eq":
-                case "=":
-                case "==":
-                    wh.eq(args[i].toString(), args[i + 2]);
-                    break;
-                case "ne":
-                case "!=":
-                case "<>":
-                    wh.ne(args[i].toString(), args[i + 2]);
-                    break;
-                case "gt":
-                case ">":
-                    wh.gt(args[i].toString(), args[i + 2]);
-                    break;
-                case "ge":
-                case ">=":
-                    wh.ge(args[i].toString(), args[i + 2]);
-                    break;
-                case "lt":
-                case "<":
-                    wh.lt(args[i].toString(), args[i + 2]);
-                    break;
-                case "le":
-                case "<=":
-                    wh.le(args[i].toString(), args[i + 2]);
-                    break;
-                case "like":
-                case "~":
-                    wh.like(args[i].toString(), args[i + 2]);
-                    break;
-                case "in":
-                    wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
-                    break;
-                case "between":
-                    wh.between(args[i].toString(), args[i + 2], args[i + 3]);
-                    i += 1;
-                    break;
-            }
+			switch (w) {
+			case "eq":
+			case "=":
+			case "==":
+				wh.eq(args[i].toString(), args[i + 2]);
+				break;
+			case "null":
+				wh.isNull(args[i].toString());
+				i -= 1;
+				break;
+			case "notnull":
+				wh.isNotNull(args[i].toString());
+				i -= 1;
+				break;
+			case "ne":
+			case "!=":
+			case "<>":
+				wh.ne(args[i].toString(), args[i + 2]);
+				break;
+			case "gt":
+			case ">":
+				wh.gt(args[i].toString(), args[i + 2]);
+				break;
+			case "ge":
+			case ">=":
+				wh.ge(args[i].toString(), args[i + 2]);
+				break;
+			case "lt":
+			case "<":
+				wh.lt(args[i].toString(), args[i + 2]);
+				break;
+			case "le":
+			case "<=":
+				wh.le(args[i].toString(), args[i + 2]);
+				break;
+			case "like":
+			case "~":
+				wh.like(args[i].toString(), args[i + 2]);
+				break;
+			case "in":
+				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
+				break;
+			case "between":
+				wh.between(args[i].toString(), args[i + 2], args[i + 3]);
+				i += 1;
+				break;
+			}
 		}
 		return wh;
 	}

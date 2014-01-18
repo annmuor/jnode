@@ -707,8 +707,17 @@ public class FtnTosser {
     }
 
     private static List<Netmail> getMail(Link link) {
-        return ORMManager.get(Netmail.class).getAnd("send", "=", false,
+        List<Netmail> mail = ORMManager.get(Netmail.class).getAnd("send", "=", false,
                 "route_via", "=", link);
+        // add direct netmail ? :-)
+        List<Netmail> insecureMail = ORMManager.get(Netmail.class).getAnd("send", "=", false,
+                "to_address", "=", link.getLinkAddress(), "route_via", "null");
+        for(Netmail m : insecureMail) {
+        	if((m.getAttr() & FtnMessage.ATTR_CRASH) > FtnMessage.ATTR_CRASH) {
+        		mail.add(m);
+        	}
+        }
+        return mail;
     }
 
     private static List<EchomailAwaiting> getEchoMail(Link link) {
