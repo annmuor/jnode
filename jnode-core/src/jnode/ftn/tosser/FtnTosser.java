@@ -737,20 +737,24 @@ public class FtnTosser {
 		for (Netmail m : mail) {
 			if ((m.getAttr() & FtnMessage.ATTR_CRASH) >= FtnMessage.ATTR_CRASH) {
 				msgs.add(netmailToFtnMessage(m));
+				m.setSend(true);
+				ORMManager.get(Netmail.class).save(m);
 			}
 		}
 		try {
-			File out = createOutboundFile(null);
-			FileOutputStream fos = new FileOutputStream(out);
-			fos.write(head.pack());
-			for (FtnMessage m : msgs) {
-				fos.write(m.pack());
+			if (!msgs.isEmpty()) {
+				File out = createOutboundFile(null);
+				FileOutputStream fos = new FileOutputStream(out);
+				fos.write(head.pack());
+				for (FtnMessage m : msgs) {
+					fos.write(m.pack());
+				}
+				fos.write(head.finalz());
+				fos.close();
+				Message m = new Message(out);
+				m.setMessageName(generate8d() + ".pkt");
+				return m;
 			}
-			fos.write(head.finalz());
-			fos.close();
-			Message m = new Message(out);
-			m.setMessageName(generate8d() + ".pkt");
-			return m;
 		} catch (Exception e) {
 
 		}

@@ -707,7 +707,10 @@ public class BinkpAsyncConnector implements Runnable {
 				messages.addAll(FtnTosser.getMessagesForLink(foreignLink));
 			} else if (clientConnection) { // unsecure only whel we make poll
 				for (FtnAddress a : foreignAddress) {
-					messages.add(FtnTosser.getDirectUnsecureMail(a));
+					Message m = FtnTosser.getDirectUnsecureMail(a);
+					if (m != null) {
+						messages.add(m);
+					}
 				}
 			}
 		}

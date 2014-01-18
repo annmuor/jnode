@@ -926,7 +926,12 @@ public final class FtnTools {
 		}
 		sb.append("========== Original message ==========\n");
 		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
-				fmsg.getFromName(), subject, text);
+				fmsg.getFromName(), subject, sb.toString());
+	}
+
+	public static void writeNetmail(FtnAddress from, FtnAddress to,
+			String fromName, String toName, String subject, String text) {
+		writeNetmail(from, to, fromName, toName, subject, text, 0, true);
 	}
 
 	/**
@@ -940,7 +945,8 @@ public final class FtnTools {
 	 * @param text
 	 */
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
-			String fromName, String toName, String subject, String text) {
+			String fromName, String toName, String subject, String text,
+			int attr, boolean route) {
 		FtnMessage message = new FtnMessage();
 
 		StringBuilder sb = new StringBuilder();
@@ -958,11 +964,14 @@ public final class FtnTools {
 		message.setSubject(subject);
 		message.setText(sb.toString());
 		message.setNetmail(true);
-		message.setAttribute(0);
+		message.setAttribute(attr);
 		processRewrite(message);
-		Link routeVia = getRouting(message);
-		if (routeVia == null) {
-			logger.l2("Routing not found for " + to);
+		Link routeVia = null;
+		if (route) {
+			routeVia = getRouting(message);
+			if (routeVia == null) {
+				logger.l2("Routing not found for " + to);
+			}
 		}
 		Netmail net = ftnMessageToNetmail(message);
 		net.setRouteVia(routeVia);

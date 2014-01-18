@@ -7,6 +7,7 @@ import java.net.Socket;
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
+import jnode.ftn.types.FtnMessage;
 import jnode.main.MainHandler;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
@@ -108,9 +109,9 @@ public class LinkRequestRoute extends Route {
 						Link l2 = ORMManager.get(Link.class).getFirstAnd(
 								"ftn_address", "=", link.getLinkAddress());
 						if (l2 == null) {
+							writeGreets(link);
 							ORMManager.get(Link.class).save(link);
 							ORMManager.get(LinkRequest.class).delete(lr);
-							writeGreets(link);
 							code = "PASSWORD&password=" + password;
 						} else {
 							code = "EXISTS";
@@ -145,7 +146,9 @@ public class LinkRequestRoute extends Route {
 				link.getLinkName(),
 				"You are welcome",
 				"You are now have linkage with our node.\n"
-						+ "Please, follow the Fidonet rules and keep your connection stable");
+						+ "Please, follow the Fidonet rules and keep your connection stable\n"
+						+ "Your password: " + link.getProtocolPassword(),
+				FtnMessage.ATTR_CRASH, false);
 	}
 
 	private void writeKey(LinkRequest lr) {
@@ -166,7 +169,8 @@ public class LinkRequestRoute extends Route {
 				"Somebody have just started a linkage proccess from your address.\n"
 						+ "If this was you, visit /confirmlink.html on our site and fill fields as described below:\n"
 						+ " > Request Id: " + lr.getId() + "\n"
-						+ " > Request Key: " + lr.getAkey() + "\n");
+						+ " > Request Key: " + lr.getAkey() + "\n",
+				FtnMessage.ATTR_CRASH, false);
 	}
 
 }
