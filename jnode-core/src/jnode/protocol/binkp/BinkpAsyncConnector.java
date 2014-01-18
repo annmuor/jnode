@@ -726,8 +726,6 @@ public class BinkpAsyncConnector implements Runnable {
 
 		connectionState = STATE_ADDR;
 		if (!clientConnection) {
-			ourAddress.addAll(info.getAddressList());
-			sendAddrs();
 			MessageDigest md;
 			try {
 				md = MessageDigest.getInstance("MD5");
@@ -742,6 +740,7 @@ public class BinkpAsyncConnector implements Runnable {
 				cramAlgo = "MD5";
 				frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, String
 						.format("OPT CRAM-MD5-%s", cramText)));
+				sendAddrs();
 			} catch (NoSuchAlgorithmException e) {
 				cramText = null;
 			}
