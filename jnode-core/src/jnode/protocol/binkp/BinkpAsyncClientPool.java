@@ -26,7 +26,6 @@ public class BinkpAsyncClientPool implements Runnable {
 					} catch (InterruptedException e) {
 					}
 				}
-				logger.l3("Proccessing poll");
 				Link l = PollQueue.getSelf().getNext();
 				logger.l2(String.format("Connecting to %s:%d",
 						l.getProtocolHost(), l.getProtocolPort()));
