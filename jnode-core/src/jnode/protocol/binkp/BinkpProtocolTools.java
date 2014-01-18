@@ -107,19 +107,21 @@ public class BinkpProtocolTools {
 
 	public static boolean messageEquals(Message message, String arg) {
 		String[] args = arg.split(" ");
+		boolean ret = false;
 		try {
 			Long len = Long.valueOf(args[1]);
 			Long unixtime = Long.valueOf(args[2]);
-			if (message.getMessageName().equals(args[0])) {
+			if (message.getMessageName().equalsIgnoreCase(args[0])) {
 				if (message.getMessageLength() == len.longValue()) {
-					if (message.getUnixtime().equals(unixtime)) {
-						return true;
+					ret = true;
+					if (!message.getUnixtime().equals(unixtime)) {
+						BinkpAsyncConnector.logger.l4("Warning: unixtime mismatch");
 					}
 				}
 			}
 		} catch (RuntimeException e) {
 		}
-		return false;
+		return ret;
 	}
 
 	public static Message createMessage(String arg) {

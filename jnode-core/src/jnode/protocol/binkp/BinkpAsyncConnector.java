@@ -51,7 +51,7 @@ import jnode.protocol.io.Message;
  * 
  */
 public class BinkpAsyncConnector implements Runnable {
-	private static final Logger logger = Logger
+	static final Logger logger = Logger
 			.getLogger(BinkpAsyncConnector.class);
 	private static final DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
