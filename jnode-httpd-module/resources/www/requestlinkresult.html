@@ -1,45 +1,61 @@
-<? include=/header.html ?>
-<span id="_text" class="info"></span>
-<BR />
-<BR />
-<a class="button" href="javascript:history.go(-1)">Back</a>
-<script>
-	var code = _getParameterByName("code");
-	var text = "Check your netmail for futher steps.";
-	var error = false;
-	if (code) {
-		if (code == "PASSWORD") {
-			var password = _getParameterByName("password");
-			if (password) {
-				text = "You are welcome to connect to node; Your password is: "
-						+ password;
+<html>
+<head>
+<title>jNode::Web</title>
+<script src="/js/jnode.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/css/jnode.css" />
+</head>
+<body>
+	<h1>jNode Web Site</h1>
+	<ul class="css-menu-1">
+		<li><a href="/index.html">Info</a></li>
+		<li><a href="/requestpoint.html">Become a point</a></li>
+		<li><a href="/requestlink.html">Become a link</a></li>
+		<li><a href="/secure/index.html">Configuration</a></li>
+	</ul>
+	<span id="_text" class="info"></span>
+	<BR />
+	<BR />
+	<a class="button" href="javascript:history.go(-1)">Back</a>
+	<script>
+		var code = _getParameterByName("code");
+		var text = "Check your netmail for futher steps.";
+		var error = false;
+		if (code) {
+			if (code == "PASSWORD") {
+				var password = _getParameterByName("password");
+				if (password) {
+					text = "You are welcome to connect to node; Your password is: "
+							+ password;
+				} else {
+					text = "Sorry, we lost your password :(";
+				}
 			} else {
-				text = "Sorry, we lost your password :(";
-			}
-		} else {
-			error = true;
-			if (code == "INET") {
-				text = "We can not connect the host you specified";
-			} else if (code == "FTN") {
-				text = "FTN address you specified is invalid";
-			} else if (code == "NODELIST") {
-				text = "FTN address you specified not exists in Nodelist";
-			} else if (code == "POINT") {
-				text = "FTN address you specified is a point address";
-			} else if (code == "EXISTS") {
-				text = "FTN address you specified is already linked with us";
-			} else if (code == "ERROR") {
-				text = "Some known error occured. Sorry, we don't know what happened :(";
-			} else if (code == "NOKEY") {
-				text = "Activation key or Request Id is invalud";
-			} else {
-				text = "Some unknown error occured. Our apologies!";
+				error = true;
+				if (code == "INET") {
+					text = "We can not connect the host you specified";
+				} else if (code == "FTN") {
+					text = "FTN address you specified is invalid";
+				} else if (code == "NODELIST") {
+					text = "FTN address you specified not exists in Nodelist";
+				} else if (code == "POINT") {
+					text = "FTN address you specified is a point address";
+				} else if (code == "EXISTS") {
+					text = "FTN address you specified is already linked with us";
+				} else if (code == "ERROR") {
+					text = "Some known error occured. Sorry, we don't know what happened :(";
+				} else if (code == "NOKEY") {
+					text = "Activation key or Request Id is invalud";
+				} else {
+					text = "Some unknown error occured. Our apologies!";
+				}
 			}
 		}
-	}
-	if (error) {
-		_fill("_text", "Error: ");
-	}
-	_fill("_text", text);
-</script>
-<? include=/footer.html ?>
+		if (error) {
+			_fill("_text", "Error: ");
+		}
+		_fill("_text", text);
+	</script>
+	<hr width="100%" />
+	<small>Powered by <a href="https://github.com/kreon/jnode">jNode</a></small>
+</body>
+</html>

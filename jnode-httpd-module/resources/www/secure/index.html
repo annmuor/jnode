@@ -1,41 +1,65 @@
-<? include=/header.html ?>
-<? include=/secure/menu.html ?>
+<html>
+<head>
+<title>jNode::Web</title>
+<script src="/js/jnode.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/css/jnode.css" />
+</head>
+<body>
+	<h1>jNode Web Site</h1>
+	<ul class="css-menu-1">
+		<li><a href="/index.html">Info</a></li>
+		<li><a href="/requestpoint.html">Become a point</a></li>
+		<li><a href="/requestlink.html">Become a link</a></li>
+		<li><a href="/secure/index.html">Configuration</a></li>
+	</ul>
+	<ul class="css-menu-1">
+		<li><a href="/secure/index.html">Health</a></li>
+		<li><a href="/secure/links.html">Links</a></li>
+		<li><a href="/secure/route.html">Routing</a></li>
+		<li><a href="/secure/echoes.html">Echoareas</a></li>
+		<li><a href="/secure/fechoes.html">Fileareas</a></li>
+		<li><a href="/secure/points.html">Point Requests</a></li>
+	</ul>
 
-<table class="info">
-	<tr>
-		<th colspan="2">System Health Status</th>
-	</tr>
-	<tr>
-		<th>Active threads</th>
-		<td id="_threads"></td>
-	</tr>
+	<table class="info">
+		<tr>
+			<th colspan="2">System Health Status</th>
+		</tr>
+		<tr>
+			<th>Active threads</th>
+			<td id="_threads"></td>
+		</tr>
 
-	<tr>
-		<th>Number of CPU</th>
-		<td id="_cpu"></td>
-	</tr>
-	<tr>
-		<th>Memory: max/total/free</th>
-		<td id="_mem"></td>
-	</tr>
-</table>
-<script>
-	function _health(h) {
-		_clear("_threads");
-		_clear("_cpu");
-		_clear("_mem");
+		<tr>
+			<th>Number of CPU</th>
+			<td id="_cpu"></td>
+		</tr>
+		<tr>
+			<th>Memory: max/total/free</th>
+			<td id="_mem"></td>
+		</tr>
+	</table>
+	<script>
+		function _health(h) {
+			_clear("_threads");
+			_clear("_cpu");
+			_clear("_mem");
 
-		_fill("_threads", h.threads);
-		_fill("_cpu", h.cores);
-		var mem = h.maxmem + " MB/" + h.totalmem + " MB/" + h.freemem + " MB";
-		_fill("_mem", mem);
-	}
+			_fill("_threads", h.threads);
+			_fill("_cpu", h.cores);
+			var mem = h.maxmem + " MB/" + h.totalmem + " MB/" + h.freemem
+					+ " MB";
+			_fill("_mem", mem);
+		}
 
-	function health() {
-		_jrun("/secure/health", "_health");
-		setTimeout("health()", 30000);
-	}
+		function health() {
+			_jrun("/secure/health", "_health");
+			setTimeout("health()", 30000);
+		}
 
-	health();
-</script>
-<? include=/footer.html ?>
+		health();
+	</script>
+	<hr width="100%" />
+	<small>Powered by <a href="https://github.com/kreon/jnode">jNode</a></small>
+</body>
+</html>

@@ -24,6 +24,7 @@ import org.jnode.httpd.routes.js.LinksRoute;
 import org.jnode.httpd.routes.js.RoutingsRoute;
 import org.jnode.httpd.routes.js.SelfRoute;
 
+
 /**
  * HttpdModule - модуль, слушающий порт и отдающий странички
  * 
@@ -32,6 +33,7 @@ import org.jnode.httpd.routes.js.SelfRoute;
  */
 import spark.Spark;
 
+@SuppressWarnings("unused")
 public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_PORT = "port";
 	private Short port;
@@ -81,7 +83,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.post(new PointRequestRoute());
 
 		// final
-		Spark.get(new MainRoute());
+//		Spark.get(new MainRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
