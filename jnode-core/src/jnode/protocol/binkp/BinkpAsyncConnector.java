@@ -40,6 +40,7 @@ import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
+import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
 import jnode.ndl.NodelistScanner;
 import jnode.protocol.io.Message;
@@ -307,6 +308,9 @@ public class BinkpAsyncConnector implements Runnable {
 			} catch (ConnectionEndException e) {
 				ConnectionEndEvent event = null;
 				if (!foreignAddress.isEmpty()) {
+					for (FtnAddress addr : foreignAddress) {
+						PollQueue.getSelf().end(addr);
+					}
 					String address = (foreignLink != null) ? foreignLink
 							.getLinkAddress() : foreignAddress.get(0)
 							.toString();
@@ -328,6 +332,7 @@ public class BinkpAsyncConnector implements Runnable {
 	}
 
 	private void error(String text) {
+		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
 		logger.l2("Local error: " + text);
 		connectionState = STATE_ERROR;
@@ -604,6 +609,17 @@ public class BinkpAsyncConnector implements Runnable {
 			error("No valid address specified");
 			return;
 		}
+
+		for (FtnAddress addr : foreignAddress) {
+			if (PollQueue.getSelf().isActive(addr)) {
+				busy("Already connected");
+				return;
+			}
+		}
+
+		for (FtnAddress addr : foreignAddress) {
+			PollQueue.getSelf().start(addr);
+		}
 		Link link = FtnTools.getLinkByFtnAddress(foreignAddress);
 		if (link != null) {
 			String ourAka = FtnTools.getOptionString(link,
@@ -641,6 +657,13 @@ public class BinkpAsyncConnector implements Runnable {
 		}
 		connectionState = STATE_AUTH;
 
+	}
+
+	private void busy(String string) {
+		frames.clear();
+		frames.addLast(new BinkpFrame(BinkpCommand.M_BSY, string));
+		connectionState = STATE_END;
+		logger.l3("Local busy: " + string);
 	}
 
 	private void sendAddrs() {
