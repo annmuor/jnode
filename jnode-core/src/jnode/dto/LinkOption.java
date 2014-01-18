@@ -41,7 +41,7 @@ public class LinkOption {
 	 * @return
 	 */
 	private static HashMap<String, String> generateOptionsMap() {
-		HashMap<String, String> options = new HashMap<String, String>();
+		HashMap<String, String> options = new HashMap<>();
 		options.put("ignorepktpwd", "-nopwd");
 		options.put("packnetmail", "-netpack");
 		options.put("packechomail", "-echpack");

@@ -60,8 +60,8 @@ public class FtnMessage {
 			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
-		seenby = new ArrayList<Ftn2D>();
-		path = new ArrayList<Ftn2D>();
+		seenby = new ArrayList<>();
+		path = new ArrayList<>();
 	}
 
 	public String getFromName() {

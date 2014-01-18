@@ -106,7 +106,7 @@ public class ListCommandProcessor implements CommandProcessor {
 				: echoDAO.getOrderAnd("name", true, "name", "like", name)
 				: (limit != 0) ? echoDAO.getOrderLimitAnd(limit, "name", true)
 						: echoDAO.getOrderAnd("name", true);
-		List<String> ret = new ArrayList<String>(areas.size());
+		List<String> ret = new ArrayList<>(areas.size());
 		for (Echoarea a : areas) {
 			ret.add(String
 					.format("Echoarea %s\n Descr: %s\n ReadLvl: %d\n WriteLvl: %d\n Group: %s\n",
@@ -122,7 +122,7 @@ public class ListCommandProcessor implements CommandProcessor {
 		if (ftn_address != null) {
 			ftn_address = ftn_address.replace('*', '%');
 		}
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<>();
 		List<Link> links = (ftn_address != null) ? (limit != 0) ? linkDAO
 				.getOrderLimitAnd(limit, "ftn_address", true, "ftn_address",
 						"like", ftn_address) : linkDAO.getOrderAnd(
@@ -168,7 +168,7 @@ public class ListCommandProcessor implements CommandProcessor {
 			routing = (limit != 0) ? routeDao.getOrderLimitAnd(limit, "nice",
 					true) : routeDao.getOrderAnd("nice", true);
 		}
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<>();
 		for (Route r : routing) {
 			r.setRouteVia(linkDAO.getById(r.getRouteVia().getId()));
 			ret.add(String
@@ -184,7 +184,7 @@ public class ListCommandProcessor implements CommandProcessor {
 		GenericDAO<Link> linkDAO = ORMManager.get(Link.class);
 		GenericDAO<Echoarea> echoDAO = ORMManager.get(Echoarea.class);
 		GenericDAO<Subscription> subDAO = ORMManager.get(Subscription.class);
-		List<Object> va_args = new ArrayList<Object>();
+		List<Object> va_args = new ArrayList<>();
 		if (ftn != null) {
 			Link link = linkDAO.getFirstAnd("ftn_address", "eq", ftn);
 			va_args.add("link_id");
@@ -202,7 +202,7 @@ public class ListCommandProcessor implements CommandProcessor {
 		List<Subscription> subs = (limit != 0) ? subDAO.getOrderLimitAnd(limit,
 				"link_id", true, args) : subDAO.getOrderAnd("link_id", true,
 				args);
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<>();
 		for (Subscription s : subs) {
 			s.setArea(echoDAO.getById(s.getArea().getId()));
 			s.setLink(linkDAO.getById(s.getLink().getId()));

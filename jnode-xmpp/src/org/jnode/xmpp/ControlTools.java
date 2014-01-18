@@ -18,7 +18,7 @@ public class ControlTools {
 	private static final HashMap<String, CommandProcessor> commandTable = createCommandTable();
 
 	private static HashMap<String, CommandProcessor> createCommandTable() {
-		HashMap<String, CommandProcessor> table = new HashMap<String, CommandProcessor>();
+		HashMap<String, CommandProcessor> table = new HashMap<>();
 		// TODO: реализовать
 		table.put("HELP", new HelpCommandProcessor());
 		table.put("QUIT", new QuitCommandProcessor());

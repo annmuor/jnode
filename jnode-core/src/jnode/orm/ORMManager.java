@@ -27,7 +27,7 @@ public enum ORMManager {
 	public final static String JDBC_PASS = "jdbc.pass";
 
 	private static final Logger logger = Logger.getLogger(ORMManager.class);
-	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<Class<?>, GenericDAO<?>>();
+	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<>();
 	private ConnectionSource source;
 
 	public void start() throws Exception {

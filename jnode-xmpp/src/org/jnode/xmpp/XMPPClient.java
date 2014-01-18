@@ -39,7 +39,7 @@ public class XMPPClient {
 		password = properties.getProperty(MASTER_PASSWORD);
 		masters = Arrays.asList(properties.getProperty(MASTERS, "")
 				.replaceAll("\\s", "").split(","));
-		chatMap = new HashMap<Chat, XMPPClient.ChatAttributes>();
+		chatMap = new HashMap<>();
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class XMPPClient {
 			if (connection != null) {
 				connection.disconnect();
 			}
-			chatMap = new HashMap<Chat, XMPPClient.ChatAttributes>();
+			chatMap = new HashMap<>();
 			logger.l2("XMPP connection failed", e);
 			notify();
 		}

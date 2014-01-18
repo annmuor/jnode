@@ -36,7 +36,7 @@ public abstract class GenericDAO<T> {
 
 	protected GenericDAO() throws Exception {
 		if (daoMap == null) {
-			daoMap = new HashMap<Class<?>, Dao<?, ?>>();
+			daoMap = new HashMap<>();
 		}
 		if (!daoMap.containsKey(getType())) {
 			Dao<?, ?> dao = DaoManager.createDao(ORMManager.getSource(),
@@ -156,7 +156,7 @@ public abstract class GenericDAO<T> {
 			logger.l1("SQL Exception in getAll", e);
 			logger.l1(MessageFormat.format("we worked with {0}", e));
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	/**
@@ -176,7 +176,7 @@ public abstract class GenericDAO<T> {
 					Arrays.toString(args)));
 
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public List<T> getOrderAnd(String order, boolean asc, Object... args) {
@@ -190,7 +190,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public List<T> getOrderLimitAnd(long limit, String order, boolean asc,
@@ -206,7 +206,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2} {3}",
 					limit, order, asc, Arrays.toString(args)));
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	/**
@@ -225,7 +225,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0}",
 					Arrays.toString(args)));
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public List<T> getOrderOr(String order, boolean asc, Object... args) {
@@ -239,7 +239,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public T getFirstAnd(Object... args) {

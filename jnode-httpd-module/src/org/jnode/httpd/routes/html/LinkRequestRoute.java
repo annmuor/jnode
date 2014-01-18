@@ -57,7 +57,7 @@ public class LinkRequestRoute extends Route {
 				if (code == null) { // next step
 					try {
 						Integer iport = Integer.valueOf(port);
-						if ("-".equals(host) || iport.intValue() == 0) {
+						if ("-".equals(host) || iport == 0) {
 							host = "-";
 							iport = 0;
 						} else {

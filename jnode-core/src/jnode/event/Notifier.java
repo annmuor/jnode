@@ -9,14 +9,14 @@ public enum Notifier {
 	private final Hashtable<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
 
 	private Notifier() {
-		notifyMap = new Hashtable<Class<? extends IEvent>, List<IEventHandler>>();
+		notifyMap = new Hashtable<>();
 	}
 
 	public void register(Class<? extends IEvent> clazz, IEventHandler handler) {
 		if (clazz != null && handler != null) {
 			List<IEventHandler> list = notifyMap.get(clazz);
 			if (list == null) {
-				list = new ArrayList<IEventHandler>();
+				list = new ArrayList<>();
 			}
 			list.add(handler);
 			notifyMap.put(clazz, list);

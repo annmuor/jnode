@@ -41,7 +41,7 @@ public class NodelistScanner {
 				NODELIST_PATH, "NODELIST"));
 		File idx = new File(MainHandler.getCurrentInstance().getProperty(
 				NODELIST_INDEX, "NODELIST.idx"));
-		List<FtnNdlAddress> address = new ArrayList<FtnNdlAddress>();
+		List<FtnNdlAddress> address = new ArrayList<>();
 		try {
 			FileInputStream fis = new FileInputStream(ndl);
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
