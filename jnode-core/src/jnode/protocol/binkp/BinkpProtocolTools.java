@@ -124,13 +124,14 @@ public class BinkpProtocolTools {
 		return ret;
 	}
 
-	public static Message createMessage(String arg) {
+	public static Message createMessage(String arg, boolean secure) {
 		String[] args = arg.split(" ");
 		try {
 			Long len = Long.valueOf(args[1]);
 			Long unixtime = Long.valueOf(args[2]);
 			Message message = new Message(args[0], len);
 			message.setUnixtime(unixtime);
+			message.setSecure(secure);
 			return message;
 		} catch (RuntimeException e) {
 			return null;

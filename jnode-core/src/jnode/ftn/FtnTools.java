@@ -974,8 +974,13 @@ public final class FtnTools {
 		}
 	}
 
-	private static File createOutboundFile(Link link) {
-		String template = "out_" + link.getId() + ".%d";
+	public static File createOutboundFile(Link link) {
+		String template;
+		if (link != null && link.getId() != null) {
+			template = "out_" + link.getId() + ".%d";
+		} else {
+			template = "out_random.%d";
+		}
 		int i = 0;
 		File f = new File(getInbound() + File.separator
 				+ String.format(template, i));

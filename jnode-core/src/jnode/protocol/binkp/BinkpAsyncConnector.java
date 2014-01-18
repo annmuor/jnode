@@ -483,7 +483,7 @@ public class BinkpAsyncConnector implements Runnable {
 	}
 
 	private void m_file(String arg) {
-		receivingMessage = createMessage(arg);
+		receivingMessage = createMessage(arg, secure);
 		long free_space = new File(FtnTools.getInbound()).getFreeSpace();
 		if (receivingMessage.getMessageLength() > free_space) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
@@ -705,11 +705,9 @@ public class BinkpAsyncConnector implements Runnable {
 		if (messages.isEmpty()) {
 			if (foreignLink != null) {
 				messages.addAll(FtnTosser.getMessagesForLink(foreignLink));
-			} else {
+			} else if (clientConnection) { // unsecure only whel we make poll
 				for (FtnAddress a : foreignAddress) {
-					Link tempLink = new Link();
-					tempLink.setLinkAddress(a.toString());
-					messages.addAll(FtnTosser.getMessagesForLink(tempLink));
+					messages.add(FtnTosser.getDirectUnsecureMail(a));
 				}
 			}
 		}
