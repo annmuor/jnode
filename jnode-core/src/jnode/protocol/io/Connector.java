@@ -27,6 +27,7 @@ import jnode.protocol.io.exception.ProtocolException;
  * @author kreon
  * 
  */
+@Deprecated
 public class Connector {
 	private Socket clientSocket;
 	private final ProtocolConnector connector;

@@ -38,6 +38,7 @@ import jnode.protocol.io.ProtocolConnector;
  * @author kreon
  * 
  */
+@Deprecated
 public class BinkpConnector implements ProtocolConnector {
 	private final static String BINKP_SIZE = "binkp.size";
 	private int MAX_PACKET_SIZE = MainHandler.getCurrentInstance()

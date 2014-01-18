@@ -7,6 +7,7 @@ import java.io.InputStream;
  * @author kreon
  * 
  */
+@Deprecated
 public interface ProtocolConnector {
 
 	public void initOutgoing(Connector connector);
