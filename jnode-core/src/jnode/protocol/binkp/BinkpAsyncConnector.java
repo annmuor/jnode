@@ -617,9 +617,10 @@ public class BinkpAsyncConnector implements Runnable {
 			}
 		}
 		if (clientConnection) {
-			sendAddrs();
 			frames.addLast(new BinkpFrame(BinkpCommand.M_PWD, getAuthPassword(
 					foreignLink, secure, cramAlgo, cramText)));
+		} else {
+			sendAddrs();
 		}
 		connectionState = STATE_AUTH;
 
@@ -734,7 +735,9 @@ public class BinkpAsyncConnector implements Runnable {
 				+ format.format(new Date())));
 
 		connectionState = STATE_ADDR;
-		if (!clientConnection) {
+		if (clientConnection) {
+			sendAddrs();
+		} else {
 			MessageDigest md;
 			try {
 				md = MessageDigest.getInstance("MD5");
@@ -749,7 +752,7 @@ public class BinkpAsyncConnector implements Runnable {
 				cramAlgo = "MD5";
 				frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, String
 						.format("OPT CRAM-MD5-%s", cramText)));
-				sendAddrs();
+
 			} catch (NoSuchAlgorithmException e) {
 				cramText = null;
 			}
