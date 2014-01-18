@@ -9,15 +9,19 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
 import org.jnode.httpd.routes.html.EchoareaRoute;
+import org.jnode.httpd.routes.html.FileareaRoute;
 import org.jnode.httpd.routes.html.LinkoptionRoute;
 import org.jnode.httpd.routes.html.LinkRequestRoute;
 import org.jnode.httpd.routes.html.LinkRoute;
 import org.jnode.httpd.routes.html.MainRoute;
 import org.jnode.httpd.routes.html.PointRequestRoute;
+import org.jnode.httpd.routes.html.RoutingRoute;
 import org.jnode.httpd.routes.js.EchoareasRoute;
+import org.jnode.httpd.routes.js.FileareasRoute;
 import org.jnode.httpd.routes.js.HealthRoute;
 import org.jnode.httpd.routes.js.LinkoptionsRoute;
 import org.jnode.httpd.routes.js.LinksRoute;
+import org.jnode.httpd.routes.js.RoutingsRoute;
 import org.jnode.httpd.routes.js.SelfRoute;
 
 /**
@@ -63,6 +67,12 @@ public class HttpdModule extends JnodeModule {
 
 		Spark.get(new EchoareasRoute("/secure/echoareas"));
 		Spark.post(new EchoareaRoute("/secure/echoarea"));
+
+		Spark.get(new FileareasRoute("/secure/fileareas"));
+		Spark.post(new FileareaRoute("/secure/filearea"));
+
+		Spark.get(new RoutingsRoute("/secure/routings"));
+		Spark.post(new RoutingRoute("/secure/routing"));
 
 		Spark.get(new HealthRoute("/secure/health"));
 		// link request

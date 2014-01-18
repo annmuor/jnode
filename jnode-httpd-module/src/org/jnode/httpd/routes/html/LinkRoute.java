@@ -1,6 +1,7 @@
 package org.jnode.httpd.routes.html;
 
 import jnode.dto.Link;
+import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.orm.ORMManager;
 import spark.Request;
@@ -21,29 +22,44 @@ public class LinkRoute extends Route {
 		String pktpass = req.queryParams("pktpassword");
 		String host = req.queryParams("host");
 		String _port = req.queryParams("port");
-		try {
-			
-			Integer port = Integer.valueOf(_port);
-			FtnAddress ftn = new FtnAddress(_ftn);
-			Link l = null;
-			if (!_id.equals("0")) {
-				Long id = Long.valueOf(_id);
-				l = ORMManager.get(Link.class).getById(id);
+		String code = null;
+		String delete = req.queryParams("did");
+		if (delete != null) {
+			try {
+				Long eid = Long.valueOf(delete);
+				Link deleteLink = ORMManager.get(Link.class).getById(eid);
+				if (deleteLink != null) {
+					FtnTools.delete(deleteLink);
+				}
+			} catch (RuntimeException e) {
+				code = "ERROR";
 			}
-			if (l == null) {
-				l = new Link();
+		} else {
+			try {
+
+				Integer port = Integer.valueOf(_port);
+				FtnAddress ftn = new FtnAddress(_ftn);
+				Link l = null;
+				if (!_id.equals("0")) {
+					Long id = Long.valueOf(_id);
+					l = ORMManager.get(Link.class).getById(id);
+				}
+				if (l == null) {
+					l = new Link();
+				}
+				l.setLinkAddress(ftn.toString());
+				l.setLinkName(name);
+				l.setPaketPassword(pktpass);
+				l.setProtocolPassword(pass);
+				l.setProtocolHost(host);
+				l.setProtocolPort(port);
+				ORMManager.get(Link.class).saveOrUpdate(l);
+			} catch (RuntimeException e) {
+				code = "ERROR";
 			}
-			l.setLinkAddress(ftn.toString());
-			l.setLinkName(name);
-			l.setPaketPassword(pktpass);
-			l.setProtocolPassword(pass);
-			l.setProtocolHost(host);
-			l.setProtocolPort(port);
-			ORMManager.get(Link.class).saveOrUpdate(l);
-			resp.header("Location", "/secure/links.html");
-		} catch (RuntimeException e) {
-			resp.header("Location", "/secure/links.html?error="+e.getMessage());
 		}
+		resp.header("Location", "/secure/links.html"
+				+ ((code != null) ? "?error=" + code : ""));
 		halt(302);
 		return null;
 	}

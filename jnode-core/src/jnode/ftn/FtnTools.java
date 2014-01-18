@@ -35,6 +35,7 @@ import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
+import jnode.dto.FileForLink;
 import jnode.dto.FileSubscription;
 import jnode.dto.Filearea;
 import jnode.dto.Filemail;
@@ -57,6 +58,7 @@ import jnode.ftn.types.FtnPkt;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
+import jnode.main.threads.TosserQueue;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
 import jnode.ndl.FtnNdlAddress.Status;
@@ -1550,5 +1552,76 @@ public final class FtnTools {
 		} catch (IOException e) {
 			return null;
 		}
+	}
+
+	public static void delete(Filearea area) {
+		synchronized (Filearea.class) {
+			if (area != null) {
+				area.setGroup("_TO_DELETE_XXX"); // to prevent suncribing while
+													// deleting
+				ORMManager.get(Filearea.class).update(area);
+				ORMManager.get(FileSubscription.class).delete("filearea_id",
+						"=", area);
+				List<Filemail> toDelete = ORMManager.get(Filemail.class)
+						.getAnd("filearea_id", "=", area);
+				for (Filemail mail : toDelete) {
+					ORMManager.get(FilemailAwaiting.class).delete(
+							"filemail_id", "=", mail);
+					ORMManager.get(Filemail.class).delete(mail);
+				}
+				ORMManager.get(Filearea.class).delete(area);
+				logger.l2("Filearea " + area.getName() + " deleted");
+			}
+		}
+
+	}
+
+	public static void delete(Echoarea area) {
+		synchronized (Echoarea.class) {
+			if (area != null) {
+				area.setGroup("_TO_DELETE_XXX"); // to prevent suncribing while
+													// deleting
+				ORMManager.get(Echoarea.class).update(area);
+				ORMManager.get(Subscription.class).delete("echoarea_id", "=",
+						area);
+				List<Echomail> toDelete = ORMManager.get(Echomail.class)
+						.getAnd("echoarea_id", "=", area);
+				for (Echomail mail : toDelete) {
+					ORMManager.get(EchomailAwaiting.class).delete(
+							"echomail_id", "=", mail);
+					ORMManager.get(Echomail.class).delete(mail);
+				}
+				ORMManager.get(Echoarea.class).delete(area);
+				logger.l2("Echoarea " + area.getName() + " deleted");
+			}
+		}
+
+	}
+
+	public static void delete(Link link) {
+		synchronized (TosserQueue.getInstanse()) {
+			if (link != null) {
+				ORMManager.get(LinkOption.class).delete("link_id", "=", link);
+				link.setProtocolHost("-");
+				link.setProtocolPort(0);
+				link.setProtocolPassword("_TO_DELETE_XXX");
+				// to prevent connect
+				ORMManager.get(Link.class).update(link);
+				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
+						link);
+				ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
+						link);
+				ORMManager.get(Subscription.class).delete("link_id", "=", link);
+				ORMManager.get(FileSubscription.class).delete("link_id", "=",
+						link);
+				ORMManager.get(FileForLink.class).delete("link_id", "=", link);
+				ORMManager.get(Route.class).delete("route_via", "=", link);
+				ORMManager.get(Netmail.class).update("route_via", 0,
+						"route_via", "=", link);
+				ORMManager.get(Link.class).delete(link);
+				logger.l2("Link " + link.getLinkAddress() + " deleted");
+			}
+		}
+
 	}
 }

@@ -18,10 +18,22 @@
 		for (i = 0; i < echs.length; i++) {
 			var e = echs[i];
 			if (e) {
-				_fill("echoes", "<tr><td>" + e.name + "</td><td>" + e.descr
-						+ "</td><td>" + e.rl + "/" + e.wl + "/" + e.gr
-						+ "</td><td><a href=\"#new\" class=\"button\" onclick=\"edit("
-						+ e.id + ");\">Edit</a></td></tr>");
+				_fill(
+						"echoes",
+						"<tr><td>"
+								+ e.name
+								+ "</td><td>"
+								+ e.descr
+								+ "</td><td>"
+								+ e.rl
+								+ "/"
+								+ e.wl
+								+ "/"
+								+ e.gr
+								+ "</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit("
+								+ e.id
+								+ ");\">Edit</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del("
+								+ e.id + ");\">Delete</a></td></tr>");
 			}
 		}
 	}
@@ -49,7 +61,7 @@
 			<td><input type="text" size="5" name="gr" id="_gr" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Proccess" class="button"/>
+	<input type="submit" name="_s" value="Proccess" class="button" />
 </form>
 <script>
 	function _edit(e) {
@@ -87,6 +99,17 @@
 			text = "Level values are invalid";
 		}
 		_fill("_error", text);
+	}
+</script>
+
+<form action="/secure/echoarea" method="post" id="_delete">
+	<input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+	function del(id) {
+		_value("_did", id);
+		document.getElementById("_delete").submit();
 	}
 </script>
 <? include=/footer.html ?>

@@ -34,7 +34,9 @@
 							+ "</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit("
 							+ links[i].id
 							+ ")\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options("
-							+ links[i].id + ")\">Options</a></td></tr>");
+							+ links[i].id
+							+ ")\">Options</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del("
+							+ links[i].id + ");\">Delete</a></td></tr>");
 		}
 	}
 	_jrun("/secure/links", "_links");
@@ -250,6 +252,17 @@
 			_jrun("/secure/linkoptions?id=" + id, "_options");
 			toggle(true);
 		}
+	}
+</script>
+
+<form action="/secure/link" method="post" id="_delete">
+	<input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+	function del(id) {
+		_value("_did", id);
+		document.getElementById("_delete").submit();
 	}
 </script>
 <? include=/footer.html ?>

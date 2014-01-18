@@ -10,6 +10,8 @@ import com.j256.ormlite.table.DatabaseTable;
  */
 @DatabaseTable(tableName = "routing")
 public class Route {
+	@DatabaseField(generatedId = true)
+	private Long id;
 	@DatabaseField(columnName = "nice")
 	private Long nice;
 	@DatabaseField(columnName = "from_name", defaultValue = "*")
@@ -24,6 +26,14 @@ public class Route {
 	private String subject;
 	@DatabaseField(columnName = "route_via", foreign = true)
 	private Link routeVia;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Long getNice() {
 		return nice;

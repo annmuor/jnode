@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jnode.dto.Echoarea;
+import jnode.dto.Filearea;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
+import jnode.dto.Route;
 
 public class JSONUtil {
 	private static final Map<Class<?>, JSONConverter<?>> converterMap = createConverterMap();;
@@ -54,6 +56,38 @@ public class JSONUtil {
 						pair("rl", object.getReadlevel()),
 						pair("wl", object.getWritelevel()),
 						pair("gr", object.getGroup()));
+
+			}
+		});
+
+		map.put(Filearea.class, new JSONConverter<Filearea>() {
+
+			@Override
+			public String convert(Filearea object) {
+				return String.format("{%s,%s,%s,%s,%s,%s}",
+						pair("id", object.getId()),
+						pair("name", object.getName()),
+						pair("descr", object.getDescription()),
+						pair("rl", object.getReadlevel()),
+						pair("wl", object.getWritelevel()),
+						pair("gr", object.getGroup()));
+
+			}
+		});
+		
+		map.put(Route.class, new JSONConverter<Route>() {
+
+			@Override
+			public String convert(Route object) {
+				return String.format("{%s,%s,%s,%s,%s,%s,%s,%s}",
+						pair("id", object.getId()),
+						pair("nice", object.getNice()),
+						pair("fa", object.getFromAddr()),
+						pair("fn", object.getFromName()),
+						pair("ta", object.getToAddr()),
+						pair("tn", object.getToName()),
+						pair("s", object.getSubject()),
+						pair("v", object.getRouteVia()));
 
 			}
 		});
