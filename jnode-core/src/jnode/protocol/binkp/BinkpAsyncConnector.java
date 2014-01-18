@@ -108,12 +108,11 @@ public class BinkpAsyncConnector implements Runnable {
 	public static BinkpAsyncConnector connect(String host, Integer port) {
 		init();
 		try {
-			logger.l1(String.format("Connecting to %s:%d", host, port));
 			SocketChannel socket = SocketChannel.open();
 			socket.connect(new InetSocketAddress(host, port));
 			return new BinkpAsyncConnector(socket, true);
 		} catch (IOException e) {
-			logger.l1("Connect error", e);
+			logger.l1("Connect error: " + e.getMessage());
 			return null;
 		}
 	}
@@ -163,6 +162,9 @@ public class BinkpAsyncConnector implements Runnable {
 		socket.configureBlocking(false);
 		selector = Selector.open();
 		socket.register(selector, socket.validOps());
+		InetSocketAddress addr = (InetSocketAddress) socket.getRemoteAddress();
+		logger.l2(String.format("Connected with %s:%d", addr.getHostString(),
+				addr.getPort()));
 	}
 
 	@Override
