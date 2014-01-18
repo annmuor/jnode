@@ -40,6 +40,13 @@ public class BinkpFrame implements Frame {
 		init();
 	}
 
+	public BinkpFrame(byte[] filedata, int len) {
+		isCommand = false;
+		this.data = new byte[len];
+		System.arraycopy(filedata, 0, data, 0, len);
+		init();
+	}
+
 	public BinkpCommand getCommand() {
 		return command;
 	}
@@ -61,6 +68,7 @@ public class BinkpFrame implements Frame {
 			return;
 		}
 		int len = data.length;
+		len &= 0xffff;
 		if (isCommand) {
 			len |= 0x8000;
 		} else {
@@ -76,42 +84,43 @@ public class BinkpFrame implements Frame {
 		return (frame != null) ? frame.array() : new byte[0];
 	}
 
-    private String displayFrame(){
-        byte[] d = getBytes();
-        StringBuilder sb = new StringBuilder();
-        sb.append("length = ");
-        sb.append(d.length);
-        sb.append(", ");
-        sb.append(DisplayByteArrayHelper.bytesToHex(d, 10));
-        return sb.toString();
-    }
+	private String displayFrame() {
+		byte[] d = getData();
+		StringBuilder sb = new StringBuilder();
+		sb.append("length = ");
+		sb.append(d.length);
+		sb.append(", ");
+		sb.append(DisplayByteArrayHelper.bytesToHex(d, 10));
+		return sb.toString();
+	}
 
 	@Override
 	public String toString() {
-		return "[ " + ((isCommand) ? command.toString() + " " + arg : displayFrame())
-				+ " ]";
+		return "[ "
+				+ ((isCommand) ? command.toString() + " " + arg
+						: displayFrame()) + " ]";
 	}
 
+	// http://stackoverflow.com/questions/9655181/convert-from-byte-array-to-hex-string-in-java
+	private static class DisplayByteArrayHelper {
+		private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
-    // http://stackoverflow.com/questions/9655181/convert-from-byte-array-to-hex-string-in-java
-    private static class DisplayByteArrayHelper{
-        private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
-        private static String bytesToHex(byte[] bytes, int limit) {
+		private static String bytesToHex(byte[] bytes, int limit) {
 
-            int realLen = Math.min(bytes.length, limit);
+			int realLen = Math.min(bytes.length, limit);
 
-            if (realLen <= 0){
-                return "";
-            }
+			if (realLen <= 0) {
+				return "";
+			}
 
-            final char[] hexChars = new char[realLen * 2];
-            int v;
-            for ( int j = 0; j < realLen; ++j ) {
-                v = bytes[j] & 0xFF;
-                hexChars[j * 2] = hexArray[v >>> 4];
-                hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-            }
-            return new String(hexChars);
-        }
-    }
+			final char[] hexChars = new char[realLen * 2];
+			int v;
+			for (int j = 0; j < realLen; ++j) {
+				v = bytes[j] & 0xFF;
+				hexChars[j * 2] = hexArray[v >>> 4];
+				hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+			}
+			return new String(hexChars);
+		}
+	}
 }

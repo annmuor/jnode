@@ -3,6 +3,7 @@ package jnode.protocol.io;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * 
@@ -14,6 +15,7 @@ public class Message {
 	private String messageName;
 	private InputStream inputStream;
 	private boolean secure = true;
+	private Long unixtime = new Date().getTime();
 	private File file;
 
 	public Message(File file) throws Exception {
@@ -68,4 +70,11 @@ public class Message {
 		this.secure = secure;
 	}
 
+	public Long getUnixtime() {
+		return unixtime;
+	}
+
+	public void setUnixtime(Long unixtime) {
+		this.unixtime = unixtime;
+	}
 }
