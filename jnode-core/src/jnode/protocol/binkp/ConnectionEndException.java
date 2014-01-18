@@ -1,4 +1,4 @@
-package jnode.protocol.binkp2;
+package jnode.protocol.binkp;
 
 public class ConnectionEndException extends RuntimeException {
 

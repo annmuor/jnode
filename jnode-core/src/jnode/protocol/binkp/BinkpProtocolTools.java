@@ -1,4 +1,4 @@
-package jnode.protocol.binkp2;
+package jnode.protocol.binkp;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,8 +15,6 @@ import java.security.NoSuchAlgorithmException;
 
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
-import jnode.protocol.binkp.BinkpCommand;
-import jnode.protocol.binkp.BinkpFrame;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {

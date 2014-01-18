@@ -1,12 +1,12 @@
-package jnode.protocol.binkp2;
+package jnode.protocol.binkp;
 
-import static jnode.protocol.binkp2.BinkpProtocolTools.createMessage;
-import static jnode.protocol.binkp2.BinkpProtocolTools.forwardToTossing;
-import static jnode.protocol.binkp2.BinkpProtocolTools.getAuthPassword;
-import static jnode.protocol.binkp2.BinkpProtocolTools.getCommand;
-import static jnode.protocol.binkp2.BinkpProtocolTools.getString;
-import static jnode.protocol.binkp2.BinkpProtocolTools.messageEquals;
-import static jnode.protocol.binkp2.BinkpProtocolTools.write;
+import static jnode.protocol.binkp.BinkpProtocolTools.createMessage;
+import static jnode.protocol.binkp.BinkpProtocolTools.forwardToTossing;
+import static jnode.protocol.binkp.BinkpProtocolTools.getAuthPassword;
+import static jnode.protocol.binkp.BinkpProtocolTools.getCommand;
+import static jnode.protocol.binkp.BinkpProtocolTools.getString;
+import static jnode.protocol.binkp.BinkpProtocolTools.messageEquals;
+import static jnode.protocol.binkp.BinkpProtocolTools.write;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,8 +41,6 @@ import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 import jnode.ndl.NodelistScanner;
-import jnode.protocol.binkp.BinkpCommand;
-import jnode.protocol.binkp.BinkpFrame;
 import jnode.protocol.io.Message;
 
 /**

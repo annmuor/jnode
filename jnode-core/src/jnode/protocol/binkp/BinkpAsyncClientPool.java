@@ -1,4 +1,4 @@
-package jnode.protocol.binkp2;
+package jnode.protocol.binkp;
 
 import jnode.dto.Link;
 import jnode.logger.Logger;

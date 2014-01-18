@@ -16,8 +16,8 @@ import jnode.main.threads.TimerPoll;
 import jnode.main.threads.TosserQueue;
 import jnode.module.JnodeModule;
 import jnode.orm.ORMManager;
-import jnode.protocol.binkp2.BinkpAsyncClientPool;
-import jnode.protocol.binkp2.BinkpAsyncServer;
+import jnode.protocol.binkp.BinkpAsyncClientPool;
+import jnode.protocol.binkp.BinkpAsyncServer;
 import jnode.stat.threads.StatPoster;
 
 import com.j256.ormlite.logger.LocalLog;

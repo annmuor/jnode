@@ -1,4 +1,4 @@
-package jnode.protocol.binkp2;
+package jnode.protocol.binkp;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
