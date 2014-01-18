@@ -16,6 +16,7 @@ import jnode.protocol.io.exception.ProtocolException;
  * @author kreon
  * 
  */
+@Deprecated
 public class Server extends Thread {
 	private static final Logger logger = Logger.getLogger(Server.class);
 

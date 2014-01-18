@@ -1,14 +1,8 @@
 package jnode.main.threads;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
 
 import jnode.dto.Link;
-import jnode.logger.Logger;
-import jnode.protocol.binkp.BinkpConnector;
-import jnode.protocol.io.Connector;
-import jnode.protocol.io.exception.ProtocolException;
 
 /**
  * 
@@ -27,53 +21,22 @@ public class PollQueue {
 		return self;
 	}
 
-	private static final Logger logger = Logger.getLogger(PollQueue.class);
-	private Set<Link> queue;
+	private LinkedList<Link> queue = new LinkedList<Link>();
 
-	private PollQueue() {
-		queue = new HashSet<Link>();
-	}
-
-	public synchronized void poll() {
-		if (queue.size() > 0) {
-			logger.l4("PollQueue contains " + queue.size()
-					+ " nodes, making poll");
-			ArrayList<Link> currentQueue = new ArrayList<Link>(queue);
-			queue = new HashSet<Link>();
-			for (Link link : currentQueue) {
-				ThreadPool.execute(new Poll(link));
+	public synchronized void add(Link link) {
+		if (link.getProtocolPort() > 0 && !"-".equals(link.getProtocolHost())) {
+			if (queue.contains(link)) {
+				queue.addLast(link);
+				this.notify();
 			}
 		}
 	}
 
-	public void add(Link link) {
-		if (link.getProtocolPort() > 0) {
-			queue.add(link);
-		}
+	public synchronized Link getNext() {
+		return queue.removeFirst();
 	}
 
-	private static class Poll implements Runnable {
-		private static final Logger logger = Logger.getLogger(Poll.class);
-		private final Link link;
-
-		public Poll(Link link) {
-			super();
-			this.link = link;
-		}
-
-		@Override
-		public void run() {
-			try {
-				BinkpConnector binkpConnector = new BinkpConnector();
-				Connector connector = new Connector(binkpConnector);
-				logger.l3(String.format("Outgoing to %s (%s:%d)",
-						link.getLinkAddress(), link.getProtocolHost(),
-						link.getProtocolPort()));
-				connector.connect(link);
-
-			} catch (ProtocolException e) {
-				logger.l2("Protocol exception", e);
-			}
-		}
+	public boolean isEmpty() {
+		return queue.isEmpty();
 	}
 }

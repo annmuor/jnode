@@ -11,13 +11,13 @@ import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
 import jnode.main.threads.NetmailFallback;
-import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
 import jnode.main.threads.TimerPoll;
-import jnode.main.threads.Server;
 import jnode.main.threads.TosserQueue;
 import jnode.module.JnodeModule;
 import jnode.orm.ORMManager;
+import jnode.protocol.binkp2.BinkpAsyncClientPool;
+import jnode.protocol.binkp2.BinkpAsyncServer;
 import jnode.stat.threads.StatPoster;
 
 import com.j256.ormlite.logger.LocalLog;
@@ -31,10 +31,6 @@ public class Main {
 	private static final Logger logger = Logger.getLogger(Main.class);
 	private static final String POLL_DELAY = "poll.delay";
 	private static final String POLL_PERIOD = "poll.period";
-	private static final String BINKD_BIND = "binkp.bind";
-	private static final String BINKD_PORT = "binkp.port";
-	private static final String BINKD_CLIENT = "binkp.client";
-	private static final String BINKD_SERVER = "binkp.server";
 	private static final String BINKD_THREADS = "binkp.threads";
 	private static final String LOG_LEVEL = "log.level";
 	private static final String MODULES = "modules";
@@ -73,33 +69,26 @@ public class Main {
 
 		new InstallUtil();
 
-		// eof
-		if (MainHandler.getCurrentInstance().getBooleanProperty(BINKD_SERVER, true)) {
-			Thread server = new Server(MainHandler.getCurrentInstance()
-					.getProperty(BINKD_BIND, "0.0.0.0"), MainHandler
-					.getCurrentInstance().getIntegerProperty(BINKD_PORT, 24554));
-			server.start();
-		}
-		if (MainHandler.getCurrentInstance().getBooleanProperty(BINKD_CLIENT, true)) {
-			logger.l4("Started client ( period "
-					+ MainHandler.getCurrentInstance().getIntegerProperty(
-							POLL_PERIOD, 0) + " seconds )");
-			new Timer().schedule(
-					new TimerPoll(),
-					MainHandler.getCurrentInstance().getIntegerProperty(
-							POLL_DELAY, 0) * 1000,
-					MainHandler.getCurrentInstance().getIntegerProperty(
-							POLL_PERIOD, 0) * 1000);
-		}
-		int nThreads = MainHandler.getCurrentInstance().getIntegerProperty(BINKD_THREADS, 10);
+		int nThreads = 2+MainHandler.getCurrentInstance().getIntegerProperty(
+				BINKD_THREADS, 10);
 		new ThreadPool(nThreads);
+
+		// eof
+		ThreadPool.execute(new BinkpAsyncServer());
+
+		ThreadPool.execute(new BinkpAsyncClientPool());
+
+		new Timer()
+				.schedule(new TimerPoll(), MainHandler.getCurrentInstance()
+						.getIntegerProperty(POLL_DELAY, 0) * 1000, MainHandler
+						.getCurrentInstance()
+						.getIntegerProperty(POLL_PERIOD, 0) * 1000);
 		Timer mainTimer = new Timer();
-		logger.l4("Started PollerTask");
-		mainTimer.schedule(new PollerTask(), 11000, 10000);
+
 		logger.l4("Started TosserTask");
 		mainTimer.schedule(new TosserTask(), 10000, 10000);
 		logger.l4("Started StatPoster");
-		mainTimer.schedule(new NetmailFallback(), 9000,3600000);
+		mainTimer.schedule(new NetmailFallback(), 9000, 3600000);
 		new StatPoster(mainTimer);
 		new JscriptExecutor();
 		logger.l4("Started JscriptExecutor");
@@ -155,14 +144,6 @@ public class Main {
 			} catch (RuntimeException e) {
 				logger.l1("Error while tossing", e);
 			}
-		}
-
-	}
-
-	private static final class PollerTask extends TimerTask {
-		@Override
-		public void run() {
-			PollQueue.getSelf().poll();
 		}
 
 	}
