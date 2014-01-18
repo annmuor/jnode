@@ -51,8 +51,7 @@ import jnode.protocol.io.Message;
  * 
  */
 public class BinkpAsyncConnector implements Runnable {
-	static final Logger logger = Logger
-			.getLogger(BinkpAsyncConnector.class);
+	static final Logger logger = Logger.getLogger(BinkpAsyncConnector.class);
 	private static final DateFormat format = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Pattern cramPattern = Pattern
@@ -162,9 +161,6 @@ public class BinkpAsyncConnector implements Runnable {
 		socket.configureBlocking(false);
 		selector = Selector.open();
 		socket.register(selector, socket.validOps());
-		InetSocketAddress addr = (InetSocketAddress) socket.getRemoteAddress();
-		logger.l2(String.format("Connected with %s:%d", addr.getHostString(),
-				addr.getPort()));
 	}
 
 	@Override
@@ -209,6 +205,13 @@ public class BinkpAsyncConnector implements Runnable {
 							if (key.isConnectable()) {
 								if (!channel.finishConnect()) {
 									key.cancel();
+								} else {
+									InetSocketAddress addr = (InetSocketAddress) channel
+											.getRemoteAddress();
+									logger.l2(String.format(
+											"Connected with %s:%d",
+											addr.getHostString(),
+											addr.getPort()));
 								}
 							}
 							if (key.isReadable()) {
@@ -467,7 +470,7 @@ public class BinkpAsyncConnector implements Runnable {
 				transferringMessage.delete();
 				transferringMessage = null;
 			} else {
-				logger.l3("M_GOT for file we haven't sent: " +arg);
+				logger.l3("M_GOT for file we haven't sent: " + arg);
 			}
 		} else {
 			logger.l4("M_GOT while message was not sent");
@@ -523,6 +526,11 @@ public class BinkpAsyncConnector implements Runnable {
 	private void m_ok() {
 		if (connectionState != STATE_AUTH) {
 			error("We weren't waiting for M_OK");
+			String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
+					+ " connection with "
+					+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
+							.get(0));
+			logger.l3(text);
 		}
 		connectionState = STATE_TRANSFER;
 	}
@@ -541,7 +549,9 @@ public class BinkpAsyncConnector implements Runnable {
 
 		if (password.equals(arg)) {
 			String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
-					+ " connection";
+					+ " connection with "
+					+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
+							.get(0));
 			logger.l3(text);
 			frames.addLast(new BinkpFrame(BinkpCommand.M_OK, text));
 			connectionState = STATE_TRANSFER;
