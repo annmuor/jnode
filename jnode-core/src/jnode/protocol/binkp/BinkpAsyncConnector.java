@@ -172,14 +172,16 @@ public class BinkpAsyncConnector implements Runnable {
 		boolean command = false;
 		ByteBuffer buffer = null;
 		ByteBuffer headBuf = null;
-		long lastActive = new Date().getTime();
+		long lastActive = 0;
 		greet();
 
 		while (true) {
 			try {
 				long now = new Date().getTime();
-				if (now - lastActive > staticMaxTimeout) {
-					throw new ConnectionEndException();
+				if (lastActive != 0) {
+					if (now - lastActive > staticMaxTimeout) {
+						throw new ConnectionEndException();
+					}
 				}
 				try {
 					if (flag_leob && flag_reob) {
@@ -198,20 +200,17 @@ public class BinkpAsyncConnector implements Runnable {
 					selector.select();
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
-						if (!channel.isConnected() || !channel.isOpen()) {
-							throw new ConnectionEndException();
+						if (lastActive == 0) {
+							InetSocketAddress addr = (InetSocketAddress) channel
+									.getRemoteAddress();
+							logger.l2(String.format("Connected with %s:%d",
+									addr.getHostString(), addr.getPort()));
+							lastActive = new Date().getTime();
 						}
 						if (key.isValid()) {
 							if (key.isConnectable()) {
 								if (!channel.finishConnect()) {
 									key.cancel();
-								} else {
-									InetSocketAddress addr = (InetSocketAddress) channel
-											.getRemoteAddress();
-									logger.l2(String.format(
-											"Connected with %s:%d",
-											addr.getHostString(),
-											addr.getPort()));
 								}
 							}
 							if (key.isReadable()) {
