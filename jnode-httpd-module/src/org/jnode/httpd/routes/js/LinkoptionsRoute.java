@@ -12,13 +12,13 @@ import org.jnode.httpd.util.JSONUtil;
 import spark.Request;
 import spark.Response;
 
-public class LinkOptionsRoute extends JsRoute {
+public class LinkoptionsRoute extends JsRoute {
 
-	public LinkOptionsRoute(String path) {
+	public LinkoptionsRoute(String path) {
 		super(path);
 	}
 
-	public LinkOptionsRoute(String path, String acceptType) {
+	public LinkoptionsRoute(String path, String acceptType) {
 		super(path, acceptType);
 	}
 

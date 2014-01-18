@@ -8,12 +8,15 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
-import org.jnode.httpd.routes.html.LinkOptionRoute;
+import org.jnode.httpd.routes.html.EchoareaRoute;
+import org.jnode.httpd.routes.html.LinkoptionRoute;
 import org.jnode.httpd.routes.html.LinkRequestRoute;
 import org.jnode.httpd.routes.html.LinkRoute;
 import org.jnode.httpd.routes.html.MainRoute;
+import org.jnode.httpd.routes.html.PointRequestRoute;
+import org.jnode.httpd.routes.js.EchoareasRoute;
 import org.jnode.httpd.routes.js.HealthRoute;
-import org.jnode.httpd.routes.js.LinkOptionsRoute;
+import org.jnode.httpd.routes.js.LinkoptionsRoute;
 import org.jnode.httpd.routes.js.LinksRoute;
 import org.jnode.httpd.routes.js.SelfRoute;
 
@@ -54,13 +57,18 @@ public class HttpdModule extends JnodeModule {
 
 		Spark.post(new LinkRoute("/secure/link"));
 
-		Spark.get(new LinkOptionsRoute("/secure/linkoptions"));
+		Spark.get(new LinkoptionsRoute("/secure/linkoptions"));
 
-		Spark.post(new LinkOptionRoute("/secure/linkoption"));
+		Spark.post(new LinkoptionRoute("/secure/linkoption"));
+
+		Spark.get(new EchoareasRoute("/secure/echoareas"));
+		Spark.post(new EchoareaRoute("/secure/echoarea"));
 
 		Spark.get(new HealthRoute("/secure/health"));
 		// link request
 		Spark.post(new LinkRequestRoute());
+		// point request
+		Spark.post(new PointRequestRoute());
 
 		// final
 		Spark.get(new MainRoute());

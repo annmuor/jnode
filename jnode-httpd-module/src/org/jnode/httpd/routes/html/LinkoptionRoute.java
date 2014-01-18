@@ -7,9 +7,9 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class LinkOptionRoute extends Route {
+public class LinkoptionRoute extends Route {
 
-	public LinkOptionRoute(String path) {
+	public LinkoptionRoute(String path) {
 		super(path);
 	}
 

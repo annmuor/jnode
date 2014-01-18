@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 
@@ -38,6 +39,21 @@ public class JSONUtil {
 				return String.format("{%s, %s}",
 						pair("name", object.getOption()),
 						pair("value", object.getValue()));
+
+			}
+		});
+
+		map.put(Echoarea.class, new JSONConverter<Echoarea>() {
+
+			@Override
+			public String convert(Echoarea object) {
+				return String.format("{%s,%s,%s,%s,%s,%s}",
+						pair("id", object.getId()),
+						pair("name", object.getName()),
+						pair("descr", object.getDescription()),
+						pair("rl", object.getReadlevel()),
+						pair("wl", object.getWritelevel()),
+						pair("gr", object.getGroup()));
 
 			}
 		});
