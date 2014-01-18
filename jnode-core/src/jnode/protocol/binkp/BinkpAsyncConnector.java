@@ -607,6 +607,16 @@ public class BinkpAsyncConnector implements Runnable {
 				return;
 			}
 		}
+		if (clientConnection) {
+			sendAddrs();
+			frames.addLast(new BinkpFrame(BinkpCommand.M_PWD, getAuthPassword(
+					foreignLink, secure, cramAlgo, cramText)));
+		}
+		connectionState = STATE_AUTH;
+
+	}
+
+	private void sendAddrs() {
 		StringBuilder sb = new StringBuilder();
 		boolean flag = true;
 		for (FtnAddress a : ourAddress) {
@@ -618,12 +628,6 @@ public class BinkpAsyncConnector implements Runnable {
 			sb.append(a.toString() + "@" + staticNetworkName);
 		}
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ADR, sb.toString()));
-		if (clientConnection) {
-			frames.addLast(new BinkpFrame(BinkpCommand.M_PWD, getAuthPassword(
-					foreignLink, secure, cramAlgo, cramText)));
-		}
-		connectionState = STATE_AUTH;
-
 	}
 
 	private void m_null(String arg) {
@@ -722,6 +726,8 @@ public class BinkpAsyncConnector implements Runnable {
 
 		connectionState = STATE_ADDR;
 		if (!clientConnection) {
+			ourAddress.addAll(info.getAddressList());
+			sendAddrs();
 			MessageDigest md;
 			try {
 				md = MessageDigest.getInstance("MD5");
