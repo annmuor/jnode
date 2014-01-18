@@ -113,9 +113,8 @@ public class BinkpProtocolTools {
 			Long unixtime = Long.valueOf(args[2]);
 			if (message.getMessageName().equalsIgnoreCase(args[0])) {
 				if (message.getMessageLength() == len.longValue()) {
-					ret = true;
-					if (!message.getUnixtime().equals(unixtime)) {
-						BinkpAsyncConnector.logger.l4("Warning: unixtime mismatch");
+					if (message.getUnixtime().equals(unixtime)) {
+						ret = true;
 					}
 				}
 			}
