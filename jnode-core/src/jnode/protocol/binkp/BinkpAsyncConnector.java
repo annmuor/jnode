@@ -282,7 +282,7 @@ public class BinkpAsyncConnector implements Runnable {
 							}
 							if (key.isWritable()) {
 								checkForMessages();
-								while (!frames.isEmpty()) {
+								if (!frames.isEmpty()) {
 									BinkpFrame frame = frames.removeFirst();
 									logger.l5("Frame sent: " + frame);
 									write(frame, channel);
