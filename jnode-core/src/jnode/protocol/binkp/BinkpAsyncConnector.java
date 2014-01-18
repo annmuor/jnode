@@ -188,6 +188,7 @@ public class BinkpAsyncConnector implements Runnable {
 						total_recv_bytes += recv_bytes;
 						total_sent_bytes += sent_bytes;
 						if (sent_bytes + recv_bytes == 0 || binkp1_0) {
+							connectionState = STATE_END;
 							finish();
 						} else {
 							flag_leob = false;
@@ -287,6 +288,11 @@ public class BinkpAsyncConnector implements Runnable {
 									logger.l5("Frame sent: " + frame);
 									write(frame, channel);
 									lastActive = new Date().getTime();
+								} else {
+									if (connectionState == STATE_END
+											|| connectionState == STATE_ERROR) {
+										finish();
+									}
 								}
 							}
 						} else {
@@ -325,7 +331,6 @@ public class BinkpAsyncConnector implements Runnable {
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
 		logger.l2("Local error: " + text);
 		connectionState = STATE_ERROR;
-		throw new ConnectionEndException();
 	}
 
 	private void proccessFrame(BinkpFrame frame) {
@@ -543,22 +548,34 @@ public class BinkpAsyncConnector implements Runnable {
 		if (connectionState != STATE_AUTH) {
 			error("We weren't waiting for M_PWD");
 		}
-		String password = getAuthPassword(foreignLink, secure, cramAlgo,
-				cramText);
-
-		if (password.equals(arg)) {
-			String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
-					+ " connection with "
-					+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
-							.get(0));
+		boolean valid = (!secure || checkPassword(arg));
+		String text;
+		if (secure) {
+			text = "(S) Secure  connection with "
+					+ foreignLink.getLinkAddress();
+		} else {
+			text = "(U) Unsecure connection with " + foreignAddress.get(0);
+		}
+		if (valid) {
 			logger.l3(text);
 			frames.addLast(new BinkpFrame(BinkpCommand.M_OK, text));
 			connectionState = STATE_TRANSFER;
 		} else {
 			error("Invalid password");
-			finish();
+			connectionState = STATE_ERROR;
 		}
+	}
 
+	private boolean checkPassword(String arg) {
+		String password = foreignLink.getProtocolPassword();
+		if (password.equals(arg)) {
+			return true;
+		}
+		password = getAuthPassword(foreignLink, secure, cramAlgo, cramText);
+		if (password.endsWith(arg)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -708,7 +725,6 @@ public class BinkpAsyncConnector implements Runnable {
 	}
 
 	private void finish() {
-		connectionState = STATE_END;
 		throw new ConnectionEndException();
 	}
 
@@ -775,6 +791,7 @@ public class BinkpAsyncConnector implements Runnable {
 					frames.addLast(new BinkpFrame(buf, n));
 			} while (n > 0);
 		} catch (IOException e) {
+			error("IOException");
 		}
 
 	}
