@@ -26,7 +26,7 @@ public class FtnTIC {
 	private Long crc32;
 
 	public void unpack(InputStream is) throws IOException {
-		seenby = new ArrayList<>();
+		seenby = new ArrayList<FtnAddress>();
 		StringBuilder _path = new StringBuilder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is,
 				"CP866"));

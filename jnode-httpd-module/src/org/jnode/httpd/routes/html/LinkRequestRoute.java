@@ -47,7 +47,8 @@ public class LinkRequestRoute extends Route {
 							code = "NODELIST";
 						} else {
 							String name = (ndl.getLine() != null) ? ndl
-									.getLine().split(",")[4].replace('_', ' ') : addr;
+									.getLine().split(",")[4].replace('_', ' ')
+									: addr;
 							lr.setName(name);
 							lr.setAddress(addr);
 						}
@@ -69,7 +70,9 @@ public class LinkRequestRoute extends Route {
 						}
 						lr.setHost(host);
 						lr.setPort(iport);
-					} catch (IOException | NumberFormatException e) {
+					} catch (IOException e) {
+						code = "INET";
+					} catch (NumberFormatException e) {
 						code = "INET";
 					}
 				}

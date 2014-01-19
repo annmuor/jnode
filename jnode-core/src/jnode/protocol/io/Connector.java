@@ -27,11 +27,11 @@ public class Connector {
     private int index = 0;
     private static final Logger logger = Logger.getLogger(Connector.class);
 
-    public static final Map<String, Long> busyMap = new HashMap<>();
+    public static final Map<String, Long> busyMap = new HashMap<String, Long>();
 
     public Connector(ProtocolConnector connector) throws ProtocolException {
         this.connector = connector;
-        messages = new ArrayList<>();
+        messages = new ArrayList<Message>();
     }
 
     public void setMessages(List<Message> messages) {
@@ -148,7 +148,7 @@ public class Connector {
                     connector.getBytesReceived(), connector.getBytesSent());
         }
         Notifier.INSTANSE.notify(event);
-        messages = new ArrayList<>();
+        messages = new ArrayList<Message>();
         index = 0;
     }
 

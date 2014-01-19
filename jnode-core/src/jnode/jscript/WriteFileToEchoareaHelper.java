@@ -13,7 +13,7 @@ import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 
 public class WriteFileToEchoareaHelper extends IJscriptHelper {
-	
+
 	private static final Logger logger = Logger
 			.getLogger(WriteFileToEchoareaHelper.class);
 
@@ -33,19 +33,27 @@ public class WriteFileToEchoareaHelper extends IJscriptHelper {
 	}
 
 	private static String readFile(String path) throws IOException {
-        try (FileInputStream stream = new FileInputStream(new File(path))) {
-            FileChannel fc = stream.getChannel();
-            MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0,
-                    fc.size());
-            return Charset.forName("UTF8").decode(bb).toString();
-        }
+		FileInputStream stream = null;
+		try {
+			stream = new FileInputStream(new File(path));
+			FileChannel fc = stream.getChannel();
+			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0,
+					fc.size());
+			return Charset.forName("UTF8").decode(bb).toString();
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			if (stream != null) {
+				stream.close();
+			}
+		}
 	}
 
 	@Override
 	public Version getVersion() {
 		return new Version() {
 
-			@Override 
+			@Override
 			public int getMinor() {
 				return 1;
 			}
