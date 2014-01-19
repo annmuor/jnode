@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import jnode.event.Notifier;
+import jnode.event.SharedModuleEvent;
 import jnode.ftn.FtnTools;
 import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
@@ -110,6 +112,8 @@ public class Main {
 							final JnodeModule jnodeModule = (JnodeModule) clazz
 									.getConstructor(String.class).newInstance(
 											config);
+							Notifier.INSTANSE.register(SharedModuleEvent.class,
+									jnodeModule);
 							// module in new thread
 							new Thread(new Runnable() {
 								@Override

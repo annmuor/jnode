@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -82,6 +83,8 @@ public final class FtnTools {
 	public static final DateFormat FORMAT = new SimpleDateFormat(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
+
+	private static Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
 	/**
 	 * Сортировщик 2D-адресов
@@ -796,26 +799,39 @@ public final class FtnTools {
 		if (message.isNetmail()) {
 			if (MainHandler.getCurrentInstance().getInfo().getAddressList()
 					.contains(message.getToAddr())) {
-				// if (message.getToAddr().equals(Main.info.getAddress())) {
-				try {
-					Robot robot = ORMManager.get(Robot.class).getById(
-							message.getToName().toLowerCase());
-					if (robot != null) {
-						robotname = robot.getRobot();
-						isRobot = true;
-						Class<?> clazz = Class.forName(robot.getClassName());
-						IRobot irobot = (IRobot) clazz.newInstance();
-						logger.l4("Message " + message.getMsgid()
-								+ " sent to robot " + robotname);
-						irobot.execute(message);
+				// TODO: optiomize
+				IRobot oRobot = robotMaps
+						.get(message.getToName().toLowerCase());
+				if (oRobot == null) {
+					try {
+						Robot robot = ORMManager.get(Robot.class).getById(
+								message.getToName().toLowerCase());
+						if (robot != null) {
+							robotname = robot.getRobot();
+							Class<?> clazz = Class
+									.forName(robot.getClassName());
+							oRobot = (IRobot) clazz.newInstance();
+							robotMaps.put(robotname, oRobot);
+							logger.l4("Message " + message.getMsgid()
+									+ " sent to robot " + robotname);
+						}
+					} catch (ClassNotFoundException e) {
+						logger.l2("Robot class not found (INIT) " + robotname,
+								e);
+					} catch (Exception e) {
+						logger.l2(
+								"Robot excception  " + robotname + " (INIT) ",
+								e);
 					}
-				} catch (SQLException e) {
-					logger.l2("Robot exception (GET) ", e);
-				} catch (ClassNotFoundException e) {
-					logger.l2("Robot excception (INIT) " + robotname, e);
-				} catch (Exception e) {
-					logger.l2("Robot excception  " + robotname + " (MESSAGE) ",
-							e);
+				}
+				if (oRobot != null) {
+					isRobot = true;
+					try {
+						oRobot.execute(message);
+					} catch (Exception e) {
+						logger.l2("Robot excception  " + robotname
+								+ " (PROCCESS) ", e);
+					}
 				}
 			}
 		}

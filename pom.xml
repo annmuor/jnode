@@ -57,6 +57,7 @@
         <modules>
         	<module>jnode-core</module>
         	<module>jnode-httpd-module</module>
+        	<module>jnode-mail-module</module>
         	<module>jnode-rss</module>
         	<module>jnode-dumb-module</module>
         	<module>jnode-xmpp</module>
@@ -66,8 +67,8 @@
     <profile>
         <id>xmlrpc</id>
         <modules>
-            <module>jnode-core</module>
-            <module>jnode-xmlrpc-server</module>
+        	<module>jnode-core</module>
+        	<module>jnode-xmlrpc-server</module>
         	<module>jnode-xmlrpc-common</module>
         	<module>jnode-xmlrpc-client</module>
         	<module>jnode-assembly</module>
@@ -81,6 +82,7 @@
         <modules>
         	<module>jnode-core</module>
         	<module>jnode-httpd-module</module>
+        	<module>jnode-mail-module</module>
         	<module>jnode-rss</module>
         	<module>jnode-dumb-module</module>
         	<module>jnode-xmpp</module>

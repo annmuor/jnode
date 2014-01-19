@@ -4,6 +4,11 @@ jnode-xmpp/target
 jnode-dumb-module/target
 jnode-pointchecker-module/target
 jnode-httpd-module/target
+jnode-mail-module/target
+jnode-assembly/target
+jnode-xmlrpc-client/target
+jnode-xmlrpc-common/target
+jnode-xmlrpc-server/target
 .project
 .settings
 .idea
