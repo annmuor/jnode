@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.html;
+package org.jnode.httpd.routes.post;
 
 import jnode.dto.Link;
 import jnode.dto.LinkOption;

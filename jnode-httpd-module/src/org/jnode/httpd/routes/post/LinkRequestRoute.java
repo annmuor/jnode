@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.html;
+package org.jnode.httpd.routes.post;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

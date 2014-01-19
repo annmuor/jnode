@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.js;
+package org.jnode.httpd.routes.get;
 
 import static org.jnode.httpd.util.JSONUtil.pair;
 

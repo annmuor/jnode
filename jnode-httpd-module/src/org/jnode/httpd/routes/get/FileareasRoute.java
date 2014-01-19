@@ -1,6 +1,6 @@
-package org.jnode.httpd.routes.js;
+package org.jnode.httpd.routes.get;
 
-import jnode.dto.Echoarea;
+import jnode.dto.Filearea;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.routes.JsRoute;
@@ -9,9 +9,9 @@ import org.jnode.httpd.util.JSONUtil;
 import spark.Request;
 import spark.Response;
 
-public class EchoareasRoute extends JsRoute {
+public class FileareasRoute extends JsRoute {
 
-	public EchoareasRoute(String path) {
+	public FileareasRoute(String path) {
 		super(path);
 	}
 
@@ -20,12 +20,12 @@ public class EchoareasRoute extends JsRoute {
 		resp.type("text/javascript");
 		String id = req.queryParams("id");
 		if (id == null) {
-			return JSONUtil.value(ORMManager.get(Echoarea.class).getOrderAnd(
+			return JSONUtil.value(ORMManager.get(Filearea.class).getOrderAnd(
 					"name", true));
 		} else {
 			try {
 				Long eid = Long.valueOf(id);
-				return JSONUtil.value(ORMManager.get(Echoarea.class).getById(
+				return JSONUtil.value(ORMManager.get(Filearea.class).getById(
 						eid));
 			} catch (RuntimeException e) {
 			}

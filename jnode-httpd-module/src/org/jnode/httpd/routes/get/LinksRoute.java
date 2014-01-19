@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.js;
+package org.jnode.httpd.routes.get;
 
 import java.util.List;
 

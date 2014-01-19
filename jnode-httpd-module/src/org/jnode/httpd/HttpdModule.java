@@ -8,21 +8,21 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
-import org.jnode.httpd.routes.html.EchoareaRoute;
-import org.jnode.httpd.routes.html.FileareaRoute;
-import org.jnode.httpd.routes.html.LinkoptionRoute;
-import org.jnode.httpd.routes.html.LinkRequestRoute;
-import org.jnode.httpd.routes.html.LinkRoute;
-import org.jnode.httpd.routes.html.MainRoute;
-import org.jnode.httpd.routes.html.PointRequestRoute;
-import org.jnode.httpd.routes.html.RoutingRoute;
-import org.jnode.httpd.routes.js.EchoareasRoute;
-import org.jnode.httpd.routes.js.FileareasRoute;
-import org.jnode.httpd.routes.js.HealthRoute;
-import org.jnode.httpd.routes.js.LinkoptionsRoute;
-import org.jnode.httpd.routes.js.LinksRoute;
-import org.jnode.httpd.routes.js.RoutingsRoute;
-import org.jnode.httpd.routes.js.SelfRoute;
+import org.jnode.httpd.routes.get.EchoareasRoute;
+import org.jnode.httpd.routes.get.FileareasRoute;
+import org.jnode.httpd.routes.get.HealthRoute;
+import org.jnode.httpd.routes.get.LinkoptionsRoute;
+import org.jnode.httpd.routes.get.LinksRoute;
+import org.jnode.httpd.routes.get.RoutingsRoute;
+import org.jnode.httpd.routes.get.SelfRoute;
+import org.jnode.httpd.routes.post.EchoareaRoute;
+import org.jnode.httpd.routes.post.FileareaRoute;
+import org.jnode.httpd.routes.post.LinkRequestRoute;
+import org.jnode.httpd.routes.post.LinkRoute;
+import org.jnode.httpd.routes.post.LinkoptionRoute;
+import org.jnode.httpd.routes.post.MainRoute;
+import org.jnode.httpd.routes.post.PointRequestRoute;
+import org.jnode.httpd.routes.post.RoutingRoute;
 
 
 /**

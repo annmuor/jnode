@@ -1,16 +1,15 @@
-package org.jnode.httpd.routes.html;
+package org.jnode.httpd.routes.post;
 
 import jnode.dto.Echoarea;
-import jnode.dto.Filearea;
 import jnode.ftn.FtnTools;
 import jnode.orm.ORMManager;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class FileareaRoute extends Route {
+public class EchoareaRoute extends Route {
 
-	public FileareaRoute(String path) {
+	public EchoareaRoute(String path) {
 		super(path);
 	}
 
@@ -27,7 +26,7 @@ public class FileareaRoute extends Route {
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);
-				Filearea deleteArea = ORMManager.get(Filearea.class).getById(
+				Echoarea deleteArea = ORMManager.get(Echoarea.class).getById(
 						eid);
 				if (deleteArea != null) {
 					FtnTools.delete(deleteArea);
@@ -37,16 +36,16 @@ public class FileareaRoute extends Route {
 			}
 		} else {
 			try {
-				Filearea ea;
+				Echoarea ea;
 				if (!name.matches("^[-a-zA-Z0-9_\\.]+$")) {
 					code = "ENAME";
 				} else {
 					if (id == null || "0".equals(id)) {
-						ea = new Filearea();
+						ea = new Echoarea();
 						ea.setName(name);
 					} else {
 						Long eid = Long.valueOf(id);
-						ea = ORMManager.get(Filearea.class).getById(eid);
+						ea = ORMManager.get(Echoarea.class).getById(eid);
 					}
 					ea.setDescription(descr);
 					ea.setReadlevel(Long.valueOf(rl));
@@ -54,11 +53,11 @@ public class FileareaRoute extends Route {
 					ea.setGroup(gr);
 					synchronized (Echoarea.class) {
 						if (ea.getId() == null
-								&& ORMManager.get(Filearea.class).getFirstAnd(
+								&& ORMManager.get(Echoarea.class).getFirstAnd(
 										"name", "=", ea.getName()) != null) {
 							code = "EXISTS";
 						} else {
-							ORMManager.get(Filearea.class).saveOrUpdate(ea);
+							ORMManager.get(Echoarea.class).saveOrUpdate(ea);
 						}
 					}
 				}
@@ -66,7 +65,7 @@ public class FileareaRoute extends Route {
 				code = "INVALID";
 			}
 		}
-		resp.header("Location", "/secure/fechoes.html"
+		resp.header("Location", "/secure/echoes.html"
 				+ ((code != null) ? "?code=" + code : ""));
 		halt(302);
 		return null;

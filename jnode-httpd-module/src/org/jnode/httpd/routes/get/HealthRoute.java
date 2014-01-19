@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.js;
+package org.jnode.httpd.routes.get;
 
 import org.jnode.httpd.routes.JsRoute;
 import org.jnode.httpd.util.JSONUtil;

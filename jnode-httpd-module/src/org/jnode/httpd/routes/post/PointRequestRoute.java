@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.html;
+package org.jnode.httpd.routes.post;
 
 import org.jnode.httpd.dto.PointRequest;
 

@@ -1,15 +1,16 @@
-package org.jnode.httpd.routes.html;
+package org.jnode.httpd.routes.post;
 
 import jnode.dto.Echoarea;
+import jnode.dto.Filearea;
 import jnode.ftn.FtnTools;
 import jnode.orm.ORMManager;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class EchoareaRoute extends Route {
+public class FileareaRoute extends Route {
 
-	public EchoareaRoute(String path) {
+	public FileareaRoute(String path) {
 		super(path);
 	}
 
@@ -26,7 +27,7 @@ public class EchoareaRoute extends Route {
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);
-				Echoarea deleteArea = ORMManager.get(Echoarea.class).getById(
+				Filearea deleteArea = ORMManager.get(Filearea.class).getById(
 						eid);
 				if (deleteArea != null) {
 					FtnTools.delete(deleteArea);
@@ -36,16 +37,16 @@ public class EchoareaRoute extends Route {
 			}
 		} else {
 			try {
-				Echoarea ea;
+				Filearea ea;
 				if (!name.matches("^[-a-zA-Z0-9_\\.]+$")) {
 					code = "ENAME";
 				} else {
 					if (id == null || "0".equals(id)) {
-						ea = new Echoarea();
+						ea = new Filearea();
 						ea.setName(name);
 					} else {
 						Long eid = Long.valueOf(id);
-						ea = ORMManager.get(Echoarea.class).getById(eid);
+						ea = ORMManager.get(Filearea.class).getById(eid);
 					}
 					ea.setDescription(descr);
 					ea.setReadlevel(Long.valueOf(rl));
@@ -53,11 +54,11 @@ public class EchoareaRoute extends Route {
 					ea.setGroup(gr);
 					synchronized (Echoarea.class) {
 						if (ea.getId() == null
-								&& ORMManager.get(Echoarea.class).getFirstAnd(
+								&& ORMManager.get(Filearea.class).getFirstAnd(
 										"name", "=", ea.getName()) != null) {
 							code = "EXISTS";
 						} else {
-							ORMManager.get(Echoarea.class).saveOrUpdate(ea);
+							ORMManager.get(Filearea.class).saveOrUpdate(ea);
 						}
 					}
 				}
@@ -65,7 +66,7 @@ public class EchoareaRoute extends Route {
 				code = "INVALID";
 			}
 		}
-		resp.header("Location", "/secure/echoes.html"
+		resp.header("Location", "/secure/fechoes.html"
 				+ ((code != null) ? "?code=" + code : ""));
 		halt(302);
 		return null;
