@@ -11,7 +11,7 @@ public class ThreadPool {
 	private final LinkedList<Runnable> queue;
 
 	public ThreadPool(int numThreads) {
-		queue = new LinkedList<>();
+		queue = new LinkedList<Runnable>();
 		threads = new ThreadRunner[numThreads];
 		for (int i = 0; i < numThreads; i++) {
 			threads[i] = new ThreadRunner();

@@ -79,8 +79,8 @@ public class BinkpConnector implements ProtocolConnector {
 	private List<Message> sent;
 
 	public void reset() {
-		sent = new ArrayList<>();
-		frames = new ArrayList<>();
+		sent = new ArrayList<Message>();
+		frames = new ArrayList<Frame>();
 		useCram = false;
 		connector = null;
 		link = null;
@@ -318,7 +318,7 @@ public class BinkpConnector implements ProtocolConnector {
 									"([^\\S]*([1-5]:\\d{1,5}/\\d{1,5}\\.?\\d{0,5})(@fido[a-z]*)?)",
 									Pattern.CASE_INSENSITIVE);
 					Matcher m = ftn.matcher(frame.getArg());
-					List<FtnAddress> testOk = new ArrayList<>();
+					List<FtnAddress> testOk = new ArrayList<FtnAddress>();
 					while (m.find()) {
 						FtnAddress test = new FtnAddress(m.group(2));
 						this.link = FtnTools.getLinkByFtnAddress(test);

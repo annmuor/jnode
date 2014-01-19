@@ -14,7 +14,7 @@ import jnode.ftn.types.FtnAddress;
  */
 public class PollQueue {
 	private static PollQueue self;
-	private HashMap<String, Long> pollMap = new HashMap<>();
+	private HashMap<String, Long> pollMap = new HashMap<String, Long>();
 
 	public static PollQueue getSelf() {
 		if (self == null) {
