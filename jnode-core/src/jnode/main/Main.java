@@ -58,8 +58,7 @@ public class Main {
 				LOG_LEVEL, Logger.LOG_L4);
 		{
 			File inbound = new File(FtnTools.getInbound());
-			if (!(inbound.exists() && inbound.isDirectory() && inbound
-					.canWrite())) {
+			if (!(inbound.isDirectory() && inbound.canWrite())) {
 				logger.l1("Bad inbound " + inbound.getAbsolutePath());
 				System.exit(-1);
 			}

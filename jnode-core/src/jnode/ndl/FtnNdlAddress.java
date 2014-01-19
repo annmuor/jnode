@@ -10,7 +10,7 @@ public class FtnNdlAddress extends FtnAddress {
 	private static final long serialVersionUID = 1L;
 	private Status status;
 
-	private String name;
+	private String line;
 
 	public Status getStatus() {
 		return status;
@@ -20,12 +20,12 @@ public class FtnNdlAddress extends FtnAddress {
 		this.status = status;
 	}
 
-	public String getName() {
-		return name;
+	public String getLine() {
+		return line;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setLine(String line) {
+		this.line = line;
 	}
 
 	public FtnNdlAddress(String addr, Status status) {
