@@ -46,8 +46,8 @@ public class LinkRequestRoute extends Route {
 						if (!exists) {
 							code = "NODELIST";
 						} else {
-							String name = (ndl.getName() != null) ? ndl
-									.getName().replace('_', ' ') : addr;
+							String name = (ndl.getLine() != null) ? ndl
+									.getLine().split(",")[4].replace('_', ' ') : addr;
 							lr.setName(name);
 							lr.setAddress(addr);
 						}

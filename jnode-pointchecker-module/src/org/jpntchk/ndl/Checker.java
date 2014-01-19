@@ -137,7 +137,7 @@ public enum Checker {
 			text += errors.toString();
 		for (FtnNdlAddress boss : bosses) {
 			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(), boss, name,
-					boss.getName(), subject, text);
+					boss.getLine().split(",")[4], subject, text);
 		}
 		return success;
 	}
