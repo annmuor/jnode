@@ -31,11 +31,13 @@ public class BinkpAsyncServer implements Runnable {
 		try {
 			ServerSocketChannel server = ServerSocketChannel.open();
 			server.configureBlocking(false);
-			server.bind(
-					new InetSocketAddress(MainHandler.getCurrentInstance()
-							.getProperty(BINKD_BIND, "0.0.0.0"), MainHandler
-							.getCurrentInstance().getIntegerProperty(
-									BINKD_PORT, 24554)), 5);
+			InetSocketAddress bind = new InetSocketAddress(MainHandler
+					.getCurrentInstance().getProperty(BINKD_BIND, "0.0.0.0"),
+					MainHandler.getCurrentInstance().getIntegerProperty(
+							BINKD_PORT, 24554));
+			server.bind(bind, 5);
+			logger.l1("We are listening on " + bind.getHostString() + ":"
+					+ bind.getPort());
 			Selector selector = Selector.open();
 			server.register(selector, server.validOps());
 			while (true) {
@@ -60,7 +62,7 @@ public class BinkpAsyncServer implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.l1("Server error occured!", e);
 		}
 	}
 

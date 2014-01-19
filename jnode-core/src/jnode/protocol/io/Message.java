@@ -2,6 +2,7 @@ package jnode.protocol.io;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -15,7 +16,7 @@ public class Message {
 	private String messageName;
 	private InputStream inputStream;
 	private boolean secure = true;
-	private Long unixtime = new Date().getTime()/1000L;
+	private Long unixtime = new Date().getTime() / 1000L;
 	private File file;
 
 	public Message(File file) throws Exception {
@@ -33,6 +34,12 @@ public class Message {
 	}
 
 	public void delete() {
+		if (inputStream != null) {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+			}
+		}
 		if (file != null) {
 			file.delete();
 		}

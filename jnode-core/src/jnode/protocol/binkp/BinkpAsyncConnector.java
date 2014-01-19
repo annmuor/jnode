@@ -107,12 +107,19 @@ public class BinkpAsyncConnector implements Runnable {
 
 	public static BinkpAsyncConnector connect(String host, Integer port) {
 		init();
+		SocketChannel socket = null;
 		try {
-			SocketChannel socket = SocketChannel.open();
+			socket = SocketChannel.open();
 			socket.connect(new InetSocketAddress(host, port));
 			return new BinkpAsyncConnector(socket, true);
 		} catch (IOException e) {
 			logger.l1("Connect error: " + e.getMessage());
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException ignore) {
+				}
+			}
 			return null;
 		}
 	}
@@ -306,6 +313,21 @@ public class BinkpAsyncConnector implements Runnable {
 					throw new ConnectionEndException();
 				}
 			} catch (ConnectionEndException e) {
+				try {
+					for (SelectionKey key : selector.keys()) {
+						key.channel().close();
+						key.cancel();
+					}
+					selector.close();
+					if (currentOS != null) {
+						currentOS.close();
+					}
+					if (transferringMessage != null) {
+						transferringMessage.getInputStream().close();
+					}
+				} catch (IOException e2) {
+					logger.l2("Error while closing key", e2);
+				}
 				ConnectionEndEvent event = null;
 				if (!foreignAddress.isEmpty()) {
 					for (FtnAddress addr : foreignAddress) {
