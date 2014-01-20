@@ -119,11 +119,11 @@ public class PointListHelper extends IJscriptHelper {
 		int dayX = dayXX % 10;
 		String ret = template;
 		if (template.endsWith("xxx")) {
-			ret = template.replaceAll("xxx$", String.format("%3d", dayXXX));
+			ret = template.replaceAll("xxx$", String.format("%03d", dayXXX));
 		} else if (template.endsWith("xx")) {
-			ret = template.replaceAll("xx$", String.format("%2d", dayXX));
+			ret = template.replaceAll("xx$", String.format("%02d", dayXX));
 		} else if (template.endsWith("x")) {
-			ret = template.replaceAll("x$", String.format("%3d", dayX));
+			ret = template.replaceAll("x$", String.format("%01d", dayX));
 		}
 		return ret;
 	}

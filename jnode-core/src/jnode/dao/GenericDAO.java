@@ -349,4 +349,52 @@ public abstract class GenericDAO<T> {
 		}
 	}
 
+	public QueryJoiner join(boolean and, Object... args) {
+		try {
+			return new QueryJoiner(and, args);
+		} catch (SQLException e) {
+			logger.l2("Error creating QueryJoiner");
+		}
+		return null;
+	}
+
+	public class QueryJoiner {
+		private QueryBuilder<T, ?> qb;
+
+		public <Z> QueryJoiner join(Class<Z> clazz, boolean and, Object... args) {
+			try {
+				QueryBuilder<Z, ?> nqb = ORMManager.get(clazz).getDao()
+						.queryBuilder();
+				ORMManager.get(clazz).buildWhere(nqb, and, args);
+				qb.join(nqb);
+			} catch (SQLException e) {
+				logger.l2("SQL error while joining", e);
+			}
+			return this;
+		}
+
+		public QueryJoiner(boolean and, Object... args) throws SQLException {
+			qb = (QueryBuilder<T, ?>) getDao().queryBuilder();
+			buildWhere(qb, and, args);
+		}
+
+		public List<T> list() {
+			try {
+				return qb.query();
+			} catch (SQLException e) {
+				logger.l2("SQL error while query", e);
+			}
+			return new ArrayList<>();
+		}
+
+		public T one() {
+			try {
+				return qb.queryForFirst();
+			} catch (SQLException e) {
+				logger.l2("SQL error while query one", e);
+			}
+			return null;
+		}
+	}
+
 }
