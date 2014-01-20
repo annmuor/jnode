@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>jnode-mail-module</artifactId>
 	<version>1.0</version>
-	<name>jnode-dumb-module</name>
+	<name>jnode-mail-module</name>
 	<description>Module to send emails</description>
 	<dependencies>
 		<dependency>

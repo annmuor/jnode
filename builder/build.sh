@@ -7,9 +7,9 @@ for I in bin docs etc files inbound lib log nodelist tmp; do
     if [ -d "$I" ]; then cp -rv "$I" "$DIR"; fi
 done
 
-mvn clean package -f ../pom.xml -pl jnode-core,jnode-httpd-module -am && \
+mvn clean package -f ../pom.xml -pl jnode-core,jnode-httpd-module,jnode-mail-module -am && \
 echo "Run!"
-for I in jnode-core jnode-httpd-module; do
+for I in jnode-core jnode-httpd-module jnode-mail-module; do
     RPATH="../$I"
     find "$RPATH/target/" -name '*.jar' -exec mv -v '{}' "$DIR/lib" ';'
 done
