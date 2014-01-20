@@ -80,9 +80,10 @@ public class HTML {
 						sb.append(new String(buf, 0, n));
 					}
 				} while (n > 0);
-				return sb.toString();
+				is.close();
 			} catch (IOException e) {
 			}
+			return sb.toString();
 		} else {
 		}
 		return "";

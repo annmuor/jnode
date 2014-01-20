@@ -48,11 +48,10 @@ public class LinksRoute extends Route {
 					"ftn_address", false);
 			for (Link object : links) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Options</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
-								object.getLinkName(),
-								object.getLinkAddress(),
-								object.getProtocolHost() + ""
-										+ object.getProtocolPort(),
+						.format("<tr><td>%s</td><td>%s</td><td>%s:%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Options</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
+								object.getLinkName(), object.getLinkAddress(),
+								object.getProtocolHost(),
+								object.getProtocolPort(),
 								object.getProtocolPassword(),
 								object.getPaketPassword(), object.getId(),
 								object.getId(), object.getId()));

@@ -14,8 +14,8 @@ import spark.Response;
 
 public class LinkoptionsRoute extends JsRoute {
 
-	public LinkoptionsRoute(String path) {
-		super(path);
+	public LinkoptionsRoute() {
+		super("/secure/linkoptions");
 	}
 
 	public LinkoptionsRoute(String path, String acceptType) {

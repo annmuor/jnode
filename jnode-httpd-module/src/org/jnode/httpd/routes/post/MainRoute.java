@@ -15,6 +15,7 @@ import spark.Route;
  * @author kreon
  * 
  */
+@Deprecated
 public class MainRoute extends Route {
 	private static final Pattern include = Pattern.compile("<\\?[ ]+include=[ ]*([^ ]*)[ ]+\\?>",
 			Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
