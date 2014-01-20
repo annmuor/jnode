@@ -1,5 +1,6 @@
 package org.jnode.mail;
 
+import java.util.LinkedList;
 import java.util.Map;
 
 import jnode.dto.Robot;
@@ -22,9 +23,11 @@ public class MailModule extends JnodeModule {
 
 	private static final Logger logger = Logger.getLogger(MailModule.class);
 	private EMailService service;
+	private LinkedList<SharedModuleEvent> queue;
 
 	public MailModule(String configFile) throws JnodeModuleException {
 		super(configFile);
+		queue = new LinkedList<>();
 	}
 
 	@Override
@@ -46,6 +49,18 @@ public class MailModule extends JnodeModule {
 			logger.l2("Robot " + robotName + " create by MailModule");
 		}
 		logger.l3("Mail service started");
+		while (true) {
+			synchronized (this) {
+				if (queue.isEmpty()) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) {
+					}
+				}
+			}
+			SharedModuleEvent e = queue.removeFirst();
+			proccessEvent(e);
+		}
 	}
 
 	@Override
@@ -53,7 +68,10 @@ public class MailModule extends JnodeModule {
 		if (event instanceof SharedModuleEvent) {
 			SharedModuleEvent e = (SharedModuleEvent) event;
 			if (getClass().getCanonicalName().equals(e.to())) {
-				proccessEvent(e);
+				synchronized (this) {
+					queue.addLast(e);
+					this.notify();
+				}
 			}
 		}
 
@@ -66,6 +84,7 @@ public class MailModule extends JnodeModule {
 			String subject = data.get("subject").toString();
 			String text = data.get("text").toString();
 			service.sendEMail(to, subject, text);
+			logger.l3("Mail to " + to + " sent");
 		} catch (RuntimeException ignore) {
 			logger.l2("Event from " + e.from() + " has invalid args");
 		} catch (Exception err) {
