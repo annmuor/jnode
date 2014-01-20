@@ -303,15 +303,12 @@ public class FtnTosser {
 								markAsBad(file, "Filearea is not availible");
 								continue;
 							}
-							new File(getFileechoPath() + File.separator
-									+ area.getName()).mkdir();
+							new File(getFilePath(area.getName(), "")).mkdir();
 							Filemail mail = new Filemail();
-							if (attach.renameTo(new File(getFileechoPath()
-									+ File.separator + area.getName()
-									+ File.separator + tic.getFile()))) {
-								mail.setFilepath(getFileechoPath()
-										+ File.separator + area.getName()
-										+ File.separator + tic.getFile());
+							String newPath = getFilePath(area.getName(),
+									tic.getFile());
+							if (attach.renameTo(new File(newPath))) {
+								mail.setFilepath(newPath);
 							} else {
 								mail.setFilepath(attach.getAbsolutePath());
 							}

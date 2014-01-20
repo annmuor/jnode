@@ -1529,13 +1529,12 @@ public final class FtnTools {
 
 		new File(FtnTosser.getFileechoPath() + File.separator + area.getName())
 				.mkdir();
-		String path = FtnTosser.getFileechoPath() + File.separator
-				+ area.getName() + File.separator + attach.getName();
+		String path = getFilePath(area.getName(), filename);
 		File newFile = new File(path);
 		if (newFile.exists()) {
 			newFile.delete();
 		}
-		if (attach.renameTo(new File(path))) {
+		if (attach.renameTo(newFile)) {
 			mail.setFilepath(path);
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
@@ -1551,6 +1550,11 @@ public final class FtnTools {
 				PollQueue.getSelf().add(sub.getLink());
 			}
 		}
+	}
+
+	public static String getFilePath(String area, String attach) {
+		return (FtnTosser.getFileechoPath() + File.separator + area
+				+ File.separator + attach).toLowerCase();
 	}
 
 	public static String md5(String protocolPassword) {

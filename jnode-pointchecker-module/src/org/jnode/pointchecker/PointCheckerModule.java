@@ -113,7 +113,8 @@ public class PointCheckerModule extends JnodeModule {
 								if (pSeg.matcher(ze.getName()).matches()) {
 									String name = file.getName() + "#"
 											+ ze.getName();
-									readAndCheck(name, zis, (int) ze.getSize());
+									readAndCheck(ze.getName(), name, zis,
+											(int) ze.getSize());
 									zis.close();
 									file.delete();
 									break;
@@ -121,7 +122,7 @@ public class PointCheckerModule extends JnodeModule {
 							}
 						} else if (pSeg.matcher(file.getName()).matches()) {
 							FileInputStream fis = new FileInputStream(file);
-							readAndCheck(file.getName(), fis,
+							readAndCheck(file.getName(), file.getName(), fis,
 									(int) file.length());
 							file.delete();
 						}
@@ -137,14 +138,14 @@ public class PointCheckerModule extends JnodeModule {
 		}
 	}
 
-	private void readAndCheck(String fileName, InputStream io, int size)
-			throws IOException {
+	private void readAndCheck(String fileName, String name, InputStream io,
+			int size) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		byte[] buf = new byte[1024];
 		while ((size = io.read(buf, 0, buf.length)) != -1) {
 			bos.write(buf, 0, size);
 		}
-		boolean success = check(fileName, bos.toByteArray(), multi);
+		boolean success = check(name, bos.toByteArray(), multi);
 		String newname = ((success) ? correctDir : incorrectDir)
 				+ File.separator + fileName;
 		FileOutputStream fof = new FileOutputStream(newname.toLowerCase());
@@ -168,8 +169,8 @@ public class PointCheckerModule extends JnodeModule {
 		Pattern pBoss = Pattern.compile("^Boss,(" + bossRegExp + ")$");
 		Pattern pPoint = Pattern
 				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");
-		String[] lines = new String(data, "CP866").replaceAll("\n", "").split(
-				"\r");
+		String[] lines = new String(data, "CP866").replaceAll("\n", "\r")
+				.replaceAll("\r+", "\r").split("\r");
 		int linenum = 0;
 		int _points = 0;
 		boolean bossnotfound = false;

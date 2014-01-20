@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -20,6 +21,8 @@ public class PointListHelper extends IJscriptHelper {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder();
+		sb.append("; Maked by jnode-pointchecker-module-1.0\r\n");
+		sb.append("; (C) Ivan Agarkov, 2014\r\n");
 		if (header != null && header.length() > 0) {
 			sb.append(getFileContents(new File(header)));
 		}
@@ -77,8 +80,13 @@ public class PointListHelper extends IJscriptHelper {
 	public void hatchToArea(String areaName, String zip, String seg,
 			String dir, String header, String footer) {
 		Filearea area = FtnTools.getFileareaByName(areaName, null);
-		File attachment = createPointList(seg, dir, header, footer);
-		FtnTools.hatchFile(area, attachment, zip, "Generated pointlist");
+		File attachment = createPointList(getFilename(seg), dir, header, footer);
+		FtnTools.hatchFile(
+				area,
+				attachment,
+				getFilename(zip),
+				"N5020 PoOINTLIST DAY "
+						+ Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
 
 	}
 
@@ -96,6 +104,28 @@ public class PointListHelper extends IJscriptHelper {
 				return 2;
 			}
 		};
+	}
+
+	/**
+	 * zxx xxx итд
+	 * 
+	 * @param template
+	 * @return
+	 */
+	private String getFilename(String template) {
+		Calendar cal = Calendar.getInstance();
+		int dayXXX = cal.get(Calendar.DAY_OF_YEAR);
+		int dayXX = dayXXX % 100;
+		int dayX = dayXX % 10;
+		String ret = template;
+		if (template.endsWith("xxx")) {
+			ret = template.replaceAll("xxx$", String.format("%3d", dayXXX));
+		} else if (template.endsWith("xx")) {
+			ret = template.replaceAll("xx$", String.format("%2d", dayXX));
+		} else if (template.endsWith("x")) {
+			ret = template.replaceAll("x$", String.format("%3d", dayX));
+		}
+		return ret;
 	}
 
 }
