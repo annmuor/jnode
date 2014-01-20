@@ -18,15 +18,17 @@ public class BinkpAsyncClientPool implements Runnable {
 			return;
 		}
 		while (true) {
+			Link l = null;
 			synchronized (PollQueue.getSelf()) {
 				if (PollQueue.getSelf().isEmpty()) {
-
 					try {
 						PollQueue.getSelf().wait();
 					} catch (InterruptedException e) {
 					}
 				}
-				Link l = PollQueue.getSelf().getNext();
+				l = PollQueue.getSelf().getNext();
+			}
+			try {
 				logger.l2(String.format("Connecting to %s:%d",
 						l.getProtocolHost(), l.getProtocolPort()));
 				BinkpAsyncConnector conn = BinkpAsyncConnector.connect(
@@ -34,6 +36,8 @@ public class BinkpAsyncClientPool implements Runnable {
 				if (conn != null) {
 					ThreadPool.execute(conn);
 				}
+			} catch (RuntimeException e) {
+				logger.l2("Runtime exception: " + e.getLocalizedMessage());
 			}
 		}
 	}

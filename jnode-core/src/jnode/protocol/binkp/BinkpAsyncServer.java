@@ -6,8 +6,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.ThreadPool;
@@ -42,22 +40,26 @@ public class BinkpAsyncServer implements Runnable {
 			server.register(selector, server.validOps());
 			while (true) {
 				selector.select();
-				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-				while (it.hasNext()) {
-					SelectionKey key = it.next();
-					ServerSocketChannel channel = (ServerSocketChannel) key
-							.channel();
-					if (key.isValid()) {
-						if (key.isAcceptable()) {
-							SocketChannel client = channel.accept();
-							InetSocketAddress addr = (InetSocketAddress) client
-									.getRemoteAddress();
-							logger.l2(String.format(
-									"Incoming connection from %s:%d",
-									addr.getHostString(), addr.getPort()));
-							ThreadPool.execute(BinkpAsyncConnector
-									.accept(client));
+				for (SelectionKey key : selector.selectedKeys()) {
+					try {
+						ServerSocketChannel channel = (ServerSocketChannel) key
+								.channel();
+						if (key.isValid()) {
+							if (key.isAcceptable()) {
+								SocketChannel client = channel.accept();
+								InetSocketAddress addr = (InetSocketAddress) client
+										.getRemoteAddress();
+								logger.l2(String.format(
+										"Incoming connection from %s:%d",
+										addr.getHostString(), addr.getPort()));
+								ThreadPool.execute(BinkpAsyncConnector
+										.accept(client));
+							}
 						}
+					} catch (IOException e) {
+						logger.l2("Error in accept(): " + e.getLocalizedMessage());
+					} catch(RuntimeException e) {
+						logger.l2("RuntimeException: " + e.getLocalizedMessage());
 					}
 				}
 			}
