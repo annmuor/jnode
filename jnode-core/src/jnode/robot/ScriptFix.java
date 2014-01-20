@@ -98,7 +98,6 @@ public class ScriptFix extends AbstractRobot {
 		for (Jscript js : ORMManager.get(Jscript.class).getOrderAnd("id", true)) {
 			String code = js.getContent();
 			boolean first = true;
-			sb.append("|-----|------------------------------------------|\n");
 			for (int i = 0; i < code.length(); i += 42) {
 				int endIndex = (code.length() > i + 42) ? i + 42 : code
 						.length();
@@ -121,7 +120,7 @@ public class ScriptFix extends AbstractRobot {
 						s.getDetails(),
 						(s.getLastRunDate() != null) ? format.format(s
 								.getLastRunDate()) : "NEVER");
-				for (int j = 51; j > fmt.length(); j--) {
+				for (int j = 53; j > fmt.length(); j--) {
 					fmt += " ";
 				}
 				fmt += "|\n";

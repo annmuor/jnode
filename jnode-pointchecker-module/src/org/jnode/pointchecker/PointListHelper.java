@@ -44,11 +44,13 @@ public class PointListHelper extends IJscriptHelper {
 					.replaceAll("\r", "").replaceAll("\n{1,}", "\n")
 					.replaceAll("\n", "\r\n");
 			File ret = File.createTempFile("zip", "pnt");
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(ret));
+			FileOutputStream fos = new FileOutputStream(ret);
+			ZipOutputStream zos = new ZipOutputStream(fos);
 			zos.putNextEntry(new ZipEntry(seg));
 			zos.write(str.toString().getBytes("CP866"));
 			zos.closeEntry();
 			zos.close();
+			fos.close();
 			return ret;
 		} catch (IOException e) {
 		}
