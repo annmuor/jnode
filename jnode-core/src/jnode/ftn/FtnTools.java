@@ -1534,10 +1534,11 @@ public final class FtnTools {
 		if (newFile.exists()) {
 			newFile.delete();
 		}
-		if (attach.renameTo(newFile)) {
+		if (attach.renameTo(new File(path))) {
 			mail.setFilepath(path);
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
+			logger.l2("Failed to rename "+attach.getAbsolutePath()+" to "+path);
 		}
 		ORMManager.get(Filemail.class).save(mail);
 

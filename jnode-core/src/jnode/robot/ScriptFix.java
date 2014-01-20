@@ -92,10 +92,9 @@ public class ScriptFix extends AbstractRobot {
 	private String list() throws SQLException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("============== List of all jscripts ==============\n");
-		sb.append("==================================================\n");
-		sb.append("| id  |                  content                 |\n");
-		sb.append("|-----|------------------------------------------|\n");
+		sb.append("============== List of all jscripts ===============\n");
+		sb.append("| id  |                   content                  |\n");
+		sb.append("|-----|--------------------------------------------|\n");
 		for (Jscript js : ORMManager.get(Jscript.class).getOrderAnd("id", true)) {
 			String code = js.getContent();
 			boolean first = true;
@@ -105,14 +104,14 @@ public class ScriptFix extends AbstractRobot {
 						.length();
 				String sub = code.substring(i, endIndex);
 				String id = (first) ? String.format("%05d", js.getId())
-						: "    ";
-				for (int j = 42; j > code.length(); j--) {
+						: "     ";
+				for (int j = 42; j > sub.length(); j--) {
 					sub += " ";
 				}
-				sb.append("|" + id + "|" + sub + "|\n");
+				sb.append("|" + id + "| " + sub + " |\n");
 				first = false;
 			}
-			sb.append("|-----|--------------scheduled-at----------------|\n");
+			sb.append("|-----|--------------scheduled-at------------------|\n");
 			for (Schedule s : ORMManager.get(Schedule.class).getAnd(
 					"jscript_id", "=", js)) {
 				String fmt = String.format(
@@ -122,16 +121,16 @@ public class ScriptFix extends AbstractRobot {
 						s.getDetails(),
 						(s.getLastRunDate() != null) ? format.format(s
 								.getLastRunDate()) : "NEVER");
-				for (int j = 42; j > fmt.length(); j--) {
+				for (int j = 51; j > fmt.length(); j--) {
 					fmt += " ";
 				}
 				fmt += "|\n";
 				sb.append(fmt);
 			}
-			sb.append("|-----|------------------------------------------|\n");
+			sb.append("|-----|--------------------------------------------|\n");
 
 		}
-		sb.append("============== List of all jscripts ==============\n");
+		sb.append("============== List of all jscripts ================\n");
 		return sb.toString();
 
 	}
