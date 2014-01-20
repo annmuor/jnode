@@ -2,6 +2,8 @@ package org.jnode.httpd.routes.post;
 
 import org.jnode.httpd.dto.PointRequest;
 
+import jnode.event.Notifier;
+import jnode.event.SharedModuleEvent;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
@@ -71,7 +73,8 @@ public class PointRequestRoute extends Route {
 					code = "EXISTS";
 				} else {
 					ORMManager.get(PointRequest.class).save(pr);
-					writeNetmail(pr);
+					writeRequestNetmail(pr);
+					writeConfirmEmail(req, pr);
 				}
 			}
 		}
@@ -81,7 +84,27 @@ public class PointRequestRoute extends Route {
 		return null;
 	}
 
-	private void writeNetmail(PointRequest pr) {
+	private void writeConfirmEmail(Request req, PointRequest pr) {
+
+		String text = "Somebody reuested a point AKA from your email address.\n"
+				+ "If that was you, click the link below to complete your registration\n"
+				+ "In other cases ignore this letter\n"
+				+"Point's Name: "+pr.getName()+"\n"
+				+"Point's AKA: "+pr.getAddr()+"\n"
+				+ " Link: "
+				+ req.url()
+				+ "?key="
+				+ pr.getId()
+				+ "  \n"
+				+ "\n--\n"
+				+ MainHandler.getVersion();
+		Notifier.INSTANSE.notify(new SharedModuleEvent(
+				"org.jnode.mail.MailModule", "to", pr.getEmail(), "subject",
+				"Point request confirmation", "text", text));
+
+	}
+
+	private void writeRequestNetmail(PointRequest pr) {
 		String text = String
 				.format("New point request:\n > Addr: %s\n > Name: %s\n > Email: %s\n > Password: %s\n",
 						pr.getAddr(), pr.getName(), pr.getEmail(),

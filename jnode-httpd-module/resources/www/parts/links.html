@@ -1,0 +1,240 @@
+<a href="#edit" onclick="createNew()" class="css-link-1">Create new</a>
+
+<table id="_links" class="links">
+	<tr>
+		<th colspan="6">Link list</th>
+	</tr>
+	<tr>
+		<th>Name</th>
+		<th>FTN</th>
+		<th>Host:Port</th>
+		<th>Connect Password</th>
+		<th>Packet Password</th>
+		<th>E/O/D</th>
+	</tr>
+	%s
+</table>
+<form action="/secure/link" method="post">
+	<input type="hidden" name="id" id="_link_id" value="0" />
+	<table id="edit" class="links">
+		<tr>
+			<th colspan="2">Link info form</th>
+		</tr>
+		<tr>
+			<th>Link name</th>
+			<td><input type="text" name="name" id="_link_name" /></td>
+		</tr>
+
+		<tr>
+			<th>Link FTN</th>
+			<td><input type="text" name="addr" id="_link_ftn" /></td>
+		</tr>
+
+		<tr>
+			<th>Host:Port</th>
+			<td><input type="text" name="host" id="_link_host" />:<input
+				type="text" name="port" id="_link_port" size="5" /></td>
+		</tr>
+
+		<tr>
+			<th>Password</th>
+			<td><input type="text" name="password" id="_link_password"
+				size="8" /></td>
+		</tr>
+
+		<tr>
+			<th>Packet Password</th>
+			<td><input type="text" name="pktpassword" id="_link_pktpassword"
+				size="8" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="s" value="Proccess" class="button" /> <input
+		type="reset" value="Clear form" class="button" />
+</form>
+<script type="text/javascript">
+	function createNew() {
+		_value("_link_id", "0");
+		_value("_link_name", "");
+		_value("_link_ftn", "");
+		_value("_link_host", "");
+		_value("_link_port", "0");
+		_value("_link_password", "");
+		_value("_link_pktpassword", "");
+	}
+
+	function _edit(link) {
+		_value("_link_id", link.id);
+		_value("_link_name", link.name);
+		_value("_link_ftn", link.addr);
+		_value("_link_host", link.host);
+		_value("_link_port", link.port);
+		_value("_link_password", link.password);
+		_value("_link_pktpassword", link.pktpassword);
+	}
+	function edit(_id) {
+		if (_id) {
+			_jrun("/secure/links.html?id=" + _id, "_edit");
+		}
+	}
+</script>
+<div id="options" style="display: none">
+	<a href="#" onclick="toggle(false)" class="css-link-1">Hide</a>
+	<form action="/secure/linkoption" method="post">
+		<input type="hidden" name="_id" id="_options_id" />
+		<table class="links">
+			<tr>
+				<th colspan="6" class="center">General Options</th>
+			</tr>
+			<tr>
+				<td colspan="2">&nbsp;</td>
+				<th>AKA to use</th>
+				<td><input type="text" id="_opt_ouraka" name="ouraka" size="8" /></td>
+				<td colspan="2">&nbsp;</td>
+			</tr>
+			<tr>
+				<th>Allow pkt pwd mismatch</th>
+				<td><select id="_opt_ignorepktpwd" name="ignorepktpwd">
+
+						<option value="true" selected>true</option>
+						<option value="false">false</option>
+				</select></td>
+				<th>Pack netmail</th>
+				<td><select id="_opt_packnetmail" name="packnetmail"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+				<th>Pack echomail</th>
+				<td><select id="_opt_packechomail" name="packechomail"><option
+							value="true" selected>true</option>
+						<option value="false">false</option></select></td>
+			</tr>
+			<tr>
+				<th>Poll on new netmail</th>
+				<td><select id="_opt_crashnetmail" name="crashnetmail"><option
+							value="true" selected>true</option>
+						<option value="false">false</option></select></td>
+				<th>Poll on new echomail</th>
+				<td><select id="_opt_crashechomail" name="crashechomail"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+				<th>Poll on new files</th>
+				<td><select id="_opt_crashfilemail" name="crashfilemail"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+			</tr>
+			<tr>
+				<th>Auto create areas</th>
+				<td><select id="_opt_areaautocreate" name="areaautocreate"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+				<th>Auto create fileareas</th>
+				<td><select id="_opt_fileautocreate" name="fileautocreate"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+				<th>Poll by global timer</th>
+				<td><select id="_opt_pollbytimeout" name="pollbytimeout"><option
+							value="true" selected>true</option>
+						<option value="false">false</option></select></td>
+			</tr>
+			<tr>
+				<th>Link paused?</th>
+				<td><select id="_opt_pause" name="pause"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+				<th>Access level</th>
+				<td><input type="text" id="_opt_level" name="level" size="8" /></td>
+				<th>Access groups</th>
+				<td><input type="text" id="_opt_groups" name="groups" size="8" /></td>
+			</tr>
+
+			<tr>
+				<th colspan="6" class="center">Robots options</th>
+			</tr>
+			<tr>
+				<th>Enable AreaFix?</th>
+				<td><select id="_opt_areafix" name="areafix"><option
+							value="true" selected>true</option>
+						<option value="false">false</option></select></td>
+
+				<th>Enable FileFix</th>
+				<td><select id="_opt_filefix" name="filefix"><option
+							value="true" selected>true</option>
+						<option value="false">false</option></select></td>
+				<th>Enable ScriptFix?</th>
+				<td><select id="_opt_scriptfix" name="scriptfix"><option
+							value="true">true</option>
+						<option value="false" selected>false</option></select></td>
+			</tr>
+			<tr>
+				<th>Password for AreaFix</th>
+				<td><input type="text" id="_opt_areafixpwd" name="areafixpwd"
+					size="8" /></td>
+				<th>Password for FileFix</th>
+				<td><input type="text" id="_opt_filefixpwd" name="filefixpwd"
+					size="8" /></td>
+				<th>Password for ScriptFix</th>
+				<td><input type="text" id="_opt_scriptfixpwd"
+					name="scriptfixpwd" size="8" /></td>
+			</tr>
+
+		</table>
+		<input type="submit" name="_s" value="Set options" class="button" />
+		<input type="reset" class="button" name="_s" value="To default"
+			onclick="_clear_options()" />
+	</form>
+</div>
+<script type="text/javascript">
+	function toggle(show) {
+		var inner = document.getElementById("options");
+		if (inner.style.display == "none")
+			inner.style.display = "";
+		else if (!show)
+			inner.style.display = "none";
+	}
+	function _clear_options() {
+		_value("_opt_ignorepktpwd", "true");
+		_value("_opt_packnetmail", "false");
+		_value("_opt_packechomail", "true");
+		_value("_opt_crashnetmail", "true");
+		_value("_opt_crashechomail", "false");
+		_value("_opt_crashfilemail", "false");
+		_value("_opt_areaautocreate", "false");
+		_value("_opt_fileautocreate", "false");
+		_value("_opt_pollbytimeout", "true");
+		_value("_opt_areafix", "true");
+		_value("_opt_filefix", "true");
+		_value("_opt_scriptfix", "false");
+		_value("_opt_pause", "false");
+		_value("_opt_level", "");
+		_value("_opt_groups", "");
+		_value("_opt_areafixpwd", "");
+		_value("_opt_scriptfixpwd", "");
+		_value("_opt_filefixpwd", "");
+		_value("_opt_ouraka", "");
+
+	}
+	function _options(options) {
+		_clear_options();
+		for (i = 0; i < options.length; i++) {
+			_value("_opt_" + options[i].name, options[i].value);
+		}
+	}
+
+	function options(id) {
+		if (id) {
+			_value("_options_id", id);
+			_jrun("/secure/linkoptions?id=" + id, "_options");
+			toggle(true);
+		}
+	}
+</script>
+
+<form action="/secure/link" method="post" id="_delete">
+	<input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+	function del(id) {
+		_value("_did", id);
+		document.getElementById("_delete").submit();
+	}
+</script>

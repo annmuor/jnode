@@ -8,6 +8,7 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.SecureFilter;
+import org.jnode.httpd.routes.get.BecomePointRoute;
 import org.jnode.httpd.routes.get.EchoareasRoute;
 import org.jnode.httpd.routes.get.FileareasRoute;
 import org.jnode.httpd.routes.get.HealthRoute;
@@ -23,6 +24,7 @@ import org.jnode.httpd.routes.post.LinkoptionRoute;
 import org.jnode.httpd.routes.post.MainRoute;
 import org.jnode.httpd.routes.post.PointRequestRoute;
 import org.jnode.httpd.routes.post.RoutingRoute;
+
 
 
 /**
@@ -57,33 +59,23 @@ public class HttpdModule extends JnodeModule {
 
 		Spark.before(new SecureFilter("/secure/*"));
 
-		Spark.get(new SelfRoute("/self"));
-
-		Spark.get(new LinksRoute("/secure/links"));
-
-		Spark.post(new LinkRoute("/secure/link"));
-
+		Spark.get(new SelfRoute());
+		Spark.get(new HealthRoute());
+		Spark.get(new LinksRoute());
+		Spark.get(new BecomePointRoute());
 		Spark.get(new LinkoptionsRoute("/secure/linkoptions"));
-
-		Spark.post(new LinkoptionRoute("/secure/linkoption"));
-
 		Spark.get(new EchoareasRoute("/secure/echoareas"));
-		Spark.post(new EchoareaRoute("/secure/echoarea"));
-
 		Spark.get(new FileareasRoute("/secure/fileareas"));
+		Spark.get(new RoutingsRoute());
+		
+		Spark.post(new LinkRoute("/secure/link"));
+		Spark.post(new LinkoptionRoute("/secure/linkoption"));
+		Spark.post(new EchoareaRoute("/secure/echoarea"));
 		Spark.post(new FileareaRoute("/secure/filearea"));
-
-		Spark.get(new RoutingsRoute("/secure/routings"));
 		Spark.post(new RoutingRoute("/secure/routing"));
 
-		Spark.get(new HealthRoute("/secure/health"));
-		// link request
 		Spark.post(new LinkRequestRoute());
-		// point request
 		Spark.post(new PointRequestRoute());
-
-		// final
-//		Spark.get(new MainRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();

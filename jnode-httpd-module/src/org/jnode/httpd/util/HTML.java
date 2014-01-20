@@ -65,7 +65,7 @@ public class HTML {
 		return this;
 	}
 
-	private String getContents(String path) {
+	public static String getContents(String path) {
 		String search = "www" + path;
 		InputStream is = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(search);

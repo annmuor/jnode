@@ -1,0 +1,83 @@
+<a href="#new" onclick="fnew();" class="css-link-1">New routing</a>
+<table class="links" id="echoes">
+	<tr>
+		<th colspan="8" class="center">Routing</th>
+	</tr>
+	<tr>
+		<th>Nice</th>
+		<th>From Address</th>
+		<th>From Name</th>
+		<th>To Address</th>
+		<th>To Name</th>
+		<th>Subject</th>
+		<th>Via</th>
+		<th>CRUD</th>
+	</tr>
+	%s
+</table>
+
+<BR />
+<span class="info" id="_error"></span>
+<form action="/secure/routing" method="post">
+	<input type="hidden" name="id" id="_id" value="0" />
+	<table class="info" id="new">
+		<tr>
+			<th class="center" colspan="6">New routing</th>
+		</tr>
+		<tr>
+			<th>Nice</th>
+			<td><input type="text" name="nice" id="_nice" size="5" /></td>
+			<th>From Address</th>
+			<td><input type="text" name="fa" id="_fa" size="15" /></td>
+			<th>From Name</th>
+			<td><input type="text" name="fn" id="_fn" size="15" /></td>
+		</tr>
+		<tr>
+			<th>To Address</th>
+			<td><input type="text" name="ta" id="_ta" size="15" /></td>
+			<th>To Name</th>
+			<td><input type="text" name="tn" id="_tn" size="15" /></td>
+			<th>Subject</th>
+			<td><input type="text" name="s" id="_s" size="15" /></td>
+		</tr>
+		<tr>
+			<th colspan="3">Via</th>
+			<td colspan="3"><select name="v" id="_v">%s</select></td>
+		</tr>
+	</table>
+	<input type="submit" name="_s" value="Proccess" class="button" />
+</form>
+<script>
+	function fnew() {
+		_value("_nice", "1000");
+		_value("_fa", "*");
+		_value("_fn", "*");
+		_value("_ta", "*");
+		_value("_tn", "*");
+		_value("_s", "*");
+	}
+	var code = _getParameterByName("code");
+	if (code) {
+		_fill("_error", "Error: ");
+		var text = "Unknown error occured";
+		if (code == "ENAME") {
+			text = "Echoarea name is invalid";
+		} else if (code == "EXISTS") {
+			text = "Echoarea with that name already exists";
+		} else if (code == "INVALID") {
+			text = "Level values are invalid";
+		}
+		_fill("_error", text);
+	}
+</script>
+
+<form action="/secure/routing" method="post" id="_delete">
+	<input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+	function del(id) {
+		_value("_did", id);
+		document.getElementById("_delete").submit();
+	}
+</script>

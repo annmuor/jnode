@@ -1,34 +1,34 @@
 package org.jnode.httpd.routes.get;
 
-import org.jnode.httpd.routes.JsRoute;
-import org.jnode.httpd.util.JSONUtil;
+import org.jnode.httpd.util.HTML;
 
 import spark.Request;
 import spark.Response;
+import spark.Route;
 
-public class HealthRoute extends JsRoute {
+public class HealthRoute extends Route {
+	private final String FORMAT_TABLE = "<table class=\"info\">%s</table>";
+	private final String FORMAT_TR = "<tr><th>%s</th><td>%s</td></tr>";
 
-	public HealthRoute(String path) {
-		super(path);
-	}
-
-	public HealthRoute(String path, String acceptType) {
-		super(path, acceptType);
+	public HealthRoute() {
+		super("/secure/index.html");
 	}
 
 	@Override
-	protected Object _handle(Request req, Response resp) {
+	public Object handle(Request req, Response resp) {
 		Runtime runtime = Runtime.getRuntime();
-
-		return String.format(
-				"{%s, %s, %s, %s, %s}",
-				JSONUtil.pair("threads", Thread.activeCount()),
-				JSONUtil.pair("freemem",
-						Math.round(runtime.freeMemory() / (1024 * 1024))),
-				JSONUtil.pair("totalmem",
-						Math.round(runtime.totalMemory() / (1024 * 1024))),
-				JSONUtil.pair("maxmem",
-						Math.round(runtime.maxMemory() / (1024 * 1024))),
-				JSONUtil.pair("cores", runtime.availableProcessors()));
+		int free = Math.round(runtime.freeMemory() / (1024 * 1024));
+		int max = Math.round(runtime.maxMemory() / (1024 * 1024));
+		int total = Math.round(runtime.totalMemory() / (1024 * 1024));
+		String text = String.format(
+				FORMAT_TABLE,
+				String.format(FORMAT_TR, "CPU cores",
+						"" + runtime.availableProcessors())
+						+ String.format(FORMAT_TR, "Running threads",
+								Thread.activeCount())
+						+ String.format(FORMAT_TR, "Memory usage", "Max: "
+								+ max + "MB / Used: " + total + " MB / Free: "
+								+ free + " MB"));
+		return HTML.start(true).append(text).footer().get();
 	}
 }

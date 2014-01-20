@@ -341,7 +341,7 @@ public class BinkpAsyncConnector implements Runnable {
 									: "Done with errors, Sb/Rb: %d/%d (%s)",
 									total_sent_bytes, total_recv_bytes, address));
 					event = new ConnectionEndEvent(new FtnAddress(address),
-							clientConnection, (connectionState == STATE_END),
+							!clientConnection, (connectionState == STATE_END),
 							total_recv_bytes, total_sent_bytes);
 				} else {
 					event = new ConnectionEndEvent(clientConnection, false);

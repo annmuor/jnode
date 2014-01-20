@@ -1,18 +1,20 @@
 package org.jnode.httpd.routes.get;
 
-import static org.jnode.httpd.util.JSONUtil.pair;
-
-import org.jnode.httpd.routes.JsRoute;
-
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
+
+import org.jnode.httpd.util.HTML;
+
 import spark.Request;
 import spark.Response;
+import spark.Route;
 
-public class SelfRoute extends JsRoute {
+public class SelfRoute extends Route {
+	private final String FORMAT_TABLE = "<table class=\"info\">%s</table>";
+	private final String FORMAT_TR = "<tr><th>%s</th><td>%s</td></tr>";
 
-	public SelfRoute(String path) {
-		super(path);
+	public SelfRoute() {
+		super("/index.html");
 	}
 
 	public SelfRoute(String path, String acceptType) {
@@ -20,14 +22,21 @@ public class SelfRoute extends JsRoute {
 	}
 
 	@Override
-	public Object _handle(Request req, Response resp) {
+	public Object handle(Request req, Response resp) {
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
-		return String.format("{%s, %s, %s, %s, %s, %s}",
-				pair("name", info.getStationName()),
-				pair("location", info.getLocation()),
-				pair("addresses", info.getAddressList()),
-				pair("sysop", info.getSysop()),
-				pair("version", MainHandler.getVersion()), pair("os", getOS()));
+		String text = String.format(
+				FORMAT_TABLE,
+				String.format(FORMAT_TR, "Station Name", info.getStationName())
+						+ String.format(FORMAT_TR, "Station Location",
+								info.getLocation())
+						+ String.format(FORMAT_TR, "Sysop's Name",
+								info.getSysop())
+						+ String.format(FORMAT_TR, "FTN Address(es)", info
+								.getAddressList().toString())
+						+ String.format(FORMAT_TR, "Version",
+								MainHandler.getVersion())
+						+ String.format(FORMAT_TR, "OS", getOS()));
+		return HTML.start(false).append(text).footer().get();
 	}
 
 	private String getOS() {
