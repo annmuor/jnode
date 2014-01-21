@@ -211,9 +211,9 @@ public class BinkpAsyncConnector implements Runnable {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (lastActive == 0) {
 							InetSocketAddress addr = (InetSocketAddress) channel
-									.getRemoteAddress();
+									.socket().getRemoteSocketAddress();
 							logger.l2(String.format("Connected with %s:%d",
-									addr.getHostString(), addr.getPort()));
+									addr.getHostName(), addr.getPort()));
 							lastActive = new Date().getTime();
 						}
 						if (key.isValid()) {
