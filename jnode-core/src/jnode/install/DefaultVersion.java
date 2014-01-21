@@ -38,7 +38,7 @@ public class DefaultVersion extends Version {
 	}
 
 	public static List<String> updateFromVersion(Version ver) {
-		List<String> ret = new ArrayList<>();
+		List<String> ret = new ArrayList<String>();
 		if (ver.equals("1.0")) {
 			ret.add("ALTER TABLE netmail ADD last_modified BIGINT NOT NULL DEFAULT 0;");
 			ver.setMinorVersion(1L);
@@ -48,7 +48,7 @@ public class DefaultVersion extends Version {
 				List<LinkOption_1_1> options2 = ORMManager.get(
 						LinkOption_1_1.class).getAll();
 
-				ArrayList<LinkOption> options = new ArrayList<>();
+				ArrayList<LinkOption> options = new ArrayList<LinkOption>();
 				for (LinkOption_1_1 l2 : options2) {
 					LinkOption l = new LinkOption();
 					l.setLink(l2.getLink());
@@ -73,7 +73,7 @@ public class DefaultVersion extends Version {
 			try {
 				List<Route_1_2> routes = ORMManager.get(Route_1_2.class)
 						.getAll();
-				LinkedList<Route> newroute = new LinkedList<>();
+				LinkedList<Route> newroute = new LinkedList<Route>();
 				for (Route_1_2 r2 : routes) {
 					Route r = new Route();
 					r.setNice(r2.getNice());

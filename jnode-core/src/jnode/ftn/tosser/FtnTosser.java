@@ -28,9 +28,9 @@ public class FtnTosser {
 	private static final String FILEECHO_ENABLE = "fileecho.enable";
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
-	private final Map<String, Integer> tossed = new HashMap<>();
-	private final Map<String, Integer> bad = new HashMap<>();
-	private final Set<Link> pollLinks = new HashSet<>();
+	private final Map<String, Integer> tossed = new HashMap<String, Integer>();
+	private final Map<String, Integer> bad = new HashMap<String, Integer>();
+	private final Set<Link> pollLinks = new HashSet<Link>();
 
 	/**
 	 * Разбор нетмейла
@@ -183,7 +183,7 @@ public class FtnTosser {
 	 */
 	public synchronized void tossInboundDirectory() {
 		logger.l5("Start tossInboundDirectory()");
-		Set<Link> poll = new HashSet<>();
+		Set<Link> poll = new HashSet<Link>();
 		File inbound = new File(getInbound());
 		final File[] listFiles = inbound.listFiles();
 		if (listFiles != null) {
@@ -445,10 +445,10 @@ public class FtnTosser {
 	public synchronized static List<Message> getMessagesForLink(Link link) {
 		FtnAddress link_address = new FtnAddress(link.getLinkAddress());
 		Ftn2D link2d = new Ftn2D(link_address.getNet(), link_address.getNode());
-		List<FtnMessage> messages = new ArrayList<>();
-		List<File> attachedFiles = new ArrayList<>();
-		List<FtnTIC> tics = new ArrayList<>();
-		List<Message> ret = new ArrayList<>();
+		List<FtnMessage> messages = new ArrayList<FtnMessage>();
+		List<File> attachedFiles = new ArrayList<File>();
+		List<FtnTIC> tics = new ArrayList<FtnTIC>();
+		List<Message> ret = new ArrayList<Message>();
 		try {
 			List<Netmail> netmails = getMail(link);
 
@@ -480,7 +480,7 @@ public class FtnTosser {
 		}
 		// echomail
 		{
-			List<Echomail> toRemove = new ArrayList<>();
+			List<Echomail> toRemove = new ArrayList<Echomail>();
 			List<EchomailAwaiting> mailToSend = getEchoMail(link);
 			for (EchomailAwaiting ema : mailToSend) {
 				Echomail mail = ema.getMail();
@@ -495,7 +495,7 @@ public class FtnTosser {
 
 				Echoarea area = mail.getArea();
 				toRemove.add(mail);
-				Set<Ftn2D> seenby = new HashSet<>(read2D(mail.getSeenBy()));
+				Set<Ftn2D> seenby = new HashSet<Ftn2D>(read2D(mail.getSeenBy()));
 				if (seenby.contains(link2d) && link_address.getPoint() == 0) {
 					logger.l5(link2d + " is in seenby for " + link_address);
 					continue;
@@ -538,7 +538,7 @@ public class FtnTosser {
 				message.setDate(mail.getDate());
 				message.setSubject(mail.getSubject());
 				message.setText(mail.getText());
-				message.setSeenby(new ArrayList<>(seenby));
+				message.setSeenby(new ArrayList<Ftn2D>(seenby));
 				message.setPath(path);
 				logger.l4("Echomail #" + mail.getId() + " (" + area.getName()
 						+ ") packed for " + link.getLinkAddress());
@@ -552,7 +552,7 @@ public class FtnTosser {
 		}
 		// fileechoes
 		{
-			List<Filemail> toRemove = new ArrayList<>();
+			List<Filemail> toRemove = new ArrayList<Filemail>();
 			List<FilemailAwaiting> filemail = getFileMail(link);
 			for (FilemailAwaiting awmail : filemail) {
 				Filemail mail = awmail.getMail();
@@ -568,7 +568,7 @@ public class FtnTosser {
 					continue;
 				}
 
-				Set<FtnAddress> seenby = new HashSet<>(read4D(mail.getSeenby()));
+				Set<FtnAddress> seenby = new HashSet<FtnAddress>(read4D(mail.getSeenby()));
 				if (seenby.contains(link_address)) {
 					logger.l3("This file have a seen-by for link");
 					continue;
@@ -617,7 +617,7 @@ public class FtnTosser {
 								+ " - ignored", e);
 					}
 				}
-				List<FtnAddress> sb = new ArrayList<>(seenby);
+				List<FtnAddress> sb = new ArrayList<FtnAddress>(seenby);
 				Collections.sort(sb, new Ftn4DComparator());
 				tic.setSeenby(sb);
 				tic.setPath(mail.getPath() + "Path " + getPrimaryFtnAddress()
@@ -716,7 +716,7 @@ public class FtnTosser {
 			return ORMManager.get(Netmail.class).getAnd("send", "=", false,
 					"route_via", "=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<Netmail>();
 		}
 	}
 
@@ -730,7 +730,7 @@ public class FtnTosser {
 		FtnPkt head = new FtnPkt(getPrimaryFtnAddress(), to, "-", new Date());
 		List<Netmail> mail = ORMManager.get(Netmail.class).getAnd("send", "=",
 				false, "to_address", "=", to.toString(), "route_via", "null");
-		List<FtnMessage> msgs = new ArrayList<>();
+		List<FtnMessage> msgs = new ArrayList<FtnMessage>();
 		for (Netmail m : mail) {
 			if ((m.getAttr() & FtnMessage.ATTR_CRASH) >= FtnMessage.ATTR_CRASH) {
 				msgs.add(netmailToFtnMessage(m));
@@ -763,7 +763,7 @@ public class FtnTosser {
 			return ORMManager.get(EchomailAwaiting.class).getAnd("link_id",
 					"=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<EchomailAwaiting>();
 		}
 	}
 
@@ -777,7 +777,7 @@ public class FtnTosser {
 			return ORMManager.get(FilemailAwaiting.class).getAnd("link_id",
 					"=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<FilemailAwaiting>();
 		}
 	}
 

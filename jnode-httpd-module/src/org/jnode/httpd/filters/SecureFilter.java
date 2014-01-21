@@ -13,7 +13,7 @@ import spark.Request;
 import spark.Response;
 
 public class SecureFilter extends Filter {
-	private HashMap<String, Boolean> cache = new HashMap<>();
+	private HashMap<String, Boolean> cache = new HashMap<String, Boolean>();
 
 	public SecureFilter() {
 		super();

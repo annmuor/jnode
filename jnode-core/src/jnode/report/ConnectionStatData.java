@@ -84,7 +84,7 @@ public class ConnectionStatData {
                     new ArrayList<ConnectionStatDataElement>();
         } catch (FileNotFoundException e) {
             logger.l2("file with stat connection ACCIDENTALLY not found", e);
-            return new ArrayList<>();
+            return new ArrayList<ConnectionStatDataElement>();
         }
         return result;
     }

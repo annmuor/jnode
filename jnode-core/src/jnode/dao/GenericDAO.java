@@ -30,13 +30,26 @@ import com.j256.ormlite.table.TableUtils;
  */
 public abstract class GenericDAO<T> {
 
+	private static final int COMMAND_EQ = 1;
+	private static final int COMMAND_NULL = 2;
+	private static final int COMMAND_NOTNULL = 3;
+	private static final int COMMAND_NE = 4;
+	private static final int COMMAND_GT = 5;
+	private static final int COMMAND_GE = 6;
+	private static final int COMMAND_LT = 7;
+	private static final int COMMAND_LE = 8;
+	private static final int COMMAND_LIKE = 9;
+	private static final int COMMAND_IN = 10;
+	private static final int COMMAND_BETWEEN = 11;
+
+	private static final HashMap<String, Integer> commandMap = createCommandMap();
 	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
 
 	private final Logger logger = Logger.getLogger(getType());
 
 	protected GenericDAO() throws Exception {
 		if (daoMap == null) {
-			daoMap = new HashMap<>();
+			daoMap = new HashMap<Class<?>, Dao<?, ?>>();
 		}
 		if (!daoMap.containsKey(getType())) {
 			Dao<?, ?> dao = DaoManager.createDao(ORMManager.getSource(),
@@ -46,6 +59,37 @@ public abstract class GenericDAO<T> {
 			}
 			daoMap.put(getType(), dao);
 		}
+	}
+
+	private static HashMap<String, Integer> createCommandMap() {
+		HashMap<String, Integer> ret = new HashMap<String, Integer>();
+		ret.put("==", COMMAND_EQ);
+		ret.put("=", COMMAND_EQ);
+		ret.put("eq", COMMAND_EQ);
+
+		ret.put("ne", COMMAND_NE);
+		ret.put("!=", COMMAND_NE);
+		ret.put("<>", COMMAND_NE);
+
+		ret.put("gt", COMMAND_GT);
+		ret.put(">", COMMAND_GT);
+
+		ret.put("ge", COMMAND_GE);
+		ret.put(">=", COMMAND_GE);
+
+		ret.put("lt", COMMAND_LT);
+		ret.put("<", COMMAND_LT);
+
+		ret.put("le", COMMAND_LE);
+		ret.put("<=", COMMAND_LE);
+
+		ret.put("like", COMMAND_LIKE);
+		ret.put("in", COMMAND_IN);
+		ret.put("between", COMMAND_BETWEEN);
+
+		ret.put("null", COMMAND_NULL);
+		ret.put("notnull", COMMAND_NOTNULL);
+		return ret;
 	}
 
 	abstract protected Class<?> getType();
@@ -77,55 +121,57 @@ public abstract class GenericDAO<T> {
 				first = false;
 			}
 			String w = args[i + 1].toString();
-			switch (w) {
-			case "eq":
-			case "=":
-			case "==":
+			int command = getCommand(w.toLowerCase());
+			switch (command) {
+			case COMMAND_EQ:
 				wh.eq(args[i].toString(), args[i + 2]);
 				break;
-			case "null":
+			case COMMAND_NULL:
 				wh.isNull(args[i].toString());
 				i -= 1;
 				break;
-			case "notnull":
+			case COMMAND_NOTNULL:
 				wh.isNotNull(args[i].toString());
 				i -= 1;
 				break;
-			case "ne":
-			case "!=":
-			case "<>":
+			case COMMAND_NE:
 				wh.ne(args[i].toString(), args[i + 2]);
 				break;
-			case "gt":
-			case ">":
+			case COMMAND_GT:
 				wh.gt(args[i].toString(), args[i + 2]);
 				break;
-			case "ge":
-			case ">=":
+			case COMMAND_GE:
 				wh.ge(args[i].toString(), args[i + 2]);
 				break;
-			case "lt":
-			case "<":
+			case COMMAND_LT:
 				wh.lt(args[i].toString(), args[i + 2]);
 				break;
-			case "le":
-			case "<=":
+			case COMMAND_LE:
 				wh.le(args[i].toString(), args[i + 2]);
 				break;
-			case "like":
-			case "~":
+			case COMMAND_LIKE:
 				wh.like(args[i].toString(), args[i + 2]);
 				break;
-			case "in":
+			case COMMAND_IN:
 				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
 				break;
-			case "between":
+			case COMMAND_BETWEEN:
 				wh.between(args[i].toString(), args[i + 2], args[i + 3]);
 				i += 1;
 				break;
+			default:
+				throw new SQLException("Unknown command: " + w);
 			}
 		}
 		return wh;
+	}
+
+	private int getCommand(String lowerCase) {
+		Integer command = commandMap.get(lowerCase);
+		if (command != null) {
+			return command.intValue();
+		}
+		return -1;
 	}
 
 	/**
@@ -156,7 +202,7 @@ public abstract class GenericDAO<T> {
 			logger.l1("SQL Exception in getAll", e);
 			logger.l1(MessageFormat.format("we worked with {0}", e));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	/**
@@ -176,7 +222,7 @@ public abstract class GenericDAO<T> {
 					Arrays.toString(args)));
 
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderAnd(String order, boolean asc, Object... args) {
@@ -190,7 +236,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderLimitAnd(long limit, String order, boolean asc,
@@ -206,7 +252,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2} {3}",
 					limit, order, asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	/**
@@ -225,7 +271,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0}",
 					Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderOr(String order, boolean asc, Object... args) {
@@ -239,7 +285,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public T getFirstAnd(Object... args) {
@@ -384,7 +430,7 @@ public abstract class GenericDAO<T> {
 			} catch (SQLException e) {
 				logger.l2("SQL error while query", e);
 			}
-			return new ArrayList<>();
+			return new ArrayList<T>();
 		}
 
 		public T one() {

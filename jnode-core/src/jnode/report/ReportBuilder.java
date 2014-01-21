@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class ReportBuilder {
     private final StringBuilder sb = new StringBuilder();
-    private final Map<String, FieldFormatter> formatters = new HashMap<>();
+    private final Map<String, FieldFormatter> formatters = new HashMap<String, FieldFormatter>();
     private List<String> columns;
     private List<Integer> colLength;
     private int width;
@@ -121,7 +121,7 @@ public class ReportBuilder {
             return null;
         }
 
-        List<Integer> result = new ArrayList<>();
+        List<Integer> result = new ArrayList<Integer>();
         for (String item : temp) {
             result.add(Integer.valueOf(item));
         }
@@ -146,7 +146,7 @@ public class ReportBuilder {
         if (formats == null) {
             this.formats = null;
         } else {
-            this.formats = new ArrayList<>(formats);
+            this.formats = new ArrayList<String>(formats);
         }
     }
 
@@ -163,7 +163,7 @@ public class ReportBuilder {
             this.colLength = null;
             width = 0;
         } else {
-            this.colLength = new ArrayList<>(colLength);
+            this.colLength = new ArrayList<Integer>(colLength);
             width = 0;
             for (Integer aColLength : colLength) {
                 ++width;
@@ -185,7 +185,7 @@ public class ReportBuilder {
         if (columns == null) {
             this.columns = null;
         } else {
-            this.columns = new ArrayList<>(columns);
+            this.columns = new ArrayList<String>(columns);
         }
     }
 

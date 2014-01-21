@@ -1,4 +1,4 @@
-package org.jnode.httpd.routes.post;
+package org.jnode.httpd.routes.html;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -7,6 +7,7 @@ import java.net.Socket;
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
+import jnode.ftn.types.FtnMessage;
 import jnode.main.MainHandler;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
@@ -71,7 +72,7 @@ public class LinkRequestRoute extends Route {
 						lr.setPort(iport);
 					} catch (IOException e) {
 						code = "INET";
-					} catch(NumberFormatException e) {
+					} catch (NumberFormatException e) {
 						code = "INET";
 					}
 				}
@@ -83,7 +84,7 @@ public class LinkRequestRoute extends Route {
 							String akey = FtnTools.generate8d();
 							lr.setAkey(akey);
 							ORMManager.get(LinkRequest.class).save(lr);
-							writeKey(req,lr);
+							writeKey(lr);
 						} else {
 							code = "EXISTS";
 						}
@@ -148,10 +149,12 @@ public class LinkRequestRoute extends Route {
 				link.getLinkName(),
 				"You are welcome",
 				"You are now have linkage with our node.\n"
-						+ "Please, follow the Fidonet rules and keep your connection stable\n");
+						+ "Please, follow the Fidonet rules and keep your connection stable\n"
+						+ "Your password: " + link.getProtocolPassword(),
+				FtnMessage.ATTR_CRASH, false);
 	}
 
-	private void writeKey(Request req, LinkRequest lr) {
+	private void writeKey(LinkRequest lr) {
 		// написать нам на почту
 		FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
 				FtnTools.getPrimaryFtnAddress(), MainHandler
@@ -167,9 +170,10 @@ public class LinkRequestRoute extends Route {
 				lr.getName(),
 				"Link instructions",
 				"Somebody have just started a linkage proccess from your address.\n"
-						+ "If this was you, visit "+req.url()+"/confirmlink.html on our site and fill fields as described below:\n"
+						+ "If this was you, visit /confirmlink.html on our site and fill fields as described below:\n"
 						+ " > Request Id: " + lr.getId() + "\n"
-						+ " > Request Key: " + lr.getAkey() + "\n");
+						+ " > Request Key: " + lr.getAkey() + "\n",
+				FtnMessage.ATTR_CRASH, false);
 	}
 
 }

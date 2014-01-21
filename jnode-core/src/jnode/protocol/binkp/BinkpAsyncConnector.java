@@ -135,15 +135,15 @@ public class BinkpAsyncConnector implements Runnable {
 	}
 
 	private int connectionState = STATE_GREET;
-	private List<FtnAddress> foreignAddress = new ArrayList<>();
-	private List<FtnAddress> ourAddress = new ArrayList<>();
+	private List<FtnAddress> foreignAddress = new ArrayList<FtnAddress>();
+	private List<FtnAddress> ourAddress = new ArrayList<FtnAddress>();
 	private Link foreignLink;
 	private boolean secure = false;
 	private boolean clientConnection = true;
 	private String cramAlgo = null;
 	private String cramText = null;
 	private boolean binkp1_0 = true;
-	private LinkedList<Message> messages = new LinkedList<>();
+	private LinkedList<Message> messages = new LinkedList<Message>();
 	private Message transferringMessage = null;
 	private Message receivingMessage = null;
 
@@ -161,7 +161,7 @@ public class BinkpAsyncConnector implements Runnable {
 
 	private Selector selector;
 
-	private LinkedList<BinkpFrame> frames = new LinkedList<>();
+	private LinkedList<BinkpFrame> frames = new LinkedList<BinkpFrame>();
 
 	private BinkpAsyncConnector(SocketChannel socket, boolean clientConnection)
 			throws IOException {
