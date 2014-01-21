@@ -19,7 +19,7 @@ public class MailSender implements IRobot {
 			+ MainHandler.getVersion();
 
 	public MailSender() {
-		timeoutMap = new Hashtable<>();
+		timeoutMap = new Hashtable<FtnAddress, Long>();
 	}
 
 	@Override

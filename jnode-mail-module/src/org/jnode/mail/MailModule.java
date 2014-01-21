@@ -27,7 +27,7 @@ public class MailModule extends JnodeModule {
 
 	public MailModule(String configFile) throws JnodeModuleException {
 		super(configFile);
-		queue = new LinkedList<>();
+		queue = new LinkedList<SharedModuleEvent>();
 	}
 
 	@Override
