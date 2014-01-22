@@ -7,7 +7,13 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
+/**
+ * 1 - fatal<br>
+ * 2 - error, warn<br>
+ * 3 - info<br>
+ * 4 - debug<br>
+ * 5 - trace
+ */
 public final class Logger {
 	public static final int LOG_L5 = 5;
 	public static final int LOG_L4 = 4;
