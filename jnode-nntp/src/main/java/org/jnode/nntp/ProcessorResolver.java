@@ -1,6 +1,9 @@
 package org.jnode.nntp;
 
 import com.google.common.collect.Maps;
+import org.jnode.nntp.model.NntpCommand;
+import org.jnode.nntp.processor.GroupProcessor;
+import org.jnode.nntp.processor.ListProcessor;
 import org.jnode.nntp.processor.ModeReaderProcessor;
 
 import java.util.Map;
@@ -11,6 +14,8 @@ public class ProcessorResolver {
 
     static {
         map.put(NntpCommand.MODE_READER, new ModeReaderProcessor());
+        map.put(NntpCommand.LIST, new ListProcessor());
+        map.put(NntpCommand.GROUP, new GroupProcessor());
     }
 
     public static Processor processor(NntpCommand command) {

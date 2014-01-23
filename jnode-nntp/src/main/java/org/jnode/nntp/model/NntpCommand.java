@@ -1,17 +1,19 @@
-package org.jnode.nntp;
+package org.jnode.nntp.model;
+
+import java.util.Collection;
 
 public enum NntpCommand {
     ARTICLE,
     BODY,
     CAPABILITIES,
     DATE,
-    GROUP,
+    GROUP("GROUP"),
     HDR,
     HEAD,
     HELP,
     IHAVE,
     LAST,
-    LIST,
+    LIST("LIST"),
     ACTIVE_TIMES,
     LIST_ACTIVE,
     LIST_DISTRIB_PATS,
@@ -29,6 +31,7 @@ public enum NntpCommand {
     STAT;
 
     private String command;
+    private Collection<String> params;
 
     NntpCommand(String command) {
         this.command = command;
@@ -39,6 +42,14 @@ public enum NntpCommand {
 
     public String getCommand() {
         return command;
+    }
+
+    public Collection<String> getParams() {
+        return params;
+    }
+
+    public void setParams(Collection<String> params) {
+        this.params = params;
     }
 
     public static NntpCommand find(String command) {

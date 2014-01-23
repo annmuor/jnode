@@ -1,6 +1,8 @@
 package org.jnode.nntp;
 
+import java.util.Collection;
+
 public interface Processor {
 
-    String process();
+    String process(Collection<String> params);
 }

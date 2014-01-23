@@ -2,6 +2,8 @@ package org.jnode.nntp.processor;
 
 import org.jnode.nntp.Processor;
 
+import java.util.Collection;
+
 /**
  * <a href="http://tools.ietf.org/html/rfc3977#section-5.3">RFC 3977. Section 5.3.</a>
  * <p/>
@@ -120,7 +122,7 @@ import org.jnode.nntp.Processor;
 public class ModeReaderProcessor implements Processor {
 
     @Override
-    public String process() {
+    public String process(Collection<String> params) {
         return "200 Posting allowed";
     }
 }
