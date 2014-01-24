@@ -28,11 +28,18 @@ public class BinkpAsyncClientPool implements Runnable {
 				}
 				l = PollQueue.getSelf().getNext();
 			}
-			try {
-				logger.l2(String.format("Connecting to %s:%d",
-						l.getProtocolHost(), l.getProtocolPort()));
-				BinkpAsyncConnector conn = BinkpAsyncConnector.connect(
-						l.getProtocolHost(), l.getProtocolPort());
+			try { // TODO: multiple providers?
+				BinkpAbstractConnector conn;
+				if (l.getProtocolHost().startsWith("|")) {
+					String cmd = l.getProtocolHost().substring(1);
+					logger.l2("Connecting through pipe: " + cmd);
+					conn = BinkpPipeConnector.connect(cmd);
+				} else {
+					logger.l2(String.format("Connecting to %s:%d",
+							l.getProtocolHost(), l.getProtocolPort()));
+					conn = BinkpAsyncConnector.connect(l.getProtocolHost(),
+							l.getProtocolPort());
+				}
 				if (conn != null) {
 					ThreadPool.execute(conn);
 				}

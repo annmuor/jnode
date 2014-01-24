@@ -7,8 +7,8 @@
 	<tr>
 		<th>Name</th>
 		<th>FTN</th>
-		<th>Host:Port</th>
-		<th>Connect Password</th>
+		<th>Protocol Address</th>
+		<th>Protocol Password</th>
 		<th>Packet Password</th>
 		<th>E/O/D</th>
 	</tr>
@@ -31,9 +31,8 @@
 		</tr>
 
 		<tr>
-			<th>Host:Port</th>
-			<td><input type="text" name="host" id="_link_host" />:<input
-				type="text" name="port" id="_link_port" size="5" /></td>
+			<th>Protocol Address</th>
+			<td><input type="text" name="address" id="_link_address" /></td>
 		</tr>
 
 		<tr>
@@ -56,8 +55,7 @@
 		_value("_link_id", "0");
 		_value("_link_name", "");
 		_value("_link_ftn", "");
-		_value("_link_host", "");
-		_value("_link_port", "0");
+		_value("_link_address", "");
 		_value("_link_password", "");
 		_value("_link_pktpassword", "");
 	}
@@ -66,8 +64,7 @@
 		_value("_link_id", link.id);
 		_value("_link_name", link.name);
 		_value("_link_ftn", link.addr);
-		_value("_link_host", link.host);
-		_value("_link_port", link.port);
+		_value("_link_address", link.address);
 		_value("_link_password", link.password);
 		_value("_link_pktpassword", link.pktpassword);
 	}

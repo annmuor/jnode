@@ -28,7 +28,7 @@ public class DefaultVersion extends Version {
 
 	private DefaultVersion() {
 		setMajorVersion(1L);
-		setMinorVersion(3L);
+		setMinorVersion(4L);
 		setInstalledAt(new Date());
 	}
 
@@ -96,6 +96,13 @@ public class DefaultVersion extends Version {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		if(ver.equals("1.3")) {
+			ret.add("ALTER TABLE links ADD COLUMN address varchar(255) NOT NULL DEFAULT '-';");
+			ret.add("UPDATE links SET address=host;");
+			ret.add("ALTER TABLE links DROP COLUMN host;");
+			ret.add("ALTER TABLE links DROP COLUMN port;");
+			ver.setMinorVersion(4L);
 		}
 		return ret;
 	}
