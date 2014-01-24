@@ -20,8 +20,7 @@ public class LinkRoute extends Route {
 		String _ftn = req.queryParams("addr");
 		String pass = req.queryParams("password");
 		String pktpass = req.queryParams("pktpassword");
-		String host = req.queryParams("host");
-		String _port = req.queryParams("port");
+		String address = req.queryParams("address");
 		String code = null;
 		String delete = req.queryParams("did");
 		if (delete != null) {
@@ -36,8 +35,6 @@ public class LinkRoute extends Route {
 			}
 		} else {
 			try {
-
-				Integer port = Integer.valueOf(_port);
 				FtnAddress ftn = new FtnAddress(_ftn);
 				Link l = null;
 				if (!_id.equals("0")) {
@@ -51,8 +48,7 @@ public class LinkRoute extends Route {
 				l.setLinkName(name);
 				l.setPaketPassword(pktpass);
 				l.setProtocolPassword(pass);
-				l.setProtocolHost(host);
-				l.setProtocolPort(port);
+				l.setProtocolAddress(address);
 				ORMManager.get(Link.class).saveOrUpdate(l);
 			} catch (RuntimeException e) {
 				code = "ERROR";

@@ -613,5 +613,21 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 
 	}
+	
+	protected void checkEOB() {
+		if (flag_leob && flag_reob) {
+			total_recv_bytes += recv_bytes;
+			total_sent_bytes += sent_bytes;
+			if (sent_bytes + recv_bytes == 0 || binkp1_0) {
+				connectionState = STATE_END;
+				finish();
+			} else {
+				flag_leob = false;
+				flag_reob = false;
+				sent_bytes = 0;
+				recv_bytes = 0;
+			}
+		}
+	}
 
 }
