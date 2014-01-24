@@ -49,21 +49,6 @@
                             </descriptors>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>dist-contrib-xmlrpc</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assembly</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-contrib-xmlrpc-${project.version}</finalName>
-                            <descriptors>
-                                <descriptor>distribution-contrib-xmlrpc.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -80,12 +65,6 @@
             <groupId>jnode</groupId>
             <artifactId>jnode-rss</artifactId>
             <version>1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-xmlrpc-server</artifactId>
-            <version>0.6-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>
