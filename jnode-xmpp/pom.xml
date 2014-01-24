@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
-			<scope>compile</scope>
+			<scope>provided</scope>
 			<version>1.0</version>
 		</dependency>
 	</dependencies>
