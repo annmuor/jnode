@@ -10,6 +10,13 @@
     <url>http://fidonode.in/jnode/</url>
     <inceptionYear>2012</inceptionYear>
 
+    <scm>
+        <connection>scm:git:https://github.com/kreon/jnode.git</connection>
+        <developerConnection>scm:git:https://github.com/kreon/jnode.git</developerConnection>
+        <url>https://github.com/kreon/jnode</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ormlite.version>4.48</ormlite.version>
