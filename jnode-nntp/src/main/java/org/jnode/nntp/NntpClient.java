@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -50,12 +51,12 @@ public class NntpClient implements Runnable {
 
          */
 
-        send(NntpResponse.InitialGreetings.READY);
+        send(Arrays.asList(NntpResponse.InitialGreetings.READY));
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 String command = read();
-                String response = process(command);
+                Collection<String> response = process(command);
                 send(response);
                 // if command = quit - mark thread as interrupted
             } catch (UnknownCommandException uce) {
@@ -84,9 +85,11 @@ public class NntpClient implements Runnable {
 
     }
 
-    private void send(String message) {
-        logger.l4("<---" + message);
-        out.println(message);
+    private void send(Collection<String> response) {
+        for (String message : response) {
+            logger.l4("<--- " + message);
+            out.println(message);
+        }
     }
 
     private String read() throws IOException {
@@ -94,11 +97,11 @@ public class NntpClient implements Runnable {
         if (line == null) {
             throw new EndOfSessionException();
         }
-        logger.l4("--->" + line);
+        logger.l4("---> " + line);
         return line;
     }
 
-    private String process(String command) {
+    private Collection<String> process(String command) {
 
         NntpCommand parsedCommand = findCommand(command);
         if (parsedCommand != null) {

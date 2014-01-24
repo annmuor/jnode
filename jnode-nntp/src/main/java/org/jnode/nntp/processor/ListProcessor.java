@@ -7,23 +7,24 @@ import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 public class ListProcessor implements Processor {
 
     private DataProvider dataProvider = new FakeDataProvider();
 
     @Override
-    public String process(Collection<String> params) {
+    public Collection<String> process(Collection<String> params) {
 
-        StringBuilder response = new StringBuilder();
-        response.append(NntpResponse.List.LIST_OF_NEWSGROUPS).append("\n");
+        Collection<String> response = new LinkedList<>();
+        response.add(NntpResponse.List.LIST_OF_NEWSGROUPS);
 
         for (NewsGroup newsGroup : dataProvider.newsGroups()) {
-            response.append(newsGroup.getName()).append("\n");
+            response.add(newsGroup.getName());
         }
 
-        response.append(NntpResponse.END_OF_RESPONSE).append("\n");
+        response.add(NntpResponse.END_OF_RESPONSE);
 
-        return response.toString();
+        return response;
     }
 }

@@ -3,13 +3,13 @@ package org.jnode.nntp.model;
 import java.util.Collection;
 
 public enum NntpCommand {
-    ARTICLE,
+    ARTICLE("ARTICLE"),
     BODY,
     CAPABILITIES,
     DATE,
     GROUP("GROUP"),
     HDR,
-    HEAD,
+    HEAD("HEAD"),
     HELP,
     IHAVE,
     LAST,
@@ -26,6 +26,7 @@ public enum NntpCommand {
     NEWNEWS,
     NEXT,
     OVER,
+    XOVER("XOVER"),
     POST,
     QUIT,
     STAT;

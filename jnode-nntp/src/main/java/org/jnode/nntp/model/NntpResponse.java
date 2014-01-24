@@ -17,4 +17,9 @@ public class NntpResponse {
         public static final String GROUP_SUCCESSFULLY_SELECTED = "211";
         public static final String NO_SUCH_NEWSGROUP = "411 No such newsgroup";
     }
+
+    public static class Head {
+        public static final String HEADERS_FOLLOW = " 221 {message-number} {message-id}";
+
+    }
 }

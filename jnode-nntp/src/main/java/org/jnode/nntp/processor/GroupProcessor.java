@@ -3,10 +3,10 @@ package org.jnode.nntp.processor;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.FakeDataProvider;
 import org.jnode.nntp.Processor;
-import org.jnode.nntp.model.NewsMessage;
 import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 /**
  * TODO
@@ -38,17 +38,15 @@ public class GroupProcessor implements Processor {
     private DataProvider dataProvider = new FakeDataProvider();
 
     @Override
-    public String process(Collection<String> params) {
+    public Collection<String> process(Collection<String> params) {
 
-        StringBuilder response = new StringBuilder();
-        response.append(NntpResponse.Group.GROUP_SUCCESSFULLY_SELECTED);
-        for (NewsMessage message : dataProvider.messages(params.iterator().next())) {
-            // todo refactor
-            response.append(" ").append(1).append(" ").append(1).append(" ").append(1).append(" ").append(1).append("\n");
-        }
+        Collection<String> response = new LinkedList<>();
 
-        response.append(NntpResponse.END_OF_RESPONSE);
+            response.add("211 1 1 1 1");
 
-        return response.toString();
+
+        response.add(NntpResponse.END_OF_RESPONSE);
+
+        return response;
     }
 }

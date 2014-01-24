@@ -4,5 +4,5 @@ import java.util.Collection;
 
 public interface Processor {
 
-    String process(Collection<String> params);
+    Collection<String> process(Collection<String> params);
 }

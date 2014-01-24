@@ -11,7 +11,11 @@ public class FakeDataProvider implements DataProvider {
 
     @Override
     public Collection<NewsGroup> newsGroups() {
-        return Arrays.asList(generateNewsGroup(), generateNewsGroup(), generateNewsGroup());
+        NewsGroup ng = new NewsGroup();
+        ng.setId(Integer.toString(1));
+        ng.setName("name");
+
+        return Arrays.asList(ng);
     }
 
     @Override
@@ -34,7 +38,7 @@ public class FakeDataProvider implements DataProvider {
 
         NewsGroup ng = new NewsGroup();
         ng.setId(Integer.toString(r));
-        ng.setName("code:" + r);
+        ng.setName("name:" + r);
 
         return ng;
     }
