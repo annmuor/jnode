@@ -13,9 +13,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -32,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
@@ -80,7 +79,7 @@ public final class FtnTools {
 	public static final Charset CP_866 = Charset.forName("CP866");
 	private static final String ROUTE_VIA = "\001Via %s "
 			+ MainHandler.getVersion() + " %s";
-	public static final DateFormat FORMAT = new SimpleDateFormat(
+	public static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 

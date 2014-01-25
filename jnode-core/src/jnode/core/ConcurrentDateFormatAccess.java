@@ -1,10 +1,11 @@
-package jnode.logger;
+package jnode.core;
 
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author Manjago (kirill@temnenkov.com)
@@ -12,9 +13,16 @@ import java.util.Date;
 public class ConcurrentDateFormatAccess {
 
     private final String dateFormat;
+    private final Locale locale;
+
+    public ConcurrentDateFormatAccess(String dateFormat, Locale locale) {
+        this.dateFormat = dateFormat;
+        this.locale = locale;
+    }
 
     public ConcurrentDateFormatAccess(String dateFormat) {
         this.dateFormat = dateFormat;
+        this.locale = null;
     }
 
     private ThreadLocal<DateFormat> df = new ThreadLocal<DateFormat> () {
@@ -26,7 +34,11 @@ public class ConcurrentDateFormatAccess {
 
         @Override
         protected DateFormat initialValue() {
-            return new SimpleDateFormat(dateFormat);
+            if (locale == null){
+                return new SimpleDateFormat(dateFormat);
+            } else {
+                return new SimpleDateFormat(dateFormat, locale);
+            }
         }
 
         @Override
@@ -41,11 +53,15 @@ public class ConcurrentDateFormatAccess {
 
     };
 
-    public Date convertStringToDate(String dateString) throws ParseException {
+    public Date parse(String dateString) throws ParseException {
         return df.get().parse(dateString);
     }
 
-    public String convertDateToString(Date date){
+    public String format(Date date){
         return df.get().format(date);
+    }
+
+    public String currentDateAsString(){
+        return format(new Date());
     }
 }

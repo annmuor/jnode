@@ -1,5 +1,6 @@
 package jnode.robot;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.dto.Jscript;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
@@ -10,9 +11,7 @@ import jnode.jscript.JscriptExecutor;
 import jnode.orm.ORMManager;
 
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,7 @@ public class ScriptFix extends AbstractRobot {
 	private static final Pattern RUN = Pattern.compile("^%RUN (\\d+)$",
 			Pattern.CASE_INSENSITIVE);
 
-	private static final DateFormat format = new SimpleDateFormat(
+	private static final ConcurrentDateFormatAccess format = new ConcurrentDateFormatAccess(
 			"dd.MM.yyyy HH:mm");
 
 	@Override

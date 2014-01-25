@@ -6,12 +6,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
 import jnode.logger.Logger;
@@ -29,7 +28,7 @@ public class FtnPkt {
 	private Date date;
 	private InputStream is;
 	private boolean close;
-	private static final DateFormat FORMAT = new SimpleDateFormat(
+	private static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"yyyy MM dd HH mm ss", Locale.US);
 
 	public FtnAddress getFromAddr() {

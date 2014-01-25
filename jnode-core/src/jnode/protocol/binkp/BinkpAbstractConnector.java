@@ -14,8 +14,6 @@ import java.io.OutputStream;
 import java.nio.channels.Selector;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -24,6 +22,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.ftn.FtnTools;
@@ -46,7 +45,7 @@ import jnode.protocol.io.Message;
 public abstract class BinkpAbstractConnector implements Runnable {
 	static final Logger logger = Logger.getLogger(BinkpAbstractConnector.class);
 
-	private static final DateFormat format = new SimpleDateFormat(
+	private static final ConcurrentDateFormatAccess format = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Pattern cramPattern = Pattern
 			.compile("^CRAM-([-A-Z0-9]+)-([a-f0-9]+)$");

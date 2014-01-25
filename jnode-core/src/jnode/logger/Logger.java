@@ -1,5 +1,7 @@
 package jnode.logger;
 
+import jnode.core.ConcurrentDateFormatAccess;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -42,7 +44,7 @@ public final class Logger {
 
     private void log(int type, String log) {
         if (isNeedLog(type)) {
-            System.out.println(String.format(LOG_FORMAT, DATE_FORMAT.convertDateToString(new Date()), Thread.currentThread()
+            System.out.println(String.format(LOG_FORMAT, DATE_FORMAT.currentDateAsString(), Thread.currentThread()
                     .getId(), className, log));
         }
     }

@@ -6,9 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +14,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
 import jnode.logger.Logger;
@@ -56,7 +55,7 @@ public class FtnMessage {
 	private boolean isNetmail;
 	private String msgid;
 
-	private static final DateFormat FORMAT = new SimpleDateFormat(
+	private static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
