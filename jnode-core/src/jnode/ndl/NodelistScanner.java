@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,13 +36,12 @@ public class NodelistScanner {
 		return self;
 	}
 
-	private NodelistIndex createNdlIndexFile(File ndl) {
-		File idx = new File(MainHandler.getCurrentInstance().getProperty(
-				NODELIST_INDEX, "NODELIST.idx"));
+	public NodelistIndex createIndex(InputStream stream, long lastModified) {
+		NodelistIndex index = null;
 		List<FtnNdlAddress> address = new ArrayList<>();
 		try {
-			FileInputStream fis = new FileInputStream(ndl);
-			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(stream));
 			String line;
 			String zone = "";
 			String net = "";
@@ -93,17 +93,30 @@ public class NodelistScanner {
 				}
 			}
 			br.close();
-			NodelistIndex index = new NodelistIndex(
-					address.toArray(new FtnNdlAddress[0]), ndl.lastModified());
+			index = new NodelistIndex(address.toArray(new FtnNdlAddress[0]),
+					lastModified);
+			logger.l4("Nodelist index was created. It containts: "
+					+ address.size() + " adresses");
+		} catch (IOException e) {
+			logger.l2("Nodelist creation error ");
+		}
+		return index;
+	}
+
+	private NodelistIndex createNdlIndexFile(File ndl) {
+		File idx = new File(MainHandler.getCurrentInstance().getProperty(
+				NODELIST_INDEX, "NODELIST.idx"));
+
+		try {
+			NodelistIndex index = createIndex(new FileInputStream(ndl),
+					ndl.lastModified());
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(idx));
 			oos.writeObject(index);
-			logger.l4("Nodelist index was created. It containts: "
-					+ address.size() + " adresses");
 			oos.close();
 			return index;
 		} catch (IOException e) {
-			logger.l2("Nodelist creation error " + ndl.getAbsolutePath()
+			logger.l2("Nodelist writing error " + ndl.getAbsolutePath()
 					+ " -> " + idx.getAbsolutePath() + " : " + e.getMessage());
 		}
 		return null;

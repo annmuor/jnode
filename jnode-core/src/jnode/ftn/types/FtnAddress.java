@@ -156,12 +156,7 @@ public class FtnAddress implements Serializable {
 	}
 
 	public FtnAddress clone() {
-		FtnAddress n = new FtnAddress();
-		n.zone = zone;
-		n.net = net;
-		n.node = node;
-		n.point = point;
-		return n;
+		return new FtnAddress(zone,net,node,point);
 	}
 
 }

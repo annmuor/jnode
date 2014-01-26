@@ -1,6 +1,7 @@
 package jnode.core;
 
 import junit.framework.TestCase;
+
 import org.junit.Test;
 
 import java.util.Date;
@@ -10,10 +11,12 @@ import java.util.concurrent.Executors;
 /**
  * @author Manjago (kirill@temnenkov.com)
  */
+@SuppressWarnings("deprecation")
 public class ConcurrentDateFormatAccessTest {
 
 
-    @Test
+    
+	@Test
     public void testConvertStringToDate() throws Exception {
         ConcurrentDateFormatAccess df = new ConcurrentDateFormatAccess("dd-MM-yy HH:mm:ss");
         String s = "25-01-14 17:02:03";
