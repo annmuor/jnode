@@ -78,7 +78,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				long now = new Date().getTime();
 				if (lastActive != 0) {
 					if (now - lastActive > staticMaxTimeout) {
-						throw new ConnectionEndException();
+						finish();
 					}
 				}
 				try {
@@ -182,13 +182,13 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								}
 							}
 						} else {
-							throw new ConnectionEndException();
+							finish();
 						}
 					}
 
 				} catch (IOException e) {
 					error("IOException");
-					throw new ConnectionEndException();
+					finish();
 				}
 			}
 		} catch (ConnectionEndException e) {
@@ -225,7 +225,6 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				event = new ConnectionEndEvent(clientConnection, false);
 				logger.l3("Connection ended as unknown");
 			}
-			end();
 			Notifier.INSTANSE.notify(event);
 		}
 	}
@@ -234,7 +233,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 			throws IOException {
 		int x = channel.read(buffer);
 		if (x == -1) {
-			throw new ConnectionEndException("Connection reset by peer");
+			finish();
 		}
 		return x;
 	}

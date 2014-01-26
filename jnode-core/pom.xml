@@ -32,7 +32,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-        <finalName>${project.artifactId}-${project.version}-r${buildNumber}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test/java</testSourceDirectory>
 		<testResources>

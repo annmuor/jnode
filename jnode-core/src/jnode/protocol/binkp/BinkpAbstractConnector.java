@@ -228,7 +228,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	private void m_bsy(String arg) {
 		logger.l3("Remote is busy: " + arg);
-		throw new ConnectionEndException();
+		connectionState = STATE_END;
+		finish();
 	}
 
 	private void rerror(String string) {
@@ -402,17 +403,6 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			error("No valid address specified");
 			return;
 		}
-
-		for (FtnAddress addr : foreignAddress) {
-			if (PollQueue.getSelf().isActive(addr)) {
-				busy("Already connected");
-				return;
-			}
-		}
-
-		for (FtnAddress addr : foreignAddress) {
-			PollQueue.getSelf().start(addr);
-		}
 		Link link = FtnTools.getLinkByFtnAddress(foreignAddress);
 		if (link != null) {
 			String ourAka = FtnTools.getOptionString(link,
@@ -442,6 +432,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				return;
 			}
 		}
+		for (FtnAddress addr : foreignAddress) {
+			if (!PollQueue.getSelf().isActive(addr)) {
+				PollQueue.getSelf().start(addr);
+			} else {
+				busy("Already connected with " + addr.toString());
+			}
+		}
 		if (clientConnection) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_PWD, getAuthPassword(
 					foreignLink, secure, cramAlgo, cramText)));
@@ -452,7 +449,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	}
 
-	private void busy(String string) {
+	protected void busy(String string) {
 		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_BSY, string));
 		connectionState = STATE_END;
@@ -542,14 +539,16 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected void finish() {
+		for (FtnAddress addr : foreignAddress) {
+			PollQueue.getSelf().end(addr);
+		}
 		throw new ConnectionEndException();
 	}
 
 	protected void greet() {
 		// check if busy
 		if (ThreadPool.isBusy()) {
-			frames.addLast(new BinkpFrame(BinkpCommand.M_BSY,
-					"Too much connections"));
+			busy("Too much connections");
 			finish();
 		}
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
@@ -626,12 +625,6 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				sent_bytes = 0;
 				recv_bytes = 0;
 			}
-		}
-	}
-	
-	protected void end() {
-		for (FtnAddress addr : foreignAddress) {
-			PollQueue.getSelf().start(addr);
 		}
 	}
 

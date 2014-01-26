@@ -109,7 +109,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				logger.l5("Frame received: " + frame);
 				proccessFrame(frame);
 			}
-			throw new ConnectionEndException("Closed by others");
+			finish();
 		} catch (ConnectionEndException e) {
 			try {
 				Thread.sleep(100); // let's proccess to write messages;
@@ -145,7 +145,6 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				event = new ConnectionEndEvent(clientConnection, false);
 				logger.l3("Connection ended as unknown");
 			}
-			end();
 			Notifier.INSTANSE.notify(event);
 		}
 
@@ -155,12 +154,12 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 		try {
 			int x = inputStream.read();
 			if (x == -1) {
-				throw new ConnectionEndException("InputStream EOF");
+				finish();
 			}
 			return x;
 		} catch (IOException e) {
-			throw new ConnectionEndException("InputStream exception: "
-					+ e.getLocalizedMessage(), e);
+			finish();
+			return -1;
 		}
 	}
 
@@ -171,13 +170,13 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			byte[] buf = new byte[len];
 			int x = inputStream.read(buf);
 			if (x == -1) {
-				throw new ConnectionEndException("InputStream EOF");
+				finish();
 			}
 			ByteBuffer ret = ByteBuffer.wrap(buf, 0, x);
 			return ret.array();
 		} catch (IOException e) {
-			throw new ConnectionEndException("InputStream exception: "
-					+ e.getLocalizedMessage(), e);
+			finish();
+			return new byte[] {};
 		}
 	}
 }
