@@ -76,8 +76,8 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 		try {
 			greet();
 			while (!closed) {
-				checkEOB();
 				checkForMessages();
+				checkEOB();
 				if (connectionState == STATE_END
 						|| connectionState == STATE_ERROR) {
 					finish();

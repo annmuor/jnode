@@ -8,6 +8,7 @@ import java.lang.management.OperatingSystemMXBean;
 /**
  * @author Manjago (kirill@temnenkov.com)
  */
+@SuppressWarnings("restriction")
 public final class SysInfo {
 
     public static class ThreadInfo {
