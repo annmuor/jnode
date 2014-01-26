@@ -83,7 +83,7 @@ public final class FtnTools {
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
-	private static Hashtable<String, IRobot> robotMaps = new Hashtable<>();
+	private static Hashtable<String, IRobot> robotMaps = new Hashtable<String, IRobot>();
 
 	/**
 	 * Сортировщик 2D-адресов

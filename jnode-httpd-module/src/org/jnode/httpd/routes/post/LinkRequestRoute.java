@@ -69,7 +69,9 @@ public class LinkRequestRoute extends Route {
 						}
 						lr.setHost(host);
 						lr.setPort(iport);
-					} catch (IOException | NumberFormatException e) {
+					} catch (IOException e) {
+						code = "INET";
+					} catch(NumberFormatException e) {
 						code = "INET";
 					}
 				}

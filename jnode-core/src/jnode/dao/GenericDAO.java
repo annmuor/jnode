@@ -430,7 +430,7 @@ public abstract class GenericDAO<T> {
 			} catch (SQLException e) {
 				logger.l2("SQL error while query", e);
 			}
-			return new ArrayList<>();
+			return new ArrayList<T>();
 		}
 
 		public T one() {

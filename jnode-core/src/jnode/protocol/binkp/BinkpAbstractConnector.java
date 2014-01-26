@@ -95,15 +95,15 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected int connectionState = STATE_GREET;
-	protected List<FtnAddress> foreignAddress = new ArrayList<>();
-	private List<FtnAddress> ourAddress = new ArrayList<>();
+	protected List<FtnAddress> foreignAddress = new ArrayList<FtnAddress>();
+	private List<FtnAddress> ourAddress = new ArrayList<FtnAddress>();
 	protected Link foreignLink;
 	private boolean secure = false;
 	protected boolean clientConnection = true;
 	private String cramAlgo = null;
 	private String cramText = null;
 	protected boolean binkp1_0 = true;
-	private LinkedList<Message> messages = new LinkedList<>();
+	private LinkedList<Message> messages = new LinkedList<Message>();
 	protected Message transferringMessage = null;
 	private Message receivingMessage = null;
 	private File currentFile;
@@ -116,7 +116,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	protected int total_sent_bytes = 0;
 	protected int total_recv_bytes = 0;
 	protected Selector selector;
-	protected LinkedList<BinkpFrame> frames = new LinkedList<>();
+	protected LinkedList<BinkpFrame> frames = new LinkedList<BinkpFrame>();
 
 	public abstract void run();
 

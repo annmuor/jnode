@@ -33,8 +33,8 @@ public class BinkpAsyncServer implements Runnable {
 					.getCurrentInstance().getProperty(BINKD_BIND, "0.0.0.0"),
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							BINKD_PORT, 24554));
-			server.bind(bind, 5);
-			logger.l1("We are listening on " + bind.getHostString() + ":"
+			server.socket().bind(bind, 5);
+			logger.l1("We are listening on " + bind.getHostName() + ":"
 					+ bind.getPort());
 			Selector selector = Selector.open();
 			server.register(selector, server.validOps());
@@ -47,11 +47,11 @@ public class BinkpAsyncServer implements Runnable {
 						if (key.isValid()) {
 							if (key.isAcceptable()) {
 								SocketChannel client = channel.accept();
-								InetSocketAddress addr = (InetSocketAddress) client
-										.getRemoteAddress();
+								InetSocketAddress addr = (InetSocketAddress) client.socket()
+										.getRemoteSocketAddress();
 								logger.l2(String.format(
 										"Incoming connection from %s:%d",
-										addr.getHostString(), addr.getPort()));
+										addr.getHostName(), addr.getPort()));
 								ThreadPool.execute(BinkpAsyncConnector
 										.accept(client));
 							}
