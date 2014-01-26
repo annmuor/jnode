@@ -144,7 +144,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				m_pwd(frame.getArg());
 				break;
 			case M_OK:
-				m_ok();
+				m_ok(frame.getArg());
 				break;
 			case M_ERR:
 				rerror("Remote told: " + frame.getArg());
@@ -325,15 +325,15 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	}
 
-	private void m_ok() {
+	private void m_ok(String arg) {
 		if (connectionState != STATE_AUTH) {
 			error("We weren't waiting for M_OK");
-			String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
-					+ " connection with "
-					+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
-							.get(0));
-			logger.l3(text);
 		}
+		String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
+				+ " connection with "
+				+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
+						.get(0)) + " remote said: " + arg;
+		logger.l3(text);
 		connectionState = STATE_TRANSFER;
 	}
 
@@ -550,7 +550,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		if (ThreadPool.isBusy()) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_BSY,
 					"Too much connections"));
-			throw new ConnectionEndException();
+			finish();
 		}
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
 		ourAddress.addAll(info.getAddressList());
@@ -612,7 +612,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 
 	}
-	
+
 	protected void checkEOB() {
 		if (flag_leob && flag_reob) {
 			total_recv_bytes += recv_bytes;
@@ -626,6 +626,12 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				sent_bytes = 0;
 				recv_bytes = 0;
 			}
+		}
+	}
+	
+	protected void end() {
+		for (FtnAddress addr : foreignAddress) {
+			PollQueue.getSelf().start(addr);
 		}
 	}
 

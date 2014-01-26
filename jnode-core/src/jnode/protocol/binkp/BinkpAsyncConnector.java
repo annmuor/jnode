@@ -71,8 +71,8 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 		ByteBuffer buffer = null;
 		ByteBuffer headBuf = null;
 		long lastActive = 0;
-		greet();
 		try {
+			greet();
 			while (true) {
 
 				long now = new Date().getTime();
@@ -225,6 +225,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				event = new ConnectionEndEvent(clientConnection, false);
 				logger.l3("Connection ended as unknown");
 			}
+			end();
 			Notifier.INSTANSE.notify(event);
 		}
 	}

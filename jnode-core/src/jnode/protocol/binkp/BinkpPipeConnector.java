@@ -73,8 +73,8 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			}
 		};
 		new Thread(processOutputObserver).start();
-		greet();
 		try {
+			greet();
 			while (!closed) {
 				checkEOB();
 				checkForMessages();
@@ -145,6 +145,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				event = new ConnectionEndEvent(clientConnection, false);
 				logger.l3("Connection ended as unknown");
 			}
+			end();
 			Notifier.INSTANSE.notify(event);
 		}
 

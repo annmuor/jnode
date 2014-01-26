@@ -1,11 +1,10 @@
 package jnode.logger;
 
-import jnode.core.ConcurrentDateFormatAccess;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Date;
+
+import jnode.core.ConcurrentDateFormatAccess;
 
 public final class Logger {
     public static final int LOG_L5 = 5;
@@ -16,7 +15,6 @@ public final class Logger {
     public static int Loglevel = LOG_L5;
 
     private final String className;
-    @SuppressWarnings("unused")
     private static final String LOG_FORMAT = "%s [%08d] %s %s";
     private static final ConcurrentDateFormatAccess DATE_FORMAT = new ConcurrentDateFormatAccess("dd-MM-yy HH:mm:ss");
 
