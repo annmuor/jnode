@@ -21,5 +21,4 @@ public class ConnectionEndException extends RuntimeException {
 	public ConnectionEndException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
 }
