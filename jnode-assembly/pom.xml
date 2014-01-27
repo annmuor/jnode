@@ -18,9 +18,10 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
                 <executions>
                     <execution>
-                        <id>dist-core</id>
+                        <id>release</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
@@ -28,24 +29,9 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
                             <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-core-${project.version}</finalName>
+                            <finalName>jnode-release-${project.version}</finalName>
                             <descriptors>
-                                <descriptor>distribution-core.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>dist-contrib</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assembly</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-contrib-${project.version}</finalName>
-                            <descriptors>
-                                <descriptor>distribution-contrib.xml</descriptor>
+                                <descriptor>distribution-release.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
