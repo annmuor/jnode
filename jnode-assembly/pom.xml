@@ -17,6 +17,22 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <shortRevisionLength>8</shortRevisionLength>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <executions>
@@ -29,7 +45,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
                             <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-release-${project.version}</finalName>
+                            <finalName>jnode-${project.version}-release</finalName>
                             <descriptors>
                                 <descriptor>distribution-release.xml</descriptor>
                             </descriptors>
@@ -40,18 +56,4 @@
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-core</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-rss</artifactId>
-            <version>1.2</version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
 </project>

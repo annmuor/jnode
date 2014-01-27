@@ -87,7 +87,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <shortRevisionLength>6</shortRevisionLength>
+                    <shortRevisionLength>8</shortRevisionLength>
                 </configuration>
             </plugin>
             <plugin>
