@@ -1,16 +1,33 @@
 package jnode.orm;
 
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+import jnode.dao.GenericDAO;
+import jnode.dto.Dupe;
+import jnode.dto.Echoarea;
+import jnode.dto.Echomail;
+import jnode.dto.EchomailAwaiting;
+import jnode.dto.FileForLink;
+import jnode.dto.FileSubscription;
+import jnode.dto.Filearea;
+import jnode.dto.Filemail;
+import jnode.dto.FilemailAwaiting;
+import jnode.dto.Jscript;
+import jnode.dto.Link;
+import jnode.dto.LinkOption;
+import jnode.dto.Netmail;
+import jnode.dto.Rewrite;
+import jnode.dto.Robot;
+import jnode.dto.Route;
+import jnode.dto.Schedule;
+import jnode.dto.ScriptHelper;
+import jnode.dto.Subscription;
+import jnode.logger.Logger;
+import jnode.main.MainHandler;
+
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.j256.ormlite.jdbc.JdbcConnectionSource;
-import com.j256.ormlite.support.ConnectionSource;
-
-import jnode.dao.GenericDAO;
-import jnode.dto.*;
-import jnode.logger.Logger;
-import jnode.main.MainHandler;
 
 /**
  * Singleton
@@ -32,10 +49,10 @@ public enum ORMManager {
 
 	public void start() throws Exception {
 		try {
-		source = new JdbcConnectionSource(MainHandler.getCurrentInstance()
-				.getProperty(JDBC_URL, ""), MainHandler.getCurrentInstance()
-				.getProperty(JDBC_USER, ""), MainHandler.getCurrentInstance()
-				.getProperty(JDBC_PASS, ""));
+		source = new JdbcConnectionSource(
+                MainHandler.getCurrentInstance().getProperty(JDBC_URL, ""),
+                MainHandler.getCurrentInstance().getProperty(JDBC_USER, ""),
+                MainHandler.getCurrentInstance().getProperty(JDBC_PASS, ""));
 		} catch(SQLException e) {
 			throw new Exception("Exception in source creation", e);
 		}

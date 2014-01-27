@@ -1,7 +1,7 @@
 package org.jnode.nntp.processor;
 
 import org.jnode.nntp.DataProvider;
-import org.jnode.nntp.FakeDataProvider;
+import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NntpResponse;
@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 public class ListProcessor implements Processor {
 
-    private DataProvider dataProvider = new FakeDataProvider();
+    private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
     public Collection<String> process(Collection<String> params) {

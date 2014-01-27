@@ -2,6 +2,7 @@ package org.jnode.nntp;
 
 import jnode.event.IEvent;
 import jnode.logger.Logger;
+import jnode.main.MainHandler;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 
@@ -22,6 +23,11 @@ public class NntpModule extends JnodeModule {
 
     public NntpModule(String configFile) throws JnodeModuleException {
         super(configFile);
+        try {
+            new MainHandler(configFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
