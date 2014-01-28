@@ -51,6 +51,36 @@
                             </descriptors>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>core</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+                            <finalName>jnode-${project.version}-core</finalName>
+                            <descriptors>
+                                <descriptor>distribution-core.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>rss</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+                            <finalName>jnode-${project.version}-rss</finalName>
+                            <descriptors>
+                                <descriptor>distribution-rss.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
