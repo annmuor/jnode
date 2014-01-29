@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -165,7 +166,16 @@ public class FtnMessage {
 
 	public byte[] pack() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream os = new DataOutputStream(bos);
+		write(bos);
+		try {
+			bos.close();
+		} catch (IOException e) {
+		}
+		return bos.toByteArray();
+	}
+
+	public void write(OutputStream _os) {
+		DataOutputStream os = new DataOutputStream(_os);
 		try {
 			os.write(new byte[] { 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
@@ -207,11 +217,9 @@ public class FtnMessage {
 			os.write(sb.toString().replaceAll("\n", "\r")
 					.getBytes(FtnTools.CP_866));
 			os.write(0);
-			os.close();
 		} catch (IOException e) {
 			// zzz
 		}
-		return bos.toByteArray();
 	}
 
 	public void unpack(byte[] data) throws LastMessageException {
@@ -287,19 +295,19 @@ public class FtnMessage {
 							if (m.matches()) {
 								String kluge = m.group(1);
 								String arg = m.group(2);
-                                switch (kluge) {
-                                    case "INTL":
-                                        String tmp[] = arg.split(" ");
-                                        toAddr = new FtnAddress(tmp[0]);
-                                        fromAddr = new FtnAddress(tmp[1]);
-                                        break;
-                                    case "TOPT":
-                                        toAddr.setPoint(new Integer(arg));
-                                        break;
-                                    case "FMPT":
-                                        fromAddr.setPoint(new Integer(arg));
-                                        break;
-                                }
+								switch (kluge) {
+								case "INTL":
+									String tmp[] = arg.split(" ");
+									toAddr = new FtnAddress(tmp[0]);
+									fromAddr = new FtnAddress(tmp[1]);
+									break;
+								case "TOPT":
+									toAddr.setPoint(new Integer(arg));
+									break;
+								case "FMPT":
+									fromAddr.setPoint(new Integer(arg));
+									break;
+								}
 								continue;
 							}
 						}
@@ -352,7 +360,7 @@ public class FtnMessage {
 		} catch (IOException | LastMessageException | ParseException e) {
 			throw new LastMessageException(e);
 		}
-    }
+	}
 
 	@Override
 	public String toString() {

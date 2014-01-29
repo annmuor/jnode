@@ -33,8 +33,13 @@ public class PollQueue {
 				&& !"-".equals(link.getProtocolAddress())) {
 			if (!queue.contains(link) && !isActive(link)) {
 				queue.addLast(link);
-				this.notify();
 			}
+		}
+	}
+
+	public synchronized void poll() {
+		for (int i = 0; i < queue.size(); i++) {
+			this.notify();
 		}
 	}
 

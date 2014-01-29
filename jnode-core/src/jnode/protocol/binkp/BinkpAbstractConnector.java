@@ -26,13 +26,13 @@ import jnode.core.ConcurrentDateFormatAccess;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.ftn.FtnTools;
-import jnode.ftn.tosser.FtnTosser;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
+import jnode.main.threads.TosserQueue;
 import jnode.ndl.NodelistScanner;
 import jnode.protocol.io.Message;
 
@@ -333,7 +333,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		String text = ((secure) ? "(S) Secure" : "(U) Unsecure")
 				+ " connection with "
 				+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
-						.get(0)) + " remote said: " + arg;
+						.get(0));
 		logger.l3(text);
 		connectionState = STATE_TRANSFER;
 	}
@@ -516,15 +516,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			return;
 		}
 		if (messages.isEmpty()) {
-			if (foreignLink != null) {
-				messages.addAll(FtnTosser.getMessagesForLink(foreignLink));
-			} else if (clientConnection) { // unsecure only whel we make poll
-				for (FtnAddress a : foreignAddress) {
-					Message m = FtnTosser.getDirectUnsecureMail(a);
-					if (m != null) {
-						messages.add(m);
-					}
-				}
+			for (FtnAddress a : foreignAddress) {
+				messages.addAll(TosserQueue.getInstanse().getMessages(a));
 			}
 		}
 

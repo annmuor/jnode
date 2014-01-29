@@ -37,8 +37,8 @@ public class MailModule extends JnodeModule {
 				"root@localhost"));
 		service.setHost(properties.getProperty(CONFIG_HOST, "127.0.0.1"));
 		service.setPort(properties.getProperty(CONFIG_PORT, "25"));
-		service.setUserName(properties.getProperty(CONFIG_USER, "root"));
-		service.setPassWord(properties.getProperty(CONFIG_PASSWORD, "root"));
+		service.setUsername(properties.getProperty(CONFIG_USER));
+		service.setPassword(properties.getProperty(CONFIG_PASSWORD));
 		String robotName = properties.getProperty(CONFIG_ROBOT, "mailsender");
 		Robot r = ORMManager.get(Robot.class).getById(robotName);
 		if (r == null) {

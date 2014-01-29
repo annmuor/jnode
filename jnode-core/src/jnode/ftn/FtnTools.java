@@ -3,6 +3,7 @@ package jnode.ftn;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -490,10 +491,12 @@ public final class FtnTools {
 	 */
 	public static String getOption(Link link, String option) {
 		String value = "";
-		LinkOption opt = ORMManager.get(LinkOption.class).getFirstAnd(
-				"link_id", "=", link, "name", "=", option.toLowerCase());
-		if (opt != null) {
-			value = opt.getValue();
+		if (link.getId() != null) {
+			LinkOption opt = ORMManager.get(LinkOption.class).getFirstAnd(
+					"link_id", "=", link, "name", "=", option.toLowerCase());
+			if (opt != null) {
+				value = opt.getValue();
+			}
 		}
 		return value;
 	}
@@ -585,96 +588,107 @@ public final class FtnTools {
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
-			InputStream is = message.getInputStream();
-			int len;
-			while ((len = is.available()) > 0) {
-				byte[] buf;
-				if (len > 1024) {
-					buf = new byte[1024];
-				} else {
-					buf = new byte[len];
+			int len = 0;
+			do {
+				byte[] buf = new byte[1024];
+				len = message.getInputStream().read(buf);
+				if (len > 0) {
+					fos.write(buf, 0, len);
 				}
-				is.read(buf);
-				fos.write(buf);
-			}
-			is.close();
+			} while (len > 0);
 			fos.close();
 		} else if (filename
 				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
-
-			ZipInputStream zis = new ZipInputStream(message.getInputStream());
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
-				String name = ze.getName().toLowerCase();
-				logger.l4("found " + filename + "#" + name);
-				int idx = name.lastIndexOf('/');
-				if (idx >= 0) {
-					name = name.substring(idx + 1);
-				}
-				idx = name.lastIndexOf('\\');
-				if (idx >= 0) {
-					name = name.substring(idx + 1);
-				}
-				if (name.matches("^[a-f0-9]{8}\\.pkt$")) {
-					File out = createInboundFile(message.isSecure());
-					FileOutputStream fos = new FileOutputStream(out);
-					int len;
-					while ((len = zis.available()) > 0) {
-						byte[] buf;
-						if (len > 1024) {
-							buf = new byte[1024];
-						} else {
-							buf = new byte[len];
-						}
-						zis.read(buf);
-						fos.write(buf);
-					}
-					fos.close();
-				}
-			}
-			zis.close();
+			unpackBundle(message);
 		} else if (message.isSecure()) {
-			filename = filename.replaceAll("^[\\./\\\\]+", "_");
-			File f = new File(getInbound() + File.separator + filename);
-			boolean ninetoa = false;
-			boolean ztonull = false;
-			boolean underll = false;
-			while (f.exists()) {
-				if ((ninetoa && ztonull) || underll) {
-					logger.l2("All possible files exists. Please delete something before continue");
-					break;
-				} else {
-					char[] array = filename.toCharArray();
-					char c = array[array.length - 1];
-					if ((c >= '0' && c <= '8') || (c >= 'a' && c <= 'y')) {
-						c++;
-					} else if (c == '9') {
-						c = 'a';
-						ninetoa = true;
-					} else if (c == 'z') {
-						c = '0';
-						ztonull = true;
-					} else {
-						c = '_';
-						underll = true;
+			File f = guessFilename(filename);
+			if (f != null) {
+				FileOutputStream fos = new FileOutputStream(f);
+				int len = 0;
+				do {
+					byte[] buf = new byte[1024];
+					len = message.getInputStream().read(buf);
+					if (len > 0) {
+						fos.write(buf, 0, len);
 					}
-					array[array.length - 1] = c;
-					filename = new String(array);
-					f = new File(getInbound() + File.separator + filename);
-				}
+				} while (len > 0);
+				fos.close();
+				logger.l3("File saved " + f.getAbsolutePath() + " ("
+						+ f.length() + ")");
 			}
-			FileOutputStream fos = new FileOutputStream(f);
-			while (message.getInputStream().available() > 0) {
-				byte[] block = new byte[1024];
-				int len = message.getInputStream().read(block);
-				fos.write(block, 0, len);
-			}
-			fos.close();
-			logger.l3("File saved " + f.getAbsolutePath() + " (" + f.length()
-					+ ")");
 		} else {
 			logger.l2("File rejected via unsecure " + filename);
 		}
+	}
+
+	protected static void unpackBundle(Message message) throws IOException,
+			FileNotFoundException {
+		logger.l4("Unpacking " + message.getMessageName());
+		ZipInputStream zis = new ZipInputStream(message.getInputStream());
+		ZipEntry ze;
+		while ((ze = zis.getNextEntry()) != null) {
+			String name = ze.getName().toLowerCase();
+			logger.l5("found " + name);
+			int idx = name.lastIndexOf('/');
+			if (idx >= 0) {
+				name = name.substring(idx + 1);
+			}
+			idx = name.lastIndexOf('\\');
+			if (idx >= 0) {
+				name = name.substring(idx + 1);
+			}
+			if (name.matches("^[a-f0-9]{8}\\.pkt$")) {
+				File out = createInboundFile(message.isSecure());
+				FileOutputStream fos = new FileOutputStream(out);
+				int len = 0;
+				do {
+					byte[] buf = new byte[1024];
+					len = zis.read(buf);
+					if (len > 0) {
+						fos.write(buf, 0, len);
+					}
+				} while (len > 0);
+				fos.close();
+				logger.l4(name + " was written as " + out.getName());
+			} else {
+				logger.l3(name + " was deleted as unknown");
+			}
+		}
+		zis.close();
+	}
+
+	public static File guessFilename(String filename) {
+		filename = filename.replaceAll("^[\\./\\\\]+", "_");
+		File f = new File(getInbound() + File.separator + filename);
+		boolean ninetoa = false;
+		boolean ztonull = false;
+		boolean underll = false;
+		while (f.exists()) {
+			if ((ninetoa && ztonull) || underll) {
+				logger.l2("All possible files exists. Please delete something before continue");
+				f = null;
+				break;
+			} else {
+				char[] array = filename.toCharArray();
+				char c = array[array.length - 1];
+				if ((c >= '0' && c <= '8') || (c >= 'a' && c <= 'y')) {
+					c++;
+				} else if (c == '9') {
+					c = 'a';
+					ninetoa = true;
+				} else if (c == 'z') {
+					c = '0';
+					ztonull = true;
+				} else {
+					c = '_';
+					underll = true;
+				}
+				array[array.length - 1] = c;
+				filename = new String(array);
+				f = new File(getInbound() + File.separator + filename);
+			}
+		}
+		return f;
 	}
 
 	/**
@@ -1537,7 +1551,8 @@ public final class FtnTools {
 			mail.setFilepath(path);
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
-			logger.l2("Failed to rename "+attach.getAbsolutePath()+" to "+path);
+			logger.l2("Failed to rename " + attach.getAbsolutePath() + " to "
+					+ path);
 		}
 		ORMManager.get(Filemail.class).save(mail);
 

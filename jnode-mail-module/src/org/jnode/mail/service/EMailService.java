@@ -8,50 +8,10 @@ import javax.mail.internet.*;
 
 public class EMailService {
 	private String host;
-	private String userName;
-	private String passWord;
+	private String username;
+	private String password;
 	private String fromAddr;
 	private String port;
-
-	public String getPort() {
-		return port;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public String getPassWord() {
-		return passWord;
-	}
-
-	public String getFromAddr() {
-		return fromAddr;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public void setPassWord(String passWord) {
-		this.passWord = passWord;
-	}
-
-	public void setFromAddr(String fromAddr) {
-		this.fromAddr = fromAddr;
-	}
 
 	public void sendEMail(String emailTo, String subject, String text)
 			throws Exception {
@@ -118,25 +78,29 @@ public class EMailService {
 	}
 
 	private Session getSession() {
-		Authenticator authenticator = new Authenticator();
 		Properties props = new Properties();
 		props.setProperty("mail.transport.protocol", "smtp");
 		props.setProperty("mail.host", host);
 		props.setProperty("mail.port", port);
-		props.setProperty("mail.smtp.auth", "true");
-		props.setProperty("mail.smtp.ssl.enable", "true");
-		props.setProperty("mail.smtp.sasl.enable", "true");
-		props.setProperty("mail.smtp.submitter", authenticator
-				.getPasswordAuthentication().getUserName());
-		return Session.getInstance(props, authenticator);
+		if ("465".equals(port)) {
+			props.setProperty("mail.smtp.ssl.enable", "true");
+		}
+		if (username != null && password != null) {
+			Authenticator authenticator = new Authenticator();
+			props.setProperty("mail.smtp.auth", "true");
+			props.setProperty("mail.smtp.sasl.enable", "true");
+			props.setProperty("mail.smtp.submitter", authenticator
+					.getPasswordAuthentication().getUserName());
+			return Session.getInstance(props, authenticator);
+
+		}
+		return Session.getInstance(props);
 	}
 
 	private class Authenticator extends javax.mail.Authenticator {
 		private PasswordAuthentication authentication;
 
 		public Authenticator() {
-			String username = userName;
-			String password = passWord;
 			authentication = new PasswordAuthentication(username, password);
 		}
 
@@ -144,4 +108,45 @@ public class EMailService {
 			return authentication;
 		}
 	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getFromAddr() {
+		return fromAddr;
+	}
+
+	public void setFromAddr(String fromAddr) {
+		this.fromAddr = fromAddr;
+	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
 }

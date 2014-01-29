@@ -84,6 +84,8 @@ public class Main {
 						.getIntegerProperty(POLL_PERIOD, 0) * 1000);
 		logger.l4("Started TosserTask");
 		mainTimer.schedule(new TosserTask(), 10000, 10000);
+		logger.l4("Started PollQueueTask");
+		mainTimer.schedule(new PollQueueTask(), 10000, 10000);
 		logger.l4("Started StatPoster");
 		mainTimer.schedule(new NetmailFallback(), 9000, 3600000);
         logger.l4("Started HealthReporter");
@@ -148,4 +150,14 @@ public class Main {
 		}
 
 	}
+	
+	private static final class PollQueueTask extends TimerTask {
+
+		@Override
+		public void run() {
+			PollQueue.getSelf().poll();
+		}
+
+	}
+
 }

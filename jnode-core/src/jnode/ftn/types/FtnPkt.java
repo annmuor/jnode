@@ -61,42 +61,10 @@ public class FtnPkt {
 
 	public byte[] pack() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream os = new DataOutputStream(bos);
+		write(bos);
 		try {
-			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
-			os.writeShort(FtnTools.revShort(toAddr.getNode()));
-			String date = FORMAT.format(this.date); // here
-			{
-				int n = 0;
-				for (String d : date.split(" ")) {
-					short s = new Short(d);
-					if (n == 1) {
-						s--;
-					}
-					os.writeShort(FtnTools.revShort(s));
-					n++;
-				}
-			}
-			os.write(new byte[] { 0, 0, 2, 0 });
-			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
-			os.writeShort(FtnTools.revShort(toAddr.getNet()));
-			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.4
-			os.write(FtnTools.substr(password, 8));
-			for (int i = password.length(); i < 8; i++) {
-				os.write(0);
-			}
-			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
-			os.writeShort(FtnTools.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 1, 19, 4, 1, 0 });// prodcode 19FF
-																// ver 0.4
-			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
-			os.writeShort(FtnTools.revShort(toAddr.getZone()));
-			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));
-			os.writeShort(FtnTools.revShort(toAddr.getPoint()));
-			os.write(new byte[] { 0, 0, 0, 0 });
-			os.close();
+			bos.close();
 		} catch (IOException e) {
-			//
 		}
 		return bos.toByteArray();
 	}
