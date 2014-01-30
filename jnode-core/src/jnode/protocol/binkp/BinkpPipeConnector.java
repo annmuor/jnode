@@ -3,6 +3,8 @@ package jnode.protocol.binkp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.NoSuchElementException;
+
 import jnode.event.ConnectionEndEvent;
 import jnode.event.Notifier;
 import jnode.ftn.types.FtnAddress;
@@ -56,14 +58,19 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 						} catch (InterruptedException e) {
 						}
 					} else {
-						BinkpFrame frame = frames.removeFirst();
 						try {
-							process.getOutputStream().write(frame.getBytes());
-							process.getOutputStream().flush();
-							logger.l5("Frame sent: " + frame);
-						} catch (IOException e) {
-							logger.l2("IOException: " + e.getLocalizedMessage());
-							break;
+							BinkpFrame frame = frames.removeFirst();
+							try {
+								process.getOutputStream().write(
+										frame.getBytes());
+								process.getOutputStream().flush();
+								logger.l5("Frame sent: " + frame);
+							} catch (IOException e) {
+								logger.l2("IOException: "
+										+ e.getLocalizedMessage());
+								break;
+							}
+						} catch (NoSuchElementException ignore) {
 						}
 					}
 				}
