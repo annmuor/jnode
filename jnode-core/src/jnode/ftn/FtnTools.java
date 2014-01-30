@@ -3,6 +3,7 @@ package jnode.ftn;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -83,6 +84,7 @@ public final class FtnTools {
 	public static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
+	private static final int BLOCK_SIZE = 4096;
 
 	private static Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
@@ -1539,16 +1541,10 @@ public final class FtnTools {
 				+ (mail.getCreated().getTime() / 1000) + " "
 				+ mail.getCreated().toString() + "\r\n");
 		mail.setSeenby("");
-
-		new File(FtnTosser.getFileechoPath() + File.separator + area.getName())
-				.mkdir();
 		String path = getFilePath(area.getName(), filename);
 		File newFile = new File(path);
-		if (newFile.exists()) {
-			newFile.delete();
-		}
-		if (attach.renameTo(new File(path))) {
-			mail.setFilepath(path);
+		if (move(attach, newFile, true)) {
+			mail.setFilepath(newFile.getAbsolutePath());
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
 			logger.l2("Failed to rename " + attach.getAbsolutePath() + " to "
@@ -1568,8 +1564,16 @@ public final class FtnTools {
 	}
 
 	public static String getFilePath(String area, String attach) {
-		return (FtnTosser.getFileechoPath() + File.separator + area
-				+ File.separator + attach).toLowerCase();
+		String areaPath = FtnTosser.getFileechoPath() + File.separator + area;
+		File f = new File(areaPath);
+		if (!f.isDirectory()) {
+			if (f.exists()) {
+				f.renameTo(new File(areaPath + "." + generate8d()));
+				f = new File(areaPath);
+			}
+			f.mkdirs();
+		}
+		return (f.getAbsolutePath() + File.separator + attach).toLowerCase();
 	}
 
 	public static String md5(String protocolPassword) {
@@ -1668,4 +1672,38 @@ public final class FtnTools {
 		}
 
 	}
+
+	public static boolean move(File source, File dest, boolean override) {
+		if (!source.exists()) {
+			return false;
+		}
+		if (dest.exists() && !override) {
+			return false;
+		}
+
+		try {
+			FileInputStream fis = new FileInputStream(source);
+			FileOutputStream fos = new FileOutputStream(dest);
+			int len = 0;
+			byte[] block = new byte[BLOCK_SIZE];
+			do {
+				len = fis.read(block);
+				if (len > 0) {
+					fos.write(block, 0, len);
+				}
+			} while (len > 0);
+			fos.close();
+			fis.close();
+			if (source.length() == dest.length()) {
+				source.delete();
+				return true;
+			}
+		} catch (IOException e) {
+			logger.l2("Error in move() ", e);
+		} catch (RuntimeException e) {
+			logger.l3("Runtime exception in move()", e);
+		}
+		return false;
+	}
+
 }
