@@ -603,7 +603,7 @@ public final class FtnTools {
 				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
 			unpackBundle(message);
 		} else if (message.isSecure()) {
-			File f = guessFilename(filename);
+			File f = guessFilename(filename, false);
 			if (f != null) {
 				FileOutputStream fos = new FileOutputStream(f);
 				int len = 0;
@@ -659,13 +659,13 @@ public final class FtnTools {
 		zis.close();
 	}
 
-	public static File guessFilename(String filename) {
+	public static File guessFilename(String filename, boolean read) {
 		filename = filename.replaceAll("^[\\./\\\\]+", "_");
 		File f = new File(getInbound() + File.separator + filename);
 		boolean ninetoa = false;
 		boolean ztonull = false;
 		boolean underll = false;
-		while (f.exists()) {
+		while ((read) ? !f.exists() : f.exists()) {
 			if ((ninetoa && ztonull) || underll) {
 				logger.l2("All possible files exists. Please delete something before continue");
 				f = null;

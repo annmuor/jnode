@@ -261,7 +261,7 @@ public class FtnTosser {
 						tic.unpack(fis);
 						fis.close();
 						String filename = tic.getFile().toLowerCase();
-						File attach = FtnTools.guessFilename(filename);
+						File attach = FtnTools.guessFilename(filename, true);
 						if (attach != null && attach.canRead()) { // processing
 							logger.l3("File found as " + filename);
 							if (!MainHandler.getCurrentInstance().getInfo()
@@ -317,7 +317,7 @@ public class FtnTosser {
 							Notifier.INSTANSE
 									.notify(new NewFilemailEvent(mail));
 						} else {
-							logger.l4("File " + tic.getFile()
+							logger.l4("File " + attach.getAbsolutePath()
 									+ " not found in inbound, waiting");
 							continue;
 						}
@@ -450,7 +450,7 @@ public class FtnTosser {
 							num++;
 							if ((n.getAttr() & FtnMessage.ATTR_FILEATT) >= FtnMessage.ATTR_FILEATT) {
 								String filename = n.getSubject();
-								File file = guessFilename(filename);
+								File file = guessFilename(filename, true);
 								if (file != null && file.canRead()) {
 									messages.add(new Message(file));
 									logger.l5("Netmail with attached file "
@@ -637,6 +637,7 @@ public class FtnTosser {
 					List<FtnAddress> sb = new ArrayList<>(seenby);
 					Collections.sort(sb, new Ftn4DComparator());
 					FtnTIC tic = createTic(link, mail, attach);
+					tic.setTo(address);
 					tic.setSeenby(sb);
 					tic.setPath(mail.getPath() + "Path "
 							+ getPrimaryFtnAddress() + " "
@@ -756,7 +757,7 @@ public class FtnTosser {
 			tic.setSize(attach.length());
 			tic.setDesc(mail.getFiledesc());
 			tic.setPassword(link.getPaketPassword());
-			tic.setFrom(getPrimaryFtnAddress());
+			tic.setFrom(FtnTools.selectOurAka(link));
 			tic.setTo(null);
 			tic.setOrigin(new FtnAddress(mail.getOrigin()));
 			return tic;
