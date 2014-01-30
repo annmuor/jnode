@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +85,7 @@ public final class FtnTools {
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 	private static final int BLOCK_SIZE = 4096;
 
-	private static Hashtable<String, IRobot> robotMaps = new Hashtable<>();
+	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
 	/**
 	 * Сортировщик 2D-адресов
@@ -623,8 +622,7 @@ public final class FtnTools {
 		}
 	}
 
-	protected static void unpackBundle(Message message) throws IOException,
-			FileNotFoundException {
+	protected static void unpackBundle(Message message) throws IOException {
 		logger.l4("Unpacking " + message.getMessageName());
 		ZipInputStream zis = new ZipInputStream(message.getInputStream());
 		ZipEntry ze;
