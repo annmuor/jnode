@@ -8,6 +8,7 @@ import jnode.dto.Schedule;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
 import jnode.jscript.JscriptExecutor;
+import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 
 import java.sql.SQLException;
@@ -19,6 +20,9 @@ import java.util.regex.Pattern;
  * @author Manjago (kirill@temnenkov.com)
  */
 public class ScriptFix extends AbstractRobot {
+
+    private final Logger logger = Logger
+            .getLogger(getClass());
 
 	private static final Pattern LIST = Pattern.compile("^%LIST$",
 			Pattern.CASE_INSENSITIVE);
@@ -72,6 +76,14 @@ public class ScriptFix extends AbstractRobot {
 
 	@Override
 	protected boolean isEnabled(Link link) {
+        if (logger.isNeedLog5()){
+            if (link == null){
+                logger.l5("AHTUNG! NULL link!");
+            } else {
+                logger.l5(MessageFormat.format("isEnabled - for link {0} scriptfix activity is {1}", link, FtnTools.getOptionBooleanDefFalse(link,
+                        LinkOption.BOOLEAN_SCRIPTFIX)));
+            }
+        }
 		return link != null
 				&& FtnTools.getOptionBooleanDefFalse(link,
 						LinkOption.BOOLEAN_SCRIPTFIX);
