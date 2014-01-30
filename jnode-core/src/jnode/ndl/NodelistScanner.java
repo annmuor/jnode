@@ -177,7 +177,8 @@ public class NodelistScanner {
 			long unixtime = 0;
 			if (ndlDir.isDirectory()) {
 				for (File file : ndlDir.listFiles()) {
-					if (file.getAbsolutePath().startsWith(nodelist_w)) {
+					if (file.getAbsolutePath().toLowerCase()
+							.startsWith(nodelist_w.toLowerCase())) {
 						if (file.lastModified() > unixtime) {
 							ndl = file;
 							unixtime = file.lastModified();
