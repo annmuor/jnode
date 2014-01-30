@@ -77,8 +77,12 @@ public class ScriptFix extends AbstractRobot {
 	@Override
 	protected boolean isEnabled(Link link) {
         if (logger.isNeedLog5()){
-            logger.l5(MessageFormat.format("isEnbabled - for link {0} scriptfix activity is {1}", link, FtnTools.getOptionBooleanDefFalse(link,
-                    LinkOption.BOOLEAN_SCRIPTFIX)));
+            if (link == null){
+                logger.l5("AHTUNG! NULL link!");
+            } else {
+                logger.l5(MessageFormat.format("isEnabled - for link {0} scriptfix activity is {1}", link, FtnTools.getOptionBooleanDefFalse(link,
+                        LinkOption.BOOLEAN_SCRIPTFIX)));
+            }
         }
 		return link != null
 				&& FtnTools.getOptionBooleanDefFalse(link,
