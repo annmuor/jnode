@@ -105,13 +105,12 @@ public class Link {
 		this.protocolAddress = protocolAddress;
 	}
 
-	@Override
-	public String toString() {
-		return "Link [id=" + id + ", linkName=" + linkName + ", linkAddress="
-				+ linkAddress + ", paketPassword=" + paketPassword
-				+ ", protocolPassword=" + protocolPassword
-				+ ", protocolAddress=" + protocolAddress + "]";
-	}
+    @Override
+    public String toString() {
+        return "Link [id=" + id + ", linkName=" + linkName + ", " +
+                "linkAddress=" + linkAddress
+                + ", protocolAddress=" + protocolAddress + "]";
+    }
 
 	@Override
 	public int hashCode() {
