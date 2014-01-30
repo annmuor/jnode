@@ -87,7 +87,7 @@ public class PointListHelper extends IJscriptHelper {
 				area,
 				attachment,
 				getFilename(zip),
-				"N5020 PoOINTLIST DAY "
+				"Pointlist, day "
 						+ Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
 
 	}
