@@ -45,6 +45,8 @@ public class HttpdModule extends JnodeModule {
 		Spark.before(new SecureFilter("/secure/*"));
 
 		Spark.get(new SelfRoute());
+		Spark.get(new SelfRoute("/"));
+		Spark.get(new SelfRoute(""));
 		Spark.get(new HealthRoute());
 		Spark.get(new LinksRoute());
 		Spark.get(new BecomePointRoute());

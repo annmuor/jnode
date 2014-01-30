@@ -17,8 +17,8 @@ public class SelfRoute extends Route {
 		super("/index.html");
 	}
 
-	public SelfRoute(String path, String acceptType) {
-		super(path, acceptType);
+	public SelfRoute(String path) {
+		super(path);
 	}
 
 	@Override
