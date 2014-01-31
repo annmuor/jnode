@@ -1,17 +1,14 @@
 package jnode.protocol.binkp.types;
 
-import java.nio.ByteBuffer;
-
 /**
  * 
  * @author kreon
  * 
  */
 public class BinkpFrame {
-	private final boolean isCommand; // if false - is a file
+	private static final int MAX_SIZE = 32767;
 	private BinkpCommand command;
-	private final byte[] data;
-	private ByteBuffer frame;
+	private byte[] frame;
 	private String arg;
 
 	public BinkpFrame(BinkpCommand command) {
@@ -20,28 +17,23 @@ public class BinkpFrame {
 
 	public BinkpFrame(BinkpCommand command, String arg) {
 		this.arg = arg;
-		isCommand = true;
 		this.command = command;
 		int arglen = (arg == null) ? 0 : arg.getBytes().length;
-		ByteBuffer buf = ByteBuffer.allocate(1 + arglen);
-		buf.put((byte) command.getCmd());
-		if (arglen > 0) {
-			buf.put(arg.getBytes());
-		}
-		this.data = buf.array();
+		frame = new byte[arglen + 3];
+		System.arraycopy(arg.getBytes(), 0, frame, 3, arglen);
+		frame[2] = (byte) (command.getCmd() & 0xff);
 		init();
 	}
 
 	public BinkpFrame(byte[] filedata) {
-		isCommand = false;
-		this.data = filedata;
+		frame = new byte[filedata.length + 2];
+		System.arraycopy(filedata, 0, frame, 2, filedata.length);
 		init();
 	}
 
 	public BinkpFrame(byte[] filedata, int len) {
-		isCommand = false;
-		this.data = new byte[len];
-		System.arraycopy(filedata, 0, data, 0, len);
+		frame = new byte[filedata.length + 2];
+		System.arraycopy(filedata, 0, frame, 2, len);
 		init();
 	}
 
@@ -49,40 +41,30 @@ public class BinkpFrame {
 		return command;
 	}
 
-	public byte[] getData() {
-		return data;
-	}
-
-	public boolean isCommand() {
-		return isCommand;
-	}
-
 	public String getArg() {
 		return arg;
 	}
 
 	private void init() {
-		if (data == null || data.length == 0) {
-			return;
-		}
-		int len = data.length;
-		len &= 0xffff;
-		if (isCommand) {
-			len |= 0x8000;
+		int datalen = frame.length - 2;
+		if (datalen > MAX_SIZE) {
+			// тут ругаться матом
 		} else {
-			len &= 0x7fff;
+			datalen &= 0x7fff;
 		}
-		frame = ByteBuffer.allocate(2 + data.length);
-		frame.putShort((short) len);
-		frame.put(data);
+		if (this.command != null) {
+			datalen |= 0x8000;
+		}
+		frame[0] = (byte) ((datalen >> 8) & 0xff);
+		frame[1] = (byte) (datalen & 0xff);
 	}
 
 	public byte[] getBytes() {
-		return (frame != null) ? frame.array() : new byte[0];
+		return (frame != null) ? frame : new byte[0];
 	}
 
 	private String displayFrame() {
-		byte[] d = getData();
+		byte[] d = frame;
 		StringBuilder sb = new StringBuilder();
 		sb.append("length = ");
 		sb.append(d.length);
@@ -94,7 +76,7 @@ public class BinkpFrame {
 	@Override
 	public String toString() {
 		return "[ "
-				+ ((isCommand) ? command.toString() + " " + arg
+				+ ((command != null) ? command.toString() + " " + arg
 						: displayFrame()) + " ]";
 	}
 

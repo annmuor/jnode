@@ -14,6 +14,7 @@ import jnode.protocol.binkp.BinkpProtocolTools;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
 import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
+import jnode.protocol.io.Message;
 
 /**
  * Соединение через пайп
@@ -133,8 +134,10 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				if (currentOS != null) {
 					currentOS.close();
 				}
-				if (transferringMessage != null) {
-					transferringMessage.getInputStream().close();
+				for (Message message : messages) {
+					if (message.getInputStream() != null) {
+						message.getInputStream().close();
+					}
 				}
 			} catch (IOException ignore) {
 			}

@@ -18,6 +18,7 @@ import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
 import jnode.protocol.binkp.types.BinkpFrame;
+import jnode.protocol.io.Message;
 
 /**
  * TCP/IP соединение
@@ -173,16 +174,15 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							}
 							if (key.isWritable()) {
 								checkForMessages();
-								if (!frames.isEmpty()) {
+								while (!frames.isEmpty()) {
 									BinkpFrame frame = frames.removeFirst();
 									logger.l5("Frame sent: " + frame);
 									write(frame, channel);
 									lastActive = new Date().getTime();
-								} else {
-									if (connectionState == STATE_END
-											|| connectionState == STATE_ERROR) {
-										finish();
-									}
+								}
+								if (connectionState == STATE_END
+										|| connectionState == STATE_ERROR) {
+									finish();
 								}
 							}
 						} else {
@@ -205,8 +205,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				if (currentOS != null) {
 					currentOS.close();
 				}
-				if (transferringMessage != null) {
-					transferringMessage.getInputStream().close();
+				for (Message message : messages) {
+					if (message.getInputStream() != null) {
+						message.getInputStream().close();
+					}
 				}
 			} catch (IOException e2) {
 				logger.l2("Error while closing key", e2);

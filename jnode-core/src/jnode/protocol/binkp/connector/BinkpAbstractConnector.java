@@ -106,8 +106,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	private String cramAlgo = null;
 	private String cramText = null;
 	protected boolean binkp1_0 = true;
-	private LinkedList<Message> messages = new LinkedList<>();
-	protected Message transferringMessage = null;
+	protected LinkedList<Message> messages = new LinkedList<>();
+	// protected transferringMessage = null;
 	private Message receivingMessage = null;
 	private File currentFile;
 	protected OutputStream currentOS;
@@ -135,7 +135,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected void proccessFrame(BinkpFrame frame) {
-		if (frame.isCommand()) {
+		if (frame.getCommand() != null) {
 			switch (frame.getCommand()) {
 			case M_NUL:
 				m_null(frame.getArg());
@@ -182,14 +182,14 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		} else {
 			if (receivingMessage != null) {
 				if (receivingBytesLeft > 0) {
-					byte[] data = frame.getData();
-					int len = data.length;
+					byte[] data = frame.getBytes();
+					int len = data.length - 2;
 					try {
 						if (receivingBytesLeft >= len) {
-							currentOS.write(data);
+							currentOS.write(data, 2, len);
 							receivingBytesLeft -= len;
 						} else {
-							currentOS.write(data, 0, (int) receivingBytesLeft);
+							currentOS.write(data, 2, (int) receivingBytesLeft);
 							receivingBytesLeft = 0;
 						}
 						recv_bytes += len;
@@ -245,43 +245,50 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	private void m_skip(String arg) {
-		if (transferringMessage != null) {
-			transferringMessage = null;
-			logger.l3("Message skipped : " + getString(transferringMessage));
+		Message found = null;
+		for (Message message : messages) {
+			if (messageEquals(message, arg)) {
+				logger.l3(String.format("Skip file: %s (%d)",
+						message.getMessageName(), message.getMessageLength()));
+				found = message;
+				break;
+			}
+		}
+		if (found != null) {
+			messages.remove(found);
 		} else {
-			logger.l4("M_SKIP while message is not sent");
+			logger.l3("M_GOT for file we haven't sent: " + arg);
 		}
 
 	}
 
 	private void m_get(String arg) {
-		if (transferringMessage != null) {
-			if (messageEquals(transferringMessage, arg)) {
+		for (Message message : messages) {
+			if (messageEquals(message, arg)) {
 				int skip = Integer.valueOf(arg.split(" ")[3]);
-				sendMessage(transferringMessage, skip, staticBufMaxSize);
+				sendMessage(message, skip, staticBufMaxSize);
 				logger.l4("M_GET for file " + arg);
-			} else {
-				logger.l4("M_GET while message was not sent");
+				break;
 			}
 		}
-
 	}
 
 	private void m_got(String arg) {
-		if (transferringMessage != null) {
-			if (messageEquals(transferringMessage, arg)) {
+		Message found = null;
+		for (Message message : messages) {
+			if (messageEquals(message, arg)) {
 				logger.l3(String.format("Sent file: %s (%d)",
-						transferringMessage.getMessageName(),
-						transferringMessage.getMessageLength()));
-				transferringMessage.delete();
-				transferringMessage = null;
-			} else {
-				logger.l3("M_GOT for file we haven't sent: " + arg);
+						message.getMessageName(), message.getMessageLength()));
+				found = message;
+				break;
 			}
-		} else {
-			logger.l4("M_GOT while message was not sent");
 		}
-
+		if (found != null) {
+			found.delete();
+			messages.remove(found);
+		} else {
+			logger.l3("M_GOT for file we haven't sent: " + arg);
+		}
 	}
 
 	private void m_file(String arg) {
@@ -514,22 +521,19 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		if (flag_leob) {
 			return;
 		}
-
-		if (transferringMessage != null) {
+		if (!messages.isEmpty()) {
 			return;
 		}
-		if (messages.isEmpty()) {
-			for (FtnAddress a : foreignAddress) {
-				messages.addAll(TosserQueue.getInstanse().getMessages(a));
-			}
+		for (FtnAddress a : foreignAddress) {
+			messages.addAll(TosserQueue.getInstanse().getMessages(a));
+
 		}
 
 		if (messages.isEmpty()) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
 			flag_leob = true;
 		} else {
-			transferringMessage = messages.removeFirst();
-			sendMessage(transferringMessage, 0, staticBufMaxSize);
+			sendMessages(staticBufMaxSize);
 		}
 
 	}
@@ -587,7 +591,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 	}
 
-	private void sendMessage(Message message, int skip, int bufMaxSize) {
+	protected void sendMessage(Message message, int skip, int bufMaxSize) {
 		frames.addLast(new BinkpFrame(BinkpCommand.M_FILE, getString(message,
 				skip)));
 		logger.l3(String.format("Sending file: %s (%d)",
@@ -602,8 +606,32 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				if (n > 0)
 					frames.addLast(new BinkpFrame(buf, n));
 			} while (n > 0);
+			message.getInputStream().close();
 		} catch (IOException e) {
 			error("IOException");
+		}
+
+	}
+
+	private void sendMessages(int bufMaxSize) {
+		for (Message message : messages) {
+			frames.addLast(new BinkpFrame(BinkpCommand.M_FILE, getString(
+					message, 0)));
+			logger.l3(String.format("Sending file: %s (%d)",
+					message.getMessageName(), message.getMessageLength()));
+			try {
+				int n;
+				do {
+					byte[] buf = new byte[bufMaxSize];
+					n = message.getInputStream().read(buf);
+					sent_bytes += n;
+					if (n > 0)
+						frames.addLast(new BinkpFrame(buf, n));
+				} while (n > 0);
+				message.getInputStream().close();
+			} catch (IOException e) {
+				error("IOException");
+			}
 		}
 
 	}
