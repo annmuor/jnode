@@ -34,7 +34,7 @@ public class DataProviderServiceTest {
     }
 
     private void generateMessages(GenericDAO<NewsMessage> dao, NewsGroup ng) {
-        for (long i = ng.getReportedLowWatermark(); i < ng.getReportedHighWatermark(); i++) {
+        for (long i = ng.getReportedLowWatermark(); i <= ng.getReportedHighWatermark(); i++) {
             int userId = random2();
 
             NewsMessage message = new NewsMessage();
@@ -54,29 +54,29 @@ public class DataProviderServiceTest {
         dao.executeRaw("DELETE FROM news_group WHERE name LIKE 'group%'");
 
         ng1 = new NewsGroup();
-        ng1.setGroupUniquePrefix(10000l);
+        ng1.setGroupUniquePrefix(100000l);
         ng1.setName("group1");
         ng1.setNumberOfArticles(1l);
         ng1.setReportedLowWatermark(ng1.getGroupUniquePrefix() + 100l);
-        ng1.setReportedHighWatermark(ng1.getGroupUniquePrefix() + 101l);
+        ng1.setReportedHighWatermark(ng1.getGroupUniquePrefix() + 100l);
         ng1.setCreatedDate(new Date());
         dao.save(ng1);
 
         ng2 = new NewsGroup();
-        ng2.setGroupUniquePrefix(20000l);
+        ng2.setGroupUniquePrefix(200000l);
         ng2.setName("group2");
         ng2.setNumberOfArticles(2l);
         ng2.setReportedLowWatermark(ng2.getGroupUniquePrefix() + 200l);
-        ng2.setReportedHighWatermark(ng2.getGroupUniquePrefix() + 202l);
+        ng2.setReportedHighWatermark(ng2.getGroupUniquePrefix() + 201l);
         ng2.setCreatedDate(new Date());
         dao.save(ng2);
 
         ng3 = new NewsGroup();
-        ng3.setGroupUniquePrefix(30000l);
+        ng3.setGroupUniquePrefix(300000l);
         ng3.setName("group3");
         ng3.setNumberOfArticles(3l);
         ng3.setReportedLowWatermark(ng3.getGroupUniquePrefix() + 300l);
-        ng3.setReportedHighWatermark(ng3.getGroupUniquePrefix() + 303l);
+        ng3.setReportedHighWatermark(ng3.getGroupUniquePrefix() + 302l);
         ng3.setCreatedDate(new Date());
         dao.save(ng3);
 

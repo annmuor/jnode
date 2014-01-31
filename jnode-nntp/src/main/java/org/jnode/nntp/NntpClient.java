@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -89,11 +90,19 @@ public class NntpClient implements Runnable {
         for (String message : response) {
             logger.l4("<--- " + message);
             out.println(message);
+            out.flush();
         }
     }
 
     private String read() throws IOException {
-        String line = in.readLine();
+
+        String line;
+        try {
+            line = in.readLine();
+        } catch (SocketException e) {
+            throw new EndOfSessionException();
+        }
+
         if (line == null) {
             throw new EndOfSessionException();
         }

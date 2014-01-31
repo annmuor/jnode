@@ -36,6 +36,12 @@ public class NntpModule extends JnodeModule {
             try (ServerSocket serverSocket = new ServerSocket(PORT)) {
                 Socket socket = serverSocket.accept();
 
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 logger.l4("New client accepted.");
                 new Thread(new NntpClient(socket)).start();
 

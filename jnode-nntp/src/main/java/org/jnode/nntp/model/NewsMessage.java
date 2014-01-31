@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "news_message")
 public class NewsMessage extends NntpEntity {
 
-    @DatabaseField(columnName = "id", index = true)
+    @DatabaseField(columnName = "id", index = true, id = true)
     private Long id;
 
     @DatabaseField(columnName = "group_name", index = true)

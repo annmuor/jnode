@@ -8,5 +8,10 @@ import java.util.Collection;
 public interface DataProvider {
     NewsGroup newsGroup(String groupName);
     Collection<NewsGroup> newsGroups();
-    Collection<NewsMessage> messages(String groupName);
+    Collection<NewsMessage> messagesByGroupName(String groupName);
+
+
+    Collection<NewsMessage> messagesByIdRange(String fromId, String toId);
+
+    NewsMessage messageById(String id);
 }

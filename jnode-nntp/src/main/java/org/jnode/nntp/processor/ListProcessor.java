@@ -20,7 +20,7 @@ public class ListProcessor implements Processor {
         response.add(NntpResponse.List.LIST_OF_NEWSGROUPS);
 
         for (NewsGroup newsGroup : dataProvider.newsGroups()) {
-            response.add(newsGroup.getName());
+            response.add(newsGroup.getName() + " " + newsGroup.getReportedHighWatermark() + " " + newsGroup.getReportedLowWatermark() + " " + "y");
         }
 
         response.add(NntpResponse.END_OF_RESPONSE);

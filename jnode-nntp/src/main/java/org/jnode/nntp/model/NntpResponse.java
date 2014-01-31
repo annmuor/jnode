@@ -5,7 +5,7 @@ public class NntpResponse {
     public static final String END_OF_RESPONSE = ".";
 
     public static class InitialGreetings {
-        public static final String READY = "200 NNTP Service Ready, posting permitted";
+        public static final String READY = "200 NNTP Service Ready, posting permitted.";
     }
 
     public static class List {

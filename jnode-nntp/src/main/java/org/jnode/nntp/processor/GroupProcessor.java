@@ -4,7 +4,6 @@ import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.model.NewsGroup;
-import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -31,7 +30,7 @@ public class GroupProcessor implements Processor {
                         .append(" ")
                         .append(group.getReportedHighWatermark())
                         .toString());
-        response.add(NntpResponse.END_OF_RESPONSE);
+        //response.add(NntpResponse.END_OF_RESPONSE);
 
         return response;
     }
