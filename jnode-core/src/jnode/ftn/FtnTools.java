@@ -552,9 +552,11 @@ public final class FtnTools {
 		if (text.charAt(text.length() - 1) != '\n') {
 			text.append('\n');
 		}
-		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
-				.getInfo().getAddressList().toString(),
-				FORMAT.format(new Date())));
+		for (FtnAddress address : MainHandler.getCurrentInstance().getInfo()
+				.getAddressList()) {
+			text.append(String.format(ROUTE_VIA, address.toString(),
+					FORMAT.format(new Date())));
+		}
 		message.setText(text.toString());
 		return message;
 	}

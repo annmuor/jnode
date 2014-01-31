@@ -9,16 +9,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Date;
-
-import jnode.event.ConnectionEndEvent;
-import jnode.event.Notifier;
-import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
-import jnode.main.threads.PollQueue;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
+import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
-import jnode.protocol.io.Message;
 
 /**
  * TCP/IP соединение
@@ -58,6 +52,8 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 		}
 	}
 
+	private Selector selector;
+
 	private BinkpAsyncConnector(SocketChannel socket, boolean clientConnection)
 			throws IOException {
 		this.clientConnection = clientConnection;
@@ -68,131 +64,81 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 
 	@Override
 	public void run() {
-		int remains = 0;
-		int len = 0;
-		int head_len = 0;
-		int head_remains = 0;
-		boolean command = false;
-		ByteBuffer buffer = null;
-		ByteBuffer headBuf = null;
-		long lastActive = 0;
 		try {
 			greet();
 			while (true) {
-
-				long now = new Date().getTime();
-				if (lastActive != 0) {
-					if (now - lastActive > staticMaxTimeout) {
-						finish();
-					}
-				}
 				try {
 					checkEOB();
-					selector.selectedKeys().clear();
-					selector.select();
+					selector.select(staticMaxTimeout);
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
-						if (lastActive == 0) {
-							InetSocketAddress addr = (InetSocketAddress) channel
-									.getRemoteAddress();
-							logger.l2(String.format("Connected with %s:%d",
-									addr.getHostString(), addr.getPort()));
-							lastActive = new Date().getTime();
-						}
 						if (key.isValid()) {
 							if (key.isConnectable()) {
 								if (!channel.finishConnect()) {
 									key.cancel();
-								}
-							}
-							if (key.isReadable()) {
-								// read frame
-								BinkpFrame frame = null;
-								try {
-									if (len == 0) {
-										if (head_len == 0) {
-											headBuf = ByteBuffer.allocate(2);
-											head_len = 2;
-											head_remains = 2;
-										}
-										int n = readOrDie(headBuf, channel);
-										head_remains = head_len - n;
-										if (head_remains > 0) {
-											continue;
-										}
-										headBuf.flip();
-										int head = headBuf.getShort() & 0xFFFF;
-										command = ((head >> 15) == 1);
-										len = head & 0x7FFF;
-										headBuf = null;
-										remains = len;
-										buffer = ByteBuffer.allocate(len);
-										buffer.clear();
-										head_len = 0;
-									}
-									if (len > 0) {
-										int n = readOrDie(buffer, channel);
-										remains -= n;
-										if (remains > 0) {
-											continue;
-										}
-										buffer.flip();
-										if (command) {
-											int cmd = buffer.get();
-											cmd &= 0xFF;
-											String arg = null;
-											if (len > 1) {
-												int next_len = buffer
-														.remaining();
-												if (buffer.get(len - 1) == 0) {
-													next_len--;
-												}
-												byte[] buf = new byte[next_len];
-												buffer.get(buf, 0, next_len);
-												arg = new String(buf);
-											}
-											frame = new BinkpFrame(
-													getCommand(cmd), arg);
-										} else {
-											frame = new BinkpFrame(
-													buffer.array());
-										}
-
-										len = 0;
-										remains = 0;
-										buffer = null;
-									}
-								} catch (IOException e) {
-									error("Unable to read frame");
-									frame = null;
-								}
-								if (frame != null) {
-									logger.l5("Frame received: " + frame);
-									proccessFrame(frame);
-									lastActive = new Date().getTime();
+									finish("Connect failed");
+								} else {
+									InetSocketAddress addr = (InetSocketAddress) channel
+											.getRemoteAddress();
+									logger.l2(String.format(
+											"Connected with %s:%d",
+											addr.getHostString(),
+											addr.getPort()));
 								}
 							}
 							if (key.isWritable()) {
 								checkForMessages();
-								while (!frames.isEmpty()) {
+								if (!frames.isEmpty()) {
 									BinkpFrame frame = frames.removeFirst();
-									logger.l5("Frame sent: " + frame);
+									logger.l5("Frame sent: " + frame
+											+ ", next " + frames.size()
+											+ " frames, total sent "
+											+ total_sent_bytes);
 									write(frame, channel);
-									lastActive = new Date().getTime();
 								}
-								if (connectionState == STATE_END
-										|| connectionState == STATE_ERROR) {
-									finish();
+							}
+							if (key.isReadable()) {
+								BinkpFrame frame = null;
+								ByteBuffer head = ByteBuffer.allocate(2);
+								for (int len = 0; len < 2;) {
+									len += readOrDie(head, channel);
+								}
+								head.flip();
+								int header = ((int) head.getShort()) & 0xffff;
+								int datalen = header & 0x7fff;
+								ByteBuffer data = ByteBuffer.allocate(datalen);
+								for (int len = 0; len < datalen;) {
+									len += readOrDie(data, channel);
+								}
+								data.flip();
+								if ((header & 0x8000) >= 0x8000) {
+									// command
+									BinkpCommand cmd = getCommand(data.get());
+									if (datalen > 1) {
+										byte[] buf = new byte[datalen - 1];
+										data.get(buf);
+										frame = new BinkpFrame(cmd, new String(
+												buf));
+									} else {
+										frame = new BinkpFrame(cmd);
+									}
+								} else {
+									frame = new BinkpFrame(data.array(),
+											datalen);
+								}
+								if (frame != null) {
+									logger.l5("Frame received: " + frame);
+									proccessFrame(frame);
 								}
 							}
 						} else {
-							finish();
+							finish("Key is invalid");
 						}
+						checkEOB();
 					}
-
 				} catch (IOException e) {
 					error("IOException");
-					finish();
+					finish("IOException");
 				}
 			}
 		} catch (ConnectionEndException e) {
@@ -205,33 +151,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				if (currentOS != null) {
 					currentOS.close();
 				}
-				for (Message message : messages) {
-					if (message.getInputStream() != null) {
-						message.getInputStream().close();
-					}
-				}
 			} catch (IOException e2) {
 				logger.l2("Error while closing key", e2);
 			}
-			ConnectionEndEvent event = null;
-			if (!foreignAddress.isEmpty()) {
-				for (FtnAddress addr : foreignAddress) {
-					PollQueue.getSelf().end(addr);
-				}
-				String address = (foreignLink != null) ? foreignLink
-						.getLinkAddress() : foreignAddress.get(0).toString();
-				logger.l3(String
-						.format((connectionState == STATE_END) ? "Done, Sb/Rb: %d/%d (%s)"
-								: "Done with errors, Sb/Rb: %d/%d (%s)",
-								total_sent_bytes, total_recv_bytes, address));
-				event = new ConnectionEndEvent(new FtnAddress(address),
-						!clientConnection, (connectionState == STATE_END),
-						total_recv_bytes, total_sent_bytes);
-			} else {
-				event = new ConnectionEndEvent(clientConnection, false);
-				logger.l3("Connection ended as unknown");
-			}
-			Notifier.INSTANSE.notify(event);
+			done();
 		}
 	}
 
@@ -239,7 +162,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 			throws IOException {
 		int x = channel.read(buffer);
 		if (x == -1) {
-			finish();
+			if (flag_leob && flag_reob) {
+				connectionState = STATE_END;
+			}
+			finish("readOrDie failed");
 		}
 		return x;
 	}

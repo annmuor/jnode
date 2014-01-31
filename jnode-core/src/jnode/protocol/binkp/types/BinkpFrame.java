@@ -20,7 +20,9 @@ public class BinkpFrame {
 		this.command = command;
 		int arglen = (arg == null) ? 0 : arg.getBytes().length;
 		frame = new byte[arglen + 3];
-		System.arraycopy(arg.getBytes(), 0, frame, 3, arglen);
+		if (arg != null) {
+			System.arraycopy(arg.getBytes(), 0, frame, 3, arglen);
+		}
 		frame[2] = (byte) (command.getCmd() & 0xff);
 		init();
 	}
@@ -32,7 +34,7 @@ public class BinkpFrame {
 	}
 
 	public BinkpFrame(byte[] filedata, int len) {
-		frame = new byte[filedata.length + 2];
+		frame = new byte[len + 2];
 		System.arraycopy(filedata, 0, frame, 2, len);
 		init();
 	}

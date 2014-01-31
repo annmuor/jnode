@@ -2,6 +2,8 @@ package jnode.protocol.binkp.connector;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
 
@@ -13,38 +15,52 @@ import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
 
 /**
- * Соединение через пайп
+ * TCP/IP соединение
  * 
  * @author kreon
  * 
  */
-public class BinkpPipeConnector extends BinkpAbstractConnector {
-	static final Logger logger = Logger.getLogger(BinkpPipeConnector.class);
+public class BinkpSyncConnector extends BinkpAbstractConnector {
+	static final Logger logger = Logger.getLogger(BinkpSyncConnector.class);
 
-	public static BinkpAbstractConnector connect(String cmd) {
-
+	public static BinkpAbstractConnector connect(String host, Integer port) {
+		init();
+		Socket socket = new Socket();
 		try {
-			Process process = Runtime.getRuntime().exec(cmd);
-			BinkpPipeConnector pipe = new BinkpPipeConnector();
-			pipe.clientConnection = true;
-			pipe.process = process;
-			return pipe;
+			socket.connect(new InetSocketAddress(host, port),
+					(int) staticMaxTimeout.longValue());
+			return new BinkpSyncConnector(socket, true);
 		} catch (IOException e) {
-			logger.l2("Pipe exec error: " + e.getLocalizedMessage());
+			logger.l1("Connect error: " + e.getMessage());
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException ignore) {
+				}
+			}
 			return null;
 		}
 	}
 
-	private Process process;
-	private volatile boolean closed = false;
-
-	public BinkpPipeConnector() {
+	public static BinkpAbstractConnector accept(Socket socket) {
 		init();
+		try {
+			return new BinkpSyncConnector(socket, false);
+		} catch (IOException e) {
+			logger.l1("Accept error", e);
+			return null;
+		}
 	}
 
-	/**
-	 * :-)
-	 */
+	private Socket socket;
+	private volatile boolean closed = false;
+
+	private BinkpSyncConnector(Socket socket, boolean clientConnection)
+			throws IOException {
+		this.clientConnection = clientConnection;
+		this.socket = socket;
+	}
+
 	@Override
 	public void run() {
 		Runnable processOutputObserver = new Runnable() {
@@ -63,9 +79,9 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 						try {
 							BinkpFrame frame = frames.removeFirst();
 							try {
-								process.getOutputStream().write(
-										frame.getBytes());
-								process.getOutputStream().flush();
+								socket.getOutputStream()
+										.write(frame.getBytes());
+								socket.getOutputStream().flush();
 								logger.l5("Frame sent: " + frame);
 							} catch (IOException e) {
 								logger.l2("IOException: "
@@ -82,37 +98,46 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			}
 		};
 		ThreadPool.execute(processOutputObserver);
+
 		try {
 			greet();
 			while (!closed) {
 				checkEOB();
-				int[] head = new int[2];
-				for (int i = 0; i < 2; i++) {
-					head[i] = readOrDie(process.getInputStream());
+				if (connectionState == STATE_END
+						|| connectionState == STATE_ERROR) {
+					finish("connectionState = END|ERROR");
 				}
-				int len = ((head[0] & 0xff) << 8 | (head[1] & 0xff)) & 0x7FFF;
-				int remaining = len;
-				ByteBuffer data = ByteBuffer.allocate(len);
-				boolean command = (head[0] & 0x80) > 0;
-				while (remaining > 0) {
-					byte[] buf = readOrDie(process.getInputStream(), remaining);
-					remaining -= buf.length;
-					data.put(buf);
+				try {
+					int[] head = new int[2];
+					for (int i = 0; i < 2; i++) {
+						head[i] = readOrDie(socket.getInputStream());
+					}
+					int len = ((head[0] & 0xff) << 8 | (head[1] & 0xff)) & 0x7FFF;
+					int remaining = len;
+					ByteBuffer data = ByteBuffer.allocate(len);
+					boolean command = (head[0] & 0x80) > 0;
+					while (remaining > 0) {
+						byte[] buf = readOrDie(socket.getInputStream(),
+								remaining);
+						remaining -= buf.length;
+						data.put(buf);
+					}
+					data.flip();
+					BinkpFrame frame;
+					if (command) {
+						BinkpCommand cmd = BinkpProtocolTools.getCommand(data
+								.get());
+						byte[] ndata = new byte[len - 1];
+						data.get(ndata);
+						frame = new BinkpFrame(cmd, new String(ndata));
+					} else {
+						frame = new BinkpFrame(data.array());
+					}
+					logger.l5("Frame received: " + frame);
+					proccessFrame(frame);
+				} catch (IOException e) {
+					error("IOException");
 				}
-				data.flip();
-				BinkpFrame frame;
-				if (command) {
-					BinkpCommand cmd = BinkpProtocolTools
-							.getCommand(data.get());
-					byte[] ndata = new byte[len - 1];
-					data.get(ndata);
-					frame = new BinkpFrame(cmd, new String(ndata));
-				} else {
-					frame = new BinkpFrame(data.array());
-				}
-				logger.l5("Frame received: " + frame);
-				proccessFrame(frame);
-				checkEOB();
 			}
 			finish("Connection closed");
 		} catch (ConnectionEndException e) {
@@ -122,10 +147,8 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			}
 			closed = true;
 			logger.l5("Connection end: " + e.getLocalizedMessage());
-			process.destroy();
 			done();
 		}
-
 	}
 
 	private int readOrDie(InputStream inputStream) {
@@ -139,9 +162,6 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			}
 			return x;
 		} catch (IOException e) {
-			if (flag_leob && flag_reob) {
-				connectionState = STATE_END;
-			}
 			finish("readOrDie(1) Exception");
 			return -1;
 		}

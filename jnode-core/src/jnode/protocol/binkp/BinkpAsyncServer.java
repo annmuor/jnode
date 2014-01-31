@@ -61,7 +61,7 @@ public class BinkpAsyncServer implements Runnable {
 					} catch (IOException e) {
 						logger.l2("Error in accept(): " + e.getLocalizedMessage());
 					} catch(RuntimeException e) {
-						logger.l2("RuntimeException: " + e.getLocalizedMessage());
+						logger.l2("RuntimeException: " + e.getLocalizedMessage(), e);
 					}
 				}
 			}

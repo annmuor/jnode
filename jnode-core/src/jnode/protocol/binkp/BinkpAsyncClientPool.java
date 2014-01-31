@@ -8,6 +8,7 @@ import jnode.main.threads.ThreadPool;
 import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 import jnode.protocol.binkp.connector.BinkpPipeConnector;
+import jnode.protocol.binkp.connector.BinkpSyncConnector;
 
 public class BinkpAsyncClientPool implements Runnable {
 	private static final Logger logger = Logger
@@ -33,8 +34,17 @@ public class BinkpAsyncClientPool implements Runnable {
 			}
 			try { // TODO: multiple providers?
 				BinkpAbstractConnector conn;
-				if (l.getProtocolHost().startsWith("|")) {
-					String cmd = l.getProtocolHost().substring(1);
+				if (l.getProtocolAddress().startsWith("sync:")) {
+					int port = 24554;
+					String host = l.getProtocolAddress().substring(5);
+					String[] data = host.split(":");
+					if (data.length > 1) {
+						port = Integer.valueOf(data[data.length - 1]);
+						host = host.replace(":" + data[data.length - 1], "");
+					}
+					conn = BinkpSyncConnector.connect(host, port);
+				} else if (l.getProtocolAddress().startsWith("|")) {
+					String cmd = l.getProtocolAddress().substring(1);
 					logger.l2("Connecting through pipe: " + cmd);
 					conn = BinkpPipeConnector.connect(cmd);
 				} else {

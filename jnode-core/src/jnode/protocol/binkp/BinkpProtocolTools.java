@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -96,9 +97,10 @@ public class BinkpProtocolTools {
 	public static int write(BinkpFrame frame, SocketChannel socket) {
 		if (frame != null) {
 			try {
-				socket.socket().getOutputStream().write(frame.getBytes());
+				socket.write(ByteBuffer.wrap(frame.getBytes()));
 				return 1;
 			} catch (IOException e) {
+				e.printStackTrace();
 				return 0;
 			}
 		}
