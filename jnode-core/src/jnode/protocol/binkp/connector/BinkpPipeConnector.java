@@ -1,4 +1,4 @@
-package jnode.protocol.binkp;
+package jnode.protocol.binkp.connector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,10 @@ import jnode.event.Notifier;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
+import jnode.protocol.binkp.BinkpProtocolTools;
+import jnode.protocol.binkp.exceprion.ConnectionEndException;
+import jnode.protocol.binkp.types.BinkpCommand;
+import jnode.protocol.binkp.types.BinkpFrame;
 
 /**
  * Соединение через пайп

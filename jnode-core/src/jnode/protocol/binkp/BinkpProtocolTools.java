@@ -15,6 +15,8 @@ import java.security.NoSuchAlgorithmException;
 
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
+import jnode.protocol.binkp.types.BinkpCommand;
+import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {

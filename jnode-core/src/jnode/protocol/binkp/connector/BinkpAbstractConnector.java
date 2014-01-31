@@ -1,4 +1,4 @@
-package jnode.protocol.binkp;
+package jnode.protocol.binkp.connector;
 
 import static jnode.protocol.binkp.BinkpProtocolTools.createMessage;
 import static jnode.protocol.binkp.BinkpProtocolTools.forwardToTossing;
@@ -34,6 +34,9 @@ import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
 import jnode.main.threads.TosserQueue;
 import jnode.ndl.NodelistScanner;
+import jnode.protocol.binkp.exceprion.ConnectionEndException;
+import jnode.protocol.binkp.types.BinkpCommand;
+import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
 
 /**

@@ -5,6 +5,9 @@ import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
+import jnode.protocol.binkp.connector.BinkpAbstractConnector;
+import jnode.protocol.binkp.connector.BinkpAsyncConnector;
+import jnode.protocol.binkp.connector.BinkpPipeConnector;
 
 public class BinkpAsyncClientPool implements Runnable {
 	private static final Logger logger = Logger

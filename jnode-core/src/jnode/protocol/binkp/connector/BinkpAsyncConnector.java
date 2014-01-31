@@ -1,7 +1,8 @@
-package jnode.protocol.binkp;
+package jnode.protocol.binkp.connector;
 
 import static jnode.protocol.binkp.BinkpProtocolTools.getCommand;
 import static jnode.protocol.binkp.BinkpProtocolTools.write;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -9,11 +10,14 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Date;
+
 import jnode.event.ConnectionEndEvent;
 import jnode.event.Notifier;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
 import jnode.main.threads.PollQueue;
+import jnode.protocol.binkp.exceprion.ConnectionEndException;
+import jnode.protocol.binkp.types.BinkpFrame;
 
 /**
  * TCP/IP соединение

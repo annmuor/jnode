@@ -1,4 +1,4 @@
-package jnode.protocol.binkp;
+package jnode.protocol.binkp.types;
 
 /**
  * 

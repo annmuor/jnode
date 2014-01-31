@@ -6,9 +6,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.ThreadPool;
+import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 
 import com.j256.ormlite.logger.LocalLog;
 
