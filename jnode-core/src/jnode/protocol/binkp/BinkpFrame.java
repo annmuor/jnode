@@ -2,14 +2,12 @@ package jnode.protocol.binkp;
 
 import java.nio.ByteBuffer;
 
-import jnode.protocol.io.Frame;
-
 /**
  * 
  * @author kreon
  * 
  */
-public class BinkpFrame implements Frame {
+public class BinkpFrame {
 	private final boolean isCommand; // if false - is a file
 	private BinkpCommand command;
 	private final byte[] data;
@@ -79,7 +77,6 @@ public class BinkpFrame implements Frame {
 		frame.put(data);
 	}
 
-	@Override
 	public byte[] getBytes() {
 		return (frame != null) ? frame.array() : new byte[0];
 	}

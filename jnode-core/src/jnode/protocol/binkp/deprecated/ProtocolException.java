@@ -1,4 +1,4 @@
-package jnode.protocol.io.exception;
+package jnode.protocol.binkp.deprecated;
 
 /**
  * 

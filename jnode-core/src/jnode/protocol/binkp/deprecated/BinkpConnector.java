@@ -1,4 +1,4 @@
-package jnode.protocol.binkp;
+package jnode.protocol.binkp.deprecated;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,10 +27,9 @@ import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
-import jnode.protocol.io.Connector;
-import jnode.protocol.io.Frame;
+import jnode.protocol.binkp.BinkpCommand;
+import jnode.protocol.binkp.BinkpFrame;
 import jnode.protocol.io.Message;
-import jnode.protocol.io.ProtocolConnector;
 
 /**
  * 
@@ -59,7 +58,7 @@ public class BinkpConnector implements ProtocolConnector {
 	private boolean send;
 	private boolean sendfile;
 	private boolean recvfile;
-	private List<Frame> frames;
+	private List<BinkpFrame> frames;
 	private int connectionState;
 	private Message currentMessage;
 	private OutputStream currentOutputStream;
@@ -510,12 +509,12 @@ public class BinkpConnector implements ProtocolConnector {
 							currentOutputStream = null;
 							currentTempFile = null;
 							currentMessage.setInputStream(iz);
-							Frame m_got = new BinkpFrame(BinkpCommand.M_GOT,
+							BinkpFrame m_got = new BinkpFrame(BinkpCommand.M_GOT,
 									String.format("%s %d %d",
 											currentMessage.getMessageName(),
 											currentMessage.getMessageLength(),
 											currentMessageTimestamp));
-							Frame m_skip = new BinkpFrame(BinkpCommand.M_SKIP,
+							BinkpFrame m_skip = new BinkpFrame(BinkpCommand.M_SKIP,
 									String.format("%s %d %d",
 											currentMessage.getMessageName(),
 											currentMessage.getMessageLength(),
@@ -545,8 +544,8 @@ public class BinkpConnector implements ProtocolConnector {
 	}
 
 	@Override
-	public Frame[] getFrames() {
-		Frame[] frames = this.frames.toArray(new Frame[0]);
+	public BinkpFrame[] getFrames() {
+		BinkpFrame[] frames = this.frames.toArray(new BinkpFrame[0]);
 		this.frames.clear();
 		return frames;
 	}

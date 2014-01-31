@@ -7,9 +7,9 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 import jnode.logger.Logger;
-import jnode.protocol.binkp.BinkpConnector;
-import jnode.protocol.io.Connector;
-import jnode.protocol.io.exception.ProtocolException;
+import jnode.protocol.binkp.deprecated.BinkpConnector;
+import jnode.protocol.binkp.deprecated.Connector;
+import jnode.protocol.binkp.deprecated.ProtocolException;
 
 /**
  * 

@@ -1,4 +1,4 @@
-package jnode.protocol.io;
+package jnode.protocol.binkp.deprecated;
 
 import jnode.dto.Link;
 import jnode.event.ConnectionEndEvent;
@@ -6,7 +6,8 @@ import jnode.event.Notifier;
 import jnode.ftn.tosser.FtnTosser;
 import jnode.ftn.types.FtnAddress;
 import jnode.logger.Logger;
-import jnode.protocol.io.exception.ProtocolException;
+import jnode.protocol.binkp.BinkpFrame;
+import jnode.protocol.io.Message;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,9 +87,9 @@ public class Connector {
                 logger.l2("Exception during doSocket", ex);
             }
 
-            Frame[] frames = connector.getFrames();
+            BinkpFrame[] frames = connector.getFrames();
             if (frames != null && frames.length > 0) {
-                for (Frame frame : frames) {
+                for (BinkpFrame frame : frames) {
                     try {
                         logger.l5("Sent frame: " + frame);
                         os.write(frame.getBytes());

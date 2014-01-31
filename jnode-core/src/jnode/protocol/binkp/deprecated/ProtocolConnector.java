@@ -1,6 +1,9 @@
-package jnode.protocol.io;
+package jnode.protocol.binkp.deprecated;
 
 import java.io.InputStream;
+
+import jnode.protocol.binkp.BinkpFrame;
+import jnode.protocol.io.Message;
 
 /**
  * 
@@ -16,7 +19,7 @@ public interface ProtocolConnector {
 
 	public int availible(InputStream is);
 
-	public Frame[] getFrames();
+	public BinkpFrame[] getFrames();
 
 	public boolean closed();
 
