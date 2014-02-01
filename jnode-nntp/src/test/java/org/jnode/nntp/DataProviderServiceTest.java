@@ -26,11 +26,13 @@ public class DataProviderServiceTest {
 
     public void prepareNewsMessages() {
         GenericDAO<NewsMessage> dao = ORMManager.get(NewsMessage.class);
-        dao.executeRaw("DELETE FROM news_message WHERE body LIKE 'body%'");
+        dao.executeRaw("DELETE FROM news_message");
 
         generateMessages(dao, ng1);
+/*
         generateMessages(dao, ng2);
         generateMessages(dao, ng3);
+*/
     }
 
     private void generateMessages(GenericDAO<NewsMessage> dao, NewsGroup ng) {
@@ -54,7 +56,7 @@ public class DataProviderServiceTest {
         dao.executeRaw("DELETE FROM news_group WHERE name LIKE 'group%'");
 
         ng1 = new NewsGroup();
-        ng1.setGroupUniquePrefix(100000l);
+        ng1.setGroupUniquePrefix(random());
         ng1.setName("group1");
         ng1.setNumberOfArticles(1l);
         ng1.setReportedLowWatermark(ng1.getGroupUniquePrefix() + 100l);
@@ -63,7 +65,7 @@ public class DataProviderServiceTest {
         dao.save(ng1);
 
         ng2 = new NewsGroup();
-        ng2.setGroupUniquePrefix(200000l);
+        ng2.setGroupUniquePrefix(random());
         ng2.setName("group2");
         ng2.setNumberOfArticles(2l);
         ng2.setReportedLowWatermark(ng2.getGroupUniquePrefix() + 200l);
@@ -72,7 +74,7 @@ public class DataProviderServiceTest {
         dao.save(ng2);
 
         ng3 = new NewsGroup();
-        ng3.setGroupUniquePrefix(300000l);
+        ng3.setGroupUniquePrefix(random());
         ng3.setName("group3");
         ng3.setNumberOfArticles(3l);
         ng3.setReportedLowWatermark(ng3.getGroupUniquePrefix() + 300l);

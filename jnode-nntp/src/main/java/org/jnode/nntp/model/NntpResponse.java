@@ -22,4 +22,8 @@ public class NntpResponse {
         public static final String HEADERS_FOLLOW = " 221 {message-number} {message-id}";
 
     }
+
+    public static class Article {
+        public static final String OK = "220";
+    }
 }

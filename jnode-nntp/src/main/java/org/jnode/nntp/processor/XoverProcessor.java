@@ -6,6 +6,7 @@ import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.model.NewsMessage;
+import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
 
@@ -32,29 +33,27 @@ public class XoverProcessor implements Processor {
             default:
         }
 
-        String r = "10100\txxx4.\tUser\t6 Oct 2000 04:38:40\t<10104@xxx.com>\t1\t1\t1\t\t";
-
         Collection<String> response = Lists.newLinkedList();
-        response.add("224");
-        response.add(r);
-        response.add(".");
 
-/*
-        response.add("224\r");
+        response.add("224");
 
         for (NewsMessage message : messages) {
-          //  response.add( " + Long.toString(message.getId()));
-            response.add("Subject: " + message.getSubject() + "\r");
-            response.add("From: " + message.getFrom());
-            response.add("Date: " + "6 Oct 2000 04:38:40");
-            response.add("Message-ID: " + "<" + Long.toString(message.getId()) + "@xxx.com>" );   // todo Message-ID header content ?
-            //response.add(Long.toString(message.getId()));   // todo References header content ?
-            //response.add("1");                              // todo :bytes metadata item ?
-           // response.add("1");                              // todo :lines metadata item ?
+            StringBuilder builder = new StringBuilder();
+
+            builder.append(Long.toString(message.getId())).append(DELIMITER);
+            builder.append(message.getSubject()).append(DELIMITER);
+            builder.append(message.getFrom()).append(DELIMITER);
+            builder.append(message.getCreatedDate().toString()).append(DELIMITER);
+            builder.append(Long.toString(message.getId())).append(DELIMITER);
+            builder.append(1).append(DELIMITER); // todo References header content
+            builder.append(1).append(DELIMITER); // todo :bytes metadata item
+            builder.append(1).append(DELIMITER); // todo :lines metadata item
+            builder.append(DELIMITER);
+
+            response.add(builder.toString());
         }
 
         response.add(NntpResponse.END_OF_RESPONSE);
-*/
 
         return response;
     }
