@@ -760,12 +760,14 @@ public final class FtnTools {
 				switch (i) {
 				case 0:
 					FtnAddress nfa = new FtnAddress(fields[i]);
-					Matcher msgid = Pattern.compile(
-							"^" + message.getFromAddr() + " (\\S+)$").matcher(
-							message.getMsgid());
-					if (msgid.find()) {
-						message.setMsgid(msgid.replaceFirst("\001MSGID: " + nfa
-								+ " $1"));
+					if (message.getMsgid() != null) {
+						Matcher msgid = Pattern.compile(
+								"^" + message.getFromAddr() + " (\\S+)$")
+								.matcher(message.getMsgid());
+						if (msgid.find()) {
+							message.setMsgid(msgid.replaceFirst("\001MSGID: "
+									+ nfa + " $1"));
+						}
 					}
 					Matcher origin = Pattern.compile(
 							"^ \\* Origin: (.*) \\(" + message.getFromAddr()

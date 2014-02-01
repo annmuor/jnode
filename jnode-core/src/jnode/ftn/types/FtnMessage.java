@@ -290,7 +290,9 @@ public class FtnMessage {
 						Matcher m = msgid.matcher(line);
 						if (m.matches()) {
 							this.msgid = m.group(1).toUpperCase();
-							continue;
+							if (!isNetmail) { // TODO: msgid in netmail
+								continue;
+							}
 						}
 						m = tzutc.matcher(line);
 						// TODO

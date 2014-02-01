@@ -223,7 +223,7 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						e.printStackTrace();
+						logger.l2("Error while tossing: " + e.getLocalizedMessage(), e);
 					}
 				} else if (loname.matches("(s|u)inb\\d*.pkt")) {
 					try {
@@ -256,7 +256,7 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						e.printStackTrace();
+						logger.l2("Error while tossing: " + e.getLocalizedMessage(), e);
 					}
 				} else if (loname.matches("^[a-z0-9]{8}\\.tic$")) {
 					if (!MainHandler.getCurrentInstance().getBooleanProperty(
