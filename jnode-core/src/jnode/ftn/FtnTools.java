@@ -765,10 +765,9 @@ public final class FtnTools {
 								"^" + message.getFromAddr() + " (\\S+)$")
 								.matcher(message.getMsgid());
 						if (msgid.find()) {
-							message.setMsgid(msgid.replaceFirst("\001MSGID: "
-									+ nfa + " $1"));
+							message.setMsgid(msgid.replaceFirst(nfa + " $1"));
 						}
-					}
+					} // TODO : netmail msgid
 					Matcher origin = Pattern.compile(
 							"^ \\* Origin: (.*) \\(" + message.getFromAddr()
 									+ "\\)$", Pattern.MULTILINE).matcher(
