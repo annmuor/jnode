@@ -104,6 +104,9 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				if (command) {
 					BinkpCommand cmd = BinkpProtocolTools
 							.getCommand(data.get());
+					if(data.get(len-1) == 0) {
+						len--;
+					}
 					byte[] ndata = new byte[len - 1];
 					data.get(ndata);
 					frame = new BinkpFrame(cmd, new String(ndata));

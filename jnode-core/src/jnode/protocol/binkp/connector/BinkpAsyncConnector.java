@@ -115,7 +115,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									// command
 									BinkpCommand cmd = getCommand(data.get());
 									if (datalen > 1) {
-										byte[] buf = new byte[datalen - 1];
+										if(data.get(datalen-1) == 0) {
+											datalen--;
+										}
+										byte[] buf = new byte[datalen-1];
 										data.get(buf);
 										frame = new BinkpFrame(cmd, new String(
 												buf));

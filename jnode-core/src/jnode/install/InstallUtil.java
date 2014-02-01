@@ -1,6 +1,7 @@
 package jnode.install;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -169,6 +170,7 @@ public class InstallUtil {
 		if (ver.equals("1.0")) {
 			execQuery("ALTER TABLE netmail ADD last_modified BIGINT NOT NULL DEFAULT 0;");
 			ver.setMinorVersion(1L);
+			ver.setInstalledAt(new Date());
 			ORMManager.get(Version.class).save(ver);
 			logger.l1(String.format("Upgraded to %s", ver.toString()));
 		}
@@ -193,6 +195,7 @@ public class InstallUtil {
 					ORMManager.get(LinkOption.class).save(l);
 				}
 				ver.setMinorVersion(2L);
+				ver.setInstalledAt(new Date());
 				ORMManager.get(Version.class).save(ver);
 				logger.l1(String.format("Upgraded to %s", ver.toString()));
 			} catch (Exception e) {
@@ -222,6 +225,7 @@ public class InstallUtil {
 					ORMManager.get(Route.class).save(r);
 				}
 				ver.setMinorVersion(3L);
+				ver.setInstalledAt(new Date());
 				ORMManager.get(Version.class).save(ver);
 				logger.l1(String.format("Upgraded to %s", ver.toString()));
 			} catch (Exception e) {
@@ -234,6 +238,7 @@ public class InstallUtil {
 			execQuery("ALTER TABLE links DROP COLUMN host;");
 			execQuery("ALTER TABLE links DROP COLUMN port;");
 			ver.setMinorVersion(4L);
+			ver.setInstalledAt(new Date());
 			ORMManager.get(Version.class).save(ver);
 			logger.l1(String.format("Upgraded to %s", ver.toString()));
 		}
@@ -256,10 +261,9 @@ public class InstallUtil {
 							String msgid = ma.group(1);
 							String text = m.getText().replace(
 									ma.group() + "\n", "");
-							ORMManager.get(Echomail.class).update("msgid",
-									msgid, "id", "=", m.getId());
-							ORMManager.get(Echomail.class).update("text", text,
-									"id", "=", m.getId());
+							m.setMsgid(msgid);
+							m.setText(text);
+							ORMManager.get(Echomail.class).update(m);
 							cnt++;
 						}
 					}
@@ -295,6 +299,7 @@ public class InstallUtil {
 					ORMManager.get(Rewrite.class).save(r);
 				}
 				ver.setMinorVersion(5L);
+				ver.setInstalledAt(new Date());
 				ORMManager.get(Version.class).save(ver);
 				logger.l1(String.format("Upgraded to %s", ver.toString()));
 			} catch (Exception e) {

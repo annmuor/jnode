@@ -544,8 +544,15 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		for (FtnAddress a : foreignAddress) {
 			messages.addAll(TosserQueue.getInstanse().getMessages(a));
 		}
-		messages_index = 0;
-		startNextFile();
+		if (messages.isEmpty()) {
+			if (!flag_leob) {
+				flag_leob = true;
+				frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
+			}
+		} else {
+			messages_index = 0;
+			startNextFile();
+		}
 	}
 
 	protected void finish(String reason) {
@@ -636,10 +643,6 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			sendMessage(nextMessage, 0);
 			return true;
 		} catch (IndexOutOfBoundsException e) {
-			if (!flag_leob) {
-				flag_leob = true;
-				frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
-			}
 			return false;
 		}
 	}
