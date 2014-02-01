@@ -68,7 +68,6 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 			greet();
 			while (true) {
 				try {
-					checkEOB();
 					selector.select(staticMaxTimeout);
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
@@ -96,6 +95,9 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 											+ total_sent_bytes);
 									write(frame, channel);
 								}
+							}
+							if(!isConnected()) {
+								finish("Connect ended");
 							}
 							if (key.isReadable()) {
 								BinkpFrame frame = null;
@@ -137,11 +139,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 						} else {
 							finish("Key is invalid");
 						}
-						checkEOB();
 					}
 				} catch (IOException e) {
 					error("IOException");
-					finish("IOException");
+					
 				}
 			}
 		} catch (ConnectionEndException e) {

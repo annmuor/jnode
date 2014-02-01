@@ -102,10 +102,12 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 		try {
 			greet();
 			while (!closed) {
-				checkEOB();
-				if (connectionState == STATE_END
-						|| connectionState == STATE_ERROR) {
-					finish("connectionState = END|ERROR");
+				if (!isConnected()) {
+					try {
+						Thread.sleep(100); // let's proccess to write messages;
+					} catch (InterruptedException ignore) {
+					}
+					continue;
 				}
 				try {
 					int[] head = new int[2];

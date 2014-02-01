@@ -85,7 +85,13 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 		try {
 			greet();
 			while (!closed) {
-				checkEOB();
+				if (!isConnected()) {
+					try {
+						Thread.sleep(100); // let's proccess to write messages;
+					} catch (InterruptedException ignore) {
+					}
+					continue;
+				}
 				int[] head = new int[2];
 				for (int i = 0; i < 2; i++) {
 					head[i] = readOrDie(process.getInputStream());
@@ -104,7 +110,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				if (command) {
 					BinkpCommand cmd = BinkpProtocolTools
 							.getCommand(data.get());
-					if(data.get(len-1) == 0) {
+					if (data.get(len - 1) == 0) {
 						len--;
 					}
 					byte[] ndata = new byte[len - 1];
@@ -115,7 +121,6 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 				}
 				logger.l5("Frame received: " + frame);
 				proccessFrame(frame);
-				checkEOB();
 			}
 			finish("Connection closed");
 		} catch (ConnectionEndException e) {

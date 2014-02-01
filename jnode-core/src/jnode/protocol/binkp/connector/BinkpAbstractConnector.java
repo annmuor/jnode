@@ -254,6 +254,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	private void m_eob() {
 		flag_reob = true;
+		checkEOB();
 	}
 
 	private void m_skip(String arg) {
@@ -548,6 +549,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			if (!flag_leob) {
 				flag_leob = true;
 				frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
+				checkEOB();
 			}
 		} else {
 			messages_index = 0;
@@ -608,6 +610,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				cramText = null;
 			}
 		}
+	}
+
+	protected boolean isConnected() {
+		return !((frames.isEmpty() && connectionState == STATE_END) || connectionState == STATE_ERROR);
 	}
 
 	protected BinkpFrame readFrame() {
@@ -672,7 +678,6 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		if (flag_leob && flag_reob) {
 			if (sent_bytes + recv_bytes == 0 || binkp1_0) {
 				connectionState = STATE_END;
-				finish("LEOB & REOB");
 			} else {
 				logger.l5("Binkp/1.1 : reset state");
 				flag_leob = false;
