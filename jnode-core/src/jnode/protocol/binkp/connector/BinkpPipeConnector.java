@@ -35,7 +35,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 		}
 	}
 
-	private Process process;
+	private volatile Process process;
 	private volatile boolean closed = false;
 
 	public BinkpPipeConnector() {
@@ -52,7 +52,15 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			@Override
 			public void run() {
 				logger.l4("processOutputObserver started");
+				boolean last = false;
 				while (isConnected()) {
+					if (process == null || last) {
+						// last iteration & exit
+						break;
+					}
+					if (closed) {
+						last = true;
+					}
 					checkForMessages();
 					if (frames.isEmpty()) {
 						try {
@@ -73,6 +81,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 								break;
 							}
 						} catch (NoSuchElementException ignore) {
+							logger.l3("NoSuchElement exception");
 						}
 					}
 				}
@@ -131,6 +140,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			closed = true;
 			logger.l5("Connection end: " + e.getLocalizedMessage());
 			process.destroy();
+			process = null;
 			done();
 		}
 

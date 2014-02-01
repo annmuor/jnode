@@ -57,7 +57,7 @@ public class BinkpAsyncClientPool implements Runnable {
 					ThreadPool.execute(conn);
 				}
 			} catch (RuntimeException e) {
-				logger.l2("Runtime exception: " + e.getLocalizedMessage());
+				logger.l2("Runtime exception: " + e.getLocalizedMessage(), e);
 			}
 		}
 	}

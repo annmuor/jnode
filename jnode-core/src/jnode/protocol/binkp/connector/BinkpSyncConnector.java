@@ -52,7 +52,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 		}
 	}
 
-	private Socket socket;
+	private volatile Socket socket;
 	private volatile boolean closed = false;
 
 	private BinkpSyncConnector(Socket socket, boolean clientConnection)
@@ -68,7 +68,14 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 			@Override
 			public void run() {
 				logger.l4("processOutputObserver started");
+				boolean last = false;
 				while (isConnected()) {
+					if(socket == null || last) {
+						break;
+					}
+					if(closed) {
+						last = true;
+					}
 					checkForMessages();
 					if (frames.isEmpty()) {
 						try {
@@ -129,7 +136,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 					if (command) {
 						BinkpCommand cmd = BinkpProtocolTools.getCommand(data
 								.get());
-						if(data.get(len-1) == 0) {
+						if (data.get(len - 1) == 0) {
 							len--;
 						}
 						byte[] ndata = new byte[len - 1];
@@ -148,10 +155,13 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 		} catch (ConnectionEndException e) {
 			try {
 				Thread.sleep(100); // let's proccess to write messages;
+				socket.close();
 			} catch (InterruptedException ignore) {
+			} catch (IOException ignore) {
 			}
 			closed = true;
 			logger.l5("Connection end: " + e.getLocalizedMessage());
+			socket = null;
 			done();
 		}
 	}
