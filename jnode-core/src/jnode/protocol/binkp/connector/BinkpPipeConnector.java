@@ -52,7 +52,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			@Override
 			public void run() {
 				logger.l4("processOutputObserver started");
-				while (!closed) {
+				while (isConnected()) {
 					checkForMessages();
 					if (frames.isEmpty()) {
 						try {
