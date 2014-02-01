@@ -92,7 +92,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 						}
 					}
 				}
-				logger.l4("processOutputObserver exits");
+				logger.l3("(sync) processOutputObserver exits");
 				closed = true;
 				return;
 			}

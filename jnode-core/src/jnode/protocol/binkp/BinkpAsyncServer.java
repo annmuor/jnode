@@ -12,8 +12,6 @@ import jnode.main.MainHandler;
 import jnode.main.threads.ThreadPool;
 import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 
-import com.j256.ormlite.logger.LocalLog;
-
 public class BinkpAsyncServer implements Runnable {
 	private static final Logger logger = Logger
 			.getLogger(BinkpAsyncServer.class);
@@ -69,12 +67,4 @@ public class BinkpAsyncServer implements Runnable {
 			logger.l1("Server error occured!", e);
 		}
 	}
-
-	public static void main(String[] args) throws Exception {
-		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
-		new MainHandler("/home/kreon/jnode-test/test.conf");
-		new ThreadPool(10);
-		ThreadPool.execute(new BinkpAsyncServer());
-	}
-
 }

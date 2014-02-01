@@ -76,7 +76,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 						}
 					}
 				}
-				logger.l4("processOutputObserver exits");
+				logger.l3("PIPE processOutputObserver exits");
 				closed = true;
 				return;
 			}
