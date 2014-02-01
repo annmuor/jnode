@@ -9,6 +9,7 @@ import com.j256.ormlite.support.ConnectionSource;
 
 import jnode.dao.GenericDAO;
 import jnode.dto.*;
+import jnode.install.support.Dupe_1_4;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 
@@ -42,8 +43,8 @@ public enum ORMManager {
 	}
 
 	@Deprecated
-	public GenericDAO<Dupe> getDupeDAO() {
-		return get(Dupe.class);
+	public GenericDAO<Dupe_1_4> getDupeDAO() {
+		return get(Dupe_1_4.class);
 	}
 
 	@Deprecated

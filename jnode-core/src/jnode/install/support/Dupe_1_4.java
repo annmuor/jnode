@@ -1,4 +1,6 @@
-package jnode.dto;
+package jnode.install.support;
+
+import jnode.dto.Echoarea;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -7,7 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  */
 @DatabaseTable(tableName = "dupes")
-public class Dupe {
+public class Dupe_1_4 {
     @DatabaseField(columnName = "msgid", index = true)
     private String msgid;
     @DatabaseField(columnName = "echoarea_id", foreign = true)

@@ -32,7 +32,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import jnode.core.ConcurrentDateFormatAccess;
-import jnode.dto.Dupe;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
@@ -761,13 +760,11 @@ public final class FtnTools {
 				switch (i) {
 				case 0:
 					FtnAddress nfa = new FtnAddress(fields[i]);
-					Matcher msgid = Pattern
-							.compile(
-									"^\001MSGID: " + message.getFromAddr()
-											+ " (\\S+)$", Pattern.MULTILINE)
-							.matcher(message.getText());
+					Matcher msgid = Pattern.compile(
+							"^" + message.getFromAddr() + " (\\S+)$").matcher(
+							message.getMsgid());
 					if (msgid.find()) {
-						message.setText(msgid.replaceFirst("\001MSGID: " + nfa
+						message.setMsgid(msgid.replaceFirst("\001MSGID: " + nfa
 								+ " $1"));
 					}
 					Matcher origin = Pattern.compile(
@@ -944,10 +941,23 @@ public final class FtnTools {
 		FtnAddress from = getPrimaryFtnAddress();
 		StringBuilder sb = new StringBuilder();
 		sb.append(text);
+		sb.append(quote(fmsg));
+		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
+				fmsg.getFromName(), subject, sb.toString());
+	}
+
+	public static String quote(FtnMessage fmsg) {
+		StringBuilder sb = new StringBuilder();
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
 				+ ")\n");
-		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")\n");
+		if (fmsg.isNetmail()) {
+			sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr()
+					+ ")\n");
+		} else {
+			sb.append("Area: " + fmsg.getArea() + "\nTo: " + fmsg.getToName()
+					+ "\n");
+		}
 		sb.append("Date: " + fmsg.getDate() + "\n");
 		sb.append("Subject: " + fmsg.getSubject() + "\n");
 		if (fmsg.getText() != null) {
@@ -956,8 +966,7 @@ public final class FtnTools {
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
 		sb.append("========== Original message ==========\n");
-		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
-				fmsg.getFromName(), subject, sb.toString());
+		return sb.toString();
 	}
 
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
@@ -1400,7 +1409,7 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		return ORMManager.get(Dupe.class).getFirstAnd("msgid", "=", msgid,
+		return ORMManager.get(Echomail.class).getFirstAnd("msgid", "=", msgid,
 				"echoarea_id", "=", area) != null;
 	}
 
@@ -1497,9 +1506,10 @@ public final class FtnTools {
 		mail.setSeenBy("");
 		mail.setToName(toName);
 		mail.setSubject(subject);
+		mail.setMsgid(getPrimaryFtnAddress().toString() + " "
+				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
-		b.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
+		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
 				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);

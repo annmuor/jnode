@@ -107,11 +107,27 @@ public class FtnTosser {
 			return;
 		}
 
+		Long rl = getOptionLong(link, LinkOption.LONG_LINK_LEVEL);
+		if (rl.longValue() < area.getWritelevel()) {
+			writeNetmail(
+					getPrimaryFtnAddress(),
+					new FtnAddress(link.getLinkAddress()),
+					MainHandler.getCurrentInstance().getInfo().getStationName(),
+					link.getLinkName(),
+					"[" + area.getName() + "]: post rejected",
+					String.format(
+							"Sorry, you have no enough level to post to this area\n%s",
+							quote(echomail), MainHandler.getVersion()));
+			logger.l3("Echoarea " + echomail.getArea()
+					+ " is not availible for " + link.getLinkAddress()
+					+ " (level mismatch)");
+			Integer n = bad.get(echomail.getArea());
+			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+			return;
+		}
 		// попадаются злобные сообщения без MSGID
 
-		if (echomail.getMsgid() == null) {
-			logger.l3("echomai " + echomail + " has null msgid");
-		} else {
+		if (echomail.getMsgid() != null) {
 			if (isADupe(area, echomail.getMsgid())) {
 				logger.l3("Message " + echomail.getArea() + " "
 						+ echomail.getMsgid() + " is a dupe");
@@ -133,6 +149,7 @@ public class FtnTosser {
 		mail.setText(echomail.getText());
 		mail.setSeenBy(write2D(echomail.getSeenby(), true));
 		mail.setPath(write2D(echomail.getPath(), false));
+		mail.setMsgid(echomail.getMsgid());
 		ORMManager.get(Echomail.class).save(mail);
 		for (Subscription sub : getSubscription(area)) {
 			if (link == null
@@ -145,14 +162,6 @@ public class FtnTosser {
 			}
 		}
 		Notifier.INSTANSE.notify(new NewEchomailEvent(mail));
-		{
-			Dupe dupe = new Dupe();
-			dupe.setEchoarea(area);
-			dupe.setMsgid(echomail.getMsgid());
-			ORMManager.get(Dupe.class).save(dupe);
-
-		}
-
 		Integer n = tossed.get(echomail.getArea());
 		tossed.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 
@@ -799,6 +808,7 @@ public class FtnTosser {
 		message.setText(mail.getText());
 		message.setSeenby(new ArrayList<>(seenby));
 		message.setPath(path);
+		message.setMsgid(mail.getMsgid());
 		return message;
 	}
 

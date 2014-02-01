@@ -148,6 +148,10 @@ public class FtnMessage {
 		return msgid;
 	}
 
+	public void setMsgid(String msgid) {
+		this.msgid = msgid;
+	}
+
 	public boolean isNetmail() {
 		return isNetmail;
 	}
@@ -206,6 +210,9 @@ public class FtnMessage {
 				os.writeBytes(toAddr.topt());
 			}
 			StringBuilder sb = new StringBuilder();
+			if (msgid != null) {
+				os.writeBytes(String.format("\001MSGID: %s\r", msgid));
+			}
 			sb.append(text);
 			if (sb.charAt(sb.length() - 1) != '\n') {
 				sb.append('\n');
@@ -283,6 +290,7 @@ public class FtnMessage {
 						Matcher m = msgid.matcher(line);
 						if (m.matches()) {
 							this.msgid = m.group(1).toUpperCase();
+							continue;
 						}
 						m = tzutc.matcher(line);
 						// TODO
@@ -365,8 +373,10 @@ public class FtnMessage {
 	@Override
 	public String toString() {
 		return String
-				.format("Message %s -> %s\nFrom: %s\nTo: %s\nDate: %s\nSubject: %s\nArea: %s\n-------------\n%s\n-------------\n",
-						fromAddr, toAddr, fromName, toName, date, subject,
-						area, text);
+				.format("MSG FROM %s@%s, TO %s@%s, ATTRS %d, MSGID %s, TYPE %s, AREA %s, SUBJECT %s",
+						fromName, fromAddr.toString(), toName, toAddr
+								.toString(), attribute, msgid,
+						(isNetmail) ? "netmail" : "echomail", (isNetmail) ? "-"
+								: area, subject);
 	}
 }

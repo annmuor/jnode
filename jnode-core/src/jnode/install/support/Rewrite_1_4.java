@@ -1,4 +1,6 @@
-package jnode.dto;
+package jnode.install.support;
+
+import jnode.dto.Rewrite.Type;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
@@ -10,13 +12,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * 
  */
 @DatabaseTable(tableName = "rewrite")
-public class Rewrite {
-	public static enum Type {
-		NETMAIL, ECHOMAIL
-	}
-
-	@DatabaseField(generatedId = true)
-	private Long id;
+public class Rewrite_1_4 {
 	@DatabaseField(canBeNull = false, defaultValue = "0", columnName = "nice")
 	private Long nice;
 	@DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, index = true, columnName = "type")
@@ -43,14 +39,6 @@ public class Rewrite {
 	private String new_to_name;
 	@DatabaseField(columnName = "ns", defaultValue = "*")
 	private String new_subject;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public Type getType() {
 		return type;
