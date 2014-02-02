@@ -29,10 +29,8 @@ public class DataProviderServiceTest {
         dao.executeRaw("DELETE FROM news_message");
 
         generateMessages(dao, ng1);
-/*
         generateMessages(dao, ng2);
         generateMessages(dao, ng3);
-*/
     }
 
     private void generateMessages(GenericDAO<NewsMessage> dao, NewsGroup ng) {

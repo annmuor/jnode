@@ -21,6 +21,8 @@ public class XoverProcessor implements Processor {
 
         // todo fix params.iterator().next()
         String[] parts = StringUtils.split(params.iterator().next(), "-");
+
+        // todo do not read all messages in one time!
         Collection<NewsMessage> messages = Lists.newLinkedList();
 
         switch (parts.length) {
