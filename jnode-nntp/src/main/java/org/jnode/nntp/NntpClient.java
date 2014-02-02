@@ -57,7 +57,6 @@ public class NntpClient implements Runnable {
                 send(response);
             }
 
-            // if command = quit - mark thread as interrupted
         } catch (UnknownCommandException uce) {
             logger.l4("Unknown command '" + command + "'.");
         } catch (EndOfSessionException eose) {

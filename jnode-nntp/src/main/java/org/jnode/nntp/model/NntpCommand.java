@@ -28,7 +28,7 @@ public enum NntpCommand {
     OVER,
     XOVER("XOVER"),
     POST,
-    QUIT,
+    QUIT("QUIT"),
     STAT;
 
     private String command;
