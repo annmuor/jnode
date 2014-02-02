@@ -35,7 +35,7 @@ public class XoverProcessor implements Processor {
 
         Collection<String> response = Lists.newLinkedList();
 
-        response.add("224");
+        response.add(NntpResponse.Xover.OVERVIEW_INFORMATION_FOLLOWS);
 
         for (NewsMessage message : messages) {
             StringBuilder builder = new StringBuilder();

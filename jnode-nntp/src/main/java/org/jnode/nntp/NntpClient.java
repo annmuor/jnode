@@ -1,8 +1,10 @@
 package org.jnode.nntp;
 
 import jnode.logger.Logger;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.exception.EndOfSessionException;
+import org.jnode.nntp.exception.ProcessorNotFoundException;
 import org.jnode.nntp.exception.UnknownCommandException;
 import org.jnode.nntp.model.NntpCommand;
 import org.jnode.nntp.model.NntpResponse;
@@ -43,83 +45,70 @@ public class NntpClient implements Runnable {
     @Override
     public void run() {
 
-        /*
+        // Send greetings. Posting is not implemented yet.
+        send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
 
-22-01-2014 18:08:53 [00000001] NntpModule           New client accepted.
-22-01-2014 18:08:53 [00000011] NntpClient           LIST EXTENSIONS
-22-01-2014 18:08:53 [00000011] NntpClient           MODE READER
-22-01-2014 18:08:53 [00000011] NntpClient           XOVER
+        String command = StringUtils.EMPTY;
 
-         */
-
-        send(Arrays.asList(NntpResponse.InitialGreetings.READY));
-
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                String command = read();
+        try {
+            while ((command = in.readLine()) != null) {
+                logger.l4("[C] " + command);
                 Collection<String> response = process(command);
                 send(response);
-                // if command = quit - mark thread as interrupted
-            } catch (UnknownCommandException uce) {
-                logger.l4("Unknown command.");
-            } catch (EndOfSessionException eose) {
-                logger.l4("Client cancel session.");
-                Thread.currentThread().interrupt();
-            } catch (Throwable e) {
-                logger.l4("Unknown problem during command processing.", e);
-                Thread.currentThread().interrupt();
             }
-        }
 
-        out.close();
-
-        try {
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            this.socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // if command = quit - mark thread as interrupted
+        } catch (UnknownCommandException uce) {
+            logger.l4("Unknown command '" + command + "'.");
+        } catch (EndOfSessionException eose) {
+            logger.l4("Client cancel session.");
+        } catch (Throwable e) {
+            logger.l4("Unknown problem during command processing.", e);
+        } finally {
+            IOUtils.closeQuietly(out);
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(socket);
         }
 
     }
 
+    /**
+     * Send response to client.
+     *
+     * @param response response.
+     */
     private void send(Collection<String> response) {
         for (String message : response) {
-            logger.l4("<--- " + message);
+            logger.l4("[S] " + message);
             out.println(message);
-            out.flush();
         }
+        out.flush();
     }
 
-    private String read() throws IOException {
-
-        String line;
-        try {
-            line = in.readLine();
-        } catch (SocketException e) {
-            throw new EndOfSessionException();
-        }
-
-        if (line == null) {
-            throw new EndOfSessionException();
-        }
-        logger.l4("---> " + line);
-        return line;
-    }
-
+    /**
+     * Process command from client.
+     * @param command command.
+     * @return response.
+     */
     private Collection<String> process(String command) {
-
         NntpCommand parsedCommand = findCommand(command);
         if (parsedCommand != null) {
-            return ProcessorResolver.processor(parsedCommand).process(parsedCommand.getParams());
+            Processor processor = ProcessorResolver.processor(parsedCommand);
+            if (processor == null) {
+                logger.l4("Can't find processor for command '" + command + "'.");
+                throw new ProcessorNotFoundException();
+            }
+            return processor.process(parsedCommand.getParams());
         }
 
         throw new UnknownCommandException();
     }
 
+    /**
+     * Find command in supported commands.
+     * @param command command.
+     * @return supported command.
+     */
     private NntpCommand findCommand(String command) {
         String[] parts = StringUtils.split(command, DELIMITER);
         NntpCommand foundedCommand;
@@ -151,6 +140,12 @@ public class NntpClient implements Runnable {
         return foundedCommand;
     }
 
+    /**
+     * Prepare command params for process by processor.
+     * @param params command params.
+     * @param isOnePartCommand is command include one part only.
+     * @return collection of params.
+     */
     private Collection<String> prepareParams(String[] params, boolean isOnePartCommand) {
         Collection<String> collection = new LinkedList<>();
         Collections.addAll(collection, params);

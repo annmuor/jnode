@@ -25,8 +25,11 @@ public class ArticleProcessor implements Processor {
 
         Collection<String> response = new LinkedList<>();
 
-        response.add(NntpResponse.Article.OK);
-        response.add(Long.toString(message.getId()) + " " + Long.toString(message.getId()));    // todo Message-ID
+        String responseCode = NntpResponse.Article.ARTICLE_FOLLOWS_2;
+        responseCode = StringUtils.replace(responseCode, "{n}", Long.toString(message.getId()));
+        responseCode = StringUtils.replace(responseCode, "{message-id}", Long.toString(message.getId())); // todo Message-ID
+
+        response.add(responseCode);
         response.add("Path: example.com!not-for-mail");                                         // todo Path
         response.add("From: " + message.getFrom());
         response.add("Newsgroup: " + message.getGroupName());
@@ -36,21 +39,6 @@ public class ArticleProcessor implements Processor {
         response.add(StringUtils.EMPTY);
         response.add(message.getBody());
         response.add(NntpResponse.END_OF_RESPONSE);
-
-/*
-        response.add("220");
-        response.add("10100 <10104@xxx.com>");
-        response.add("Path: example.com!not-for-mail");
-        response.add("From: User <user@example.com>");
-        response.add("Newsgroups: group1");
-        response.add("Subject: xxx4.");
-        response.add("Date: 6 Oct 2000 04:38:40");
-        response.add("Organization: An Example Net, Uncertain, Texas");
-        response.add("Message-ID: <10104@xxx.com>");
-        response.add("");
-        response.add("body");
-        response.add(NntpResponse.END_OF_RESPONSE);
-*/
 
         return response;
     }
