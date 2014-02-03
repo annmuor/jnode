@@ -21,25 +21,12 @@ import jnode.protocol.binkp.types.BinkpFrame;
 public class BinkpPipeConnector extends BinkpAbstractConnector {
 	static final Logger logger = Logger.getLogger(BinkpPipeConnector.class);
 
-	public static BinkpAbstractConnector connect(String cmd) {
-
-		try {
-			Process process = Runtime.getRuntime().exec(cmd);
-			BinkpPipeConnector pipe = new BinkpPipeConnector();
-			pipe.clientConnection = true;
-			pipe.process = process;
-			return pipe;
-		} catch (IOException e) {
-			logger.l2("Pipe exec error: " + e.getLocalizedMessage());
-			return null;
-		}
-	}
-
 	private volatile Process process;
 	private volatile boolean closed = false;
 
-	public BinkpPipeConnector() {
-		init();
+	public BinkpPipeConnector(String protocolAddress) throws IOException {
+		super(protocolAddress);
+		process = Runtime.getRuntime().exec(protocolAddress);
 	}
 
 	/**

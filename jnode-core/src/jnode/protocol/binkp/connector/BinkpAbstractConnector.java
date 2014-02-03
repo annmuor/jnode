@@ -130,8 +130,18 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	public abstract void run();
 
-	public BinkpAbstractConnector() {
-		super();
+	public BinkpAbstractConnector(String protocolAddress) throws IOException {
+		init();
+		this.clientConnection = true;
+		logger.l3("Created " + getClass().getSimpleName()
+				+ " client connection to " + protocolAddress);
+	}
+
+	public BinkpAbstractConnector() throws IOException {
+		init();
+		this.clientConnection = false;
+		logger.l3("Created " + getClass().getSimpleName()
+				+ " server connection");
 	}
 
 	protected void error(String text) {

@@ -73,7 +73,10 @@ public class InstallUtil {
 		logger.l1("[+] Robots created");
 
 		// owner's point
-		String ownAddr = FtnTools.getPrimaryFtnAddress().toString() + ".1";
+		String ownAddr = FtnTools.getPrimaryFtnAddress().toString();
+		if (!ownAddr.contains(".")) {
+			ownAddr += ".1";
+		}
 		Link owner = ORMManager.get(Link.class).getFirstAnd("ftn_address", "=",
 				ownAddr);
 		if (owner == null) {

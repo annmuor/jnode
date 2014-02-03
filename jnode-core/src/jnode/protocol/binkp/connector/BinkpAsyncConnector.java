@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+
 import jnode.logger.Logger;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
 import jnode.protocol.binkp.types.BinkpCommand;
@@ -22,41 +23,42 @@ import jnode.protocol.binkp.types.BinkpFrame;
  */
 public class BinkpAsyncConnector extends BinkpAbstractConnector {
 	static final Logger logger = Logger.getLogger(BinkpAsyncConnector.class);
-
-	public static BinkpAbstractConnector connect(String host, Integer port) {
-		init();
-		SocketChannel socket = null;
-		try {
-			socket = SocketChannel.open();
-			socket.connect(new InetSocketAddress(host, port));
-			return new BinkpAsyncConnector(socket, true);
-		} catch (IOException e) {
-			logger.l1("Connect error: " + e.getMessage());
-			if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException ignore) {
-				}
-			}
-			return null;
-		}
-	}
-
-	public static BinkpAbstractConnector accept(SocketChannel socket) {
-		init();
-		try {
-			return new BinkpAsyncConnector(socket, false);
-		} catch (IOException e) {
-			logger.l1("Accept error", e);
-			return null;
-		}
-	}
-
 	private Selector selector;
 
-	private BinkpAsyncConnector(SocketChannel socket, boolean clientConnection)
-			throws IOException {
-		this.clientConnection = clientConnection;
+	/**
+	 * accept ()
+	 * 
+	 * @param socket
+	 * @throws Exception
+	 */
+	public BinkpAsyncConnector(SocketChannel socket) throws IOException {
+		super();
+		init(socket);
+
+	}
+
+	public BinkpAsyncConnector(String protocolAddress) throws IOException {
+		super(protocolAddress);
+		SocketChannel socket = SocketChannel.open();
+		try {
+			String[] parts = protocolAddress.split(":");
+			if (parts.length == 1) {
+				socket.connect(new InetSocketAddress(protocolAddress, 24554));
+			} else if (parts.length == 2) {
+				int port = Integer.valueOf(parts[1]);
+				socket.connect(new InetSocketAddress(parts[0], port));
+			} else {
+				throw new IOException("Invalid protocolAddress ("
+						+ protocolAddress + ") for this scheme");
+			}
+		} catch (NumberFormatException e) {
+			throw new IOException("Invalid protocolAddress (" + protocolAddress
+					+ ") for this scheme");
+		}
+		init(socket);
+	}
+
+	private void init(SocketChannel socket) throws IOException {
 		socket.configureBlocking(false);
 		selector = Selector.open();
 		socket.register(selector, socket.validOps());
@@ -96,7 +98,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									write(frame, channel);
 								}
 							}
-							if(!isConnected()) {
+							if (!isConnected()) {
 								finish("Connect ended");
 							}
 							if (key.isReadable()) {
@@ -117,10 +119,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									// command
 									BinkpCommand cmd = getCommand(data.get());
 									if (datalen > 1) {
-										if(data.get(datalen-1) == 0) {
+										if (data.get(datalen - 1) == 0) {
 											datalen--;
 										}
-										byte[] buf = new byte[datalen-1];
+										byte[] buf = new byte[datalen - 1];
 										data.get(buf);
 										frame = new BinkpFrame(cmd, new String(
 												buf));
@@ -142,7 +144,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 					}
 				} catch (IOException e) {
 					error("IOException");
-					
+
 				}
 			}
 		} catch (ConnectionEndException e) {

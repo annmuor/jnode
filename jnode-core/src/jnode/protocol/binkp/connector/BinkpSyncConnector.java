@@ -22,43 +22,27 @@ import jnode.protocol.binkp.types.BinkpFrame;
  */
 public class BinkpSyncConnector extends BinkpAbstractConnector {
 	static final Logger logger = Logger.getLogger(BinkpSyncConnector.class);
-
-	public static BinkpAbstractConnector connect(String host, Integer port) {
-		init();
-		Socket socket = new Socket();
-		try {
-			socket.connect(new InetSocketAddress(host, port),
-					(int) staticMaxTimeout.longValue());
-			return new BinkpSyncConnector(socket, true);
-		} catch (IOException e) {
-			logger.l1("Connect error: " + e.getMessage());
-			if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException ignore) {
-				}
-			}
-			return null;
-		}
-	}
-
-	public static BinkpAbstractConnector accept(Socket socket) {
-		init();
-		try {
-			return new BinkpSyncConnector(socket, false);
-		} catch (IOException e) {
-			logger.l1("Accept error", e);
-			return null;
-		}
-	}
-
 	private volatile Socket socket;
 	private volatile boolean closed = false;
 
-	private BinkpSyncConnector(Socket socket, boolean clientConnection)
-			throws IOException {
-		this.clientConnection = clientConnection;
-		this.socket = socket;
+	public BinkpSyncConnector(String protocolAddress) throws IOException {
+		super(protocolAddress);
+		try {
+			socket = new Socket();
+			String[] parts = protocolAddress.split(":");
+			if (parts.length == 1) {
+				socket.connect(new InetSocketAddress(protocolAddress, 24554));
+			} else if (parts.length == 2) {
+				int port = Integer.valueOf(parts[1]);
+				socket.connect(new InetSocketAddress(parts[0], port));
+			} else {
+				throw new IOException("Invalid protocolAddress ("
+						+ protocolAddress + ") for this scheme");
+			}
+		} catch (NumberFormatException e) {
+			throw new IOException("Invalid protocolAddress (" + protocolAddress
+					+ ") for this scheme");
+		}
 	}
 
 	@Override
@@ -70,10 +54,10 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 				logger.l4("processOutputObserver started");
 				boolean last = false;
 				while (isConnected()) {
-					if(socket == null || last) {
+					if (socket == null || last) {
 						break;
 					}
-					if(closed) {
+					if (closed) {
 						last = true;
 					}
 					checkForMessages();

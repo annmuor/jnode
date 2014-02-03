@@ -1,5 +1,7 @@
 package jnode.protocol.binkp;
 
+import java.io.IOException;
+
 import jnode.dto.Link;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
@@ -7,8 +9,6 @@ import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
 import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.connector.BinkpAsyncConnector;
-import jnode.protocol.binkp.connector.BinkpPipeConnector;
-import jnode.protocol.binkp.connector.BinkpSyncConnector;
 
 public class BinkpAsyncClientPool implements Runnable {
 	private static final Logger logger = Logger
@@ -32,34 +32,38 @@ public class BinkpAsyncClientPool implements Runnable {
 				}
 				l = PollQueue.getSelf().getNext();
 			}
-			try { // TODO: multiple providers?
-				BinkpAbstractConnector conn;
-				if (l.getProtocolAddress().startsWith("sync:")) {
-					int port = 24554;
-					String host = l.getProtocolAddress().substring(5);
-					String[] data = host.split(":");
-					if (data.length > 1) {
-						port = Integer.valueOf(data[data.length - 1]);
-						host = host.replace(":" + data[data.length - 1], "");
+			try {
+				BinkpAbstractConnector conn = null;
+				String pa = l.getProtocolAddress();
+				for (String key : BinkpConnectorRegistry.getSelf().getKeys()) {
+					if (l.getProtocolAddress().startsWith(key)) {
+						conn = createConnector(pa, key);
+						break;
 					}
-					conn = BinkpSyncConnector.connect(host, port);
-				} else if (l.getProtocolAddress().startsWith("|")) {
-					String cmd = l.getProtocolAddress().substring(1);
-					logger.l2("Connecting through pipe: " + cmd);
-					conn = BinkpPipeConnector.connect(cmd);
-				} else {
-					logger.l2(String.format("Connecting to %s:%d",
-							l.getProtocolHost(), l.getProtocolPort()));
-					conn = BinkpAsyncConnector.connect(l.getProtocolHost(),
-							l.getProtocolPort());
 				}
-				if (conn != null) {
-					ThreadPool.execute(conn);
+				if (conn == null) {
+					conn = new BinkpAsyncConnector(l.getProtocolAddress());
 				}
+				ThreadPool.execute(conn);
 			} catch (RuntimeException e) {
 				logger.l2("Runtime exception: " + e.getLocalizedMessage(), e);
+			} catch (IOException e) {
+				logger.l2(e.getLocalizedMessage(), e);
 			}
 		}
 	}
 
+	protected BinkpAbstractConnector createConnector(String protocolAddress,
+			String key) throws IOException {
+		Class<? extends BinkpAbstractConnector> connectorClass = BinkpConnectorRegistry
+				.getSelf().getConnector(key);
+		try {
+			return connectorClass.getConstructor(String.class).newInstance(
+					protocolAddress.substring(key.length()));
+		} catch (Exception e) {
+			throw new IOException("Error instatiating class "
+					+ connectorClass.getName() + " ( " + protocolAddress
+					+ " ) ", e);
+		}
+	}
 }

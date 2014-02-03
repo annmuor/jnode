@@ -765,7 +765,11 @@ public final class FtnTools {
 								"^" + message.getFromAddr() + " (\\S+)$")
 								.matcher(message.getMsgid());
 						if (msgid.find()) {
-							message.setMsgid(msgid.replaceFirst(nfa + " $1"));
+							String msg = msgid.replaceFirst(nfa + " $1");
+							message.setText(message.getText().replace(
+									message.getMsgid(), msg));
+							message.setMsgid(msg);
+
 						}
 					} // TODO : netmail msgid
 					Matcher origin = Pattern.compile(
@@ -925,6 +929,7 @@ public final class FtnTools {
 				.getInfo().getAddressList()) {
 			if (routeTo.isPointOf(testAddress)) {
 				ourPoint = true;
+				break;
 			}
 		}
 		return ourPoint;
@@ -941,6 +946,9 @@ public final class FtnTools {
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
 		FtnAddress from = getPrimaryFtnAddress();
 		StringBuilder sb = new StringBuilder();
+		if (fmsg.getMsgid() != null) {
+			sb.append("\001REPLY: " + fmsg.getMsgid() + "\n");
+		}
 		sb.append(text);
 		sb.append(quote(fmsg));
 		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
@@ -991,10 +999,9 @@ public final class FtnTools {
 		FtnMessage message = new FtnMessage();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
+		sb.append(String.format("\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n",
 				from.toString(), generate8d(), MainHandler.getVersion(),
-				MainHandler.getVersion(), toName));
+				MainHandler.getVersion()));
 		sb.append(text);
 		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
 		message.setDate(new Date());
@@ -1129,13 +1136,14 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Паковка сообщений
+	 * Паковка сообщений На удаление !
 	 * 
 	 * @param messages
 	 * @param link
 	 * @return
 	 */
-	public static List<Message> pack(List<FtnMessage> messages, Link link) {
+	@Deprecated
+	protected static List<Message> pack(List<FtnMessage> messages, Link link) {
 		boolean packNetmail = getOptionBooleanDefFalse(link,
 				LinkOption.BOOLEAN_PACK_NETMAIL);
 		boolean packEchomail = getOptionBooleanDefTrue(link,
@@ -1284,11 +1292,12 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Кривые пакеты - в инбаунд
+	 * Кривые пакеты - в инбаунд -- на удаление
 	 * 
 	 * @param pkt
 	 */
-	public static void moveToBad(FtnPkt pkt) {
+	@Deprecated
+	protected static void moveToBad(FtnPkt pkt) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(pkt.pack());
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
 				new Date().getTime() / 1000), bis.available());
@@ -1334,7 +1343,7 @@ public final class FtnTools {
 	 */
 	public static Echoarea getAreaByName(String name, Link link) {
 		Echoarea ret;
-		name = name.toLowerCase().replace("'", "\\'");
+		name = name.toLowerCase();
 		ret = ORMManager.get(Echoarea.class).getFirstAnd("name", "=", name);
 		if (ret == null) {
 			if (link == null
@@ -1343,9 +1352,12 @@ public final class FtnTools {
 				ret = new Echoarea();
 				ret.setName(name);
 				ret.setDescription("Autocreated echoarea");
-				ret.setReadlevel(0L);
-				ret.setWritelevel(0L);
-				ret.setGroup("");
+				ret.setReadlevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setWritelevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setGroup((link != null) ? getOptionString(link,
+						LinkOption.SARRAY_LINK_GROUPS).split(" ")[0] : "");
 				logger.l3("Echoarea " + name.toUpperCase() + " created");
 				ORMManager.get(Echoarea.class).save(ret);
 				if (link != null) {
@@ -1385,9 +1397,12 @@ public final class FtnTools {
 				ret = new Filearea();
 				ret.setName(name);
 				ret.setDescription("Autocreated filearea");
-				ret.setReadlevel(0L);
-				ret.setWritelevel(0L);
-				ret.setGroup("");
+				ret.setReadlevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setWritelevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setGroup((link != null) ? getOptionString(link,
+						LinkOption.SARRAY_LINK_GROUPS).split(" ")[0] : "");
 				logger.l3("Filearea " + name + " created");
 				ORMManager.get(Filearea.class).save(ret);
 				if (link != null) {
@@ -1683,7 +1698,14 @@ public final class FtnTools {
 		}
 
 	}
-
+/**
+ * Замена File.renameTo
+ * 
+ * @param source
+ * @param dest
+ * @param override
+ * @return
+ */
 	public static boolean move(File source, File dest, boolean override) {
 		if (!source.exists()) {
 			return false;

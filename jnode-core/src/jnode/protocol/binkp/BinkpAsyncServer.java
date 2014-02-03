@@ -52,14 +52,17 @@ public class BinkpAsyncServer implements Runnable {
 								logger.l2(String.format(
 										"Incoming connection from %s:%d",
 										addr.getHostString(), addr.getPort()));
-								ThreadPool.execute(BinkpAsyncConnector
-										.accept(client));
+								ThreadPool.execute(new BinkpAsyncConnector(
+										client));
 							}
 						}
 					} catch (IOException e) {
-						logger.l2("Error in accept(): " + e.getLocalizedMessage());
-					} catch(RuntimeException e) {
-						logger.l2("RuntimeException: " + e.getLocalizedMessage(), e);
+						logger.l2("Error in accept(): "
+								+ e.getLocalizedMessage(), e);
+					} catch (RuntimeException e) {
+						logger.l2(
+								"RuntimeException: " + e.getLocalizedMessage(),
+								e);
 					}
 				}
 			}
