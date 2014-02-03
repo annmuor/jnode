@@ -3,6 +3,8 @@ package org.jnode.httpd.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jnode.ftn.FtnTools;
+
 public class HTML {
 	private static String header = null;
 	private static String footer = null;
@@ -13,16 +15,17 @@ public class HTML {
 
 	private HTML() {
 		if (header == null) {
-			header = getContents("/header.html");
+			header = String.format(getContents("/parts/header.html"), FtnTools
+					.getPrimaryFtnAddress().toString());
 		}
 		if (footer == null) {
-			footer = getContents("/footer.html");
+			footer = getContents("/parts/footer.html");
 		}
 		if (menu == null) {
-			menu = getContents("/menu.html");
+			menu = getContents("/parts/menu.html");
 		}
 		if (secureMenu == null) {
-			secureMenu = getContents("/secure/menu.html");
+			secureMenu = getContents("/parts/secure_menu.html");
 		}
 		data = new StringBuilder();
 	}

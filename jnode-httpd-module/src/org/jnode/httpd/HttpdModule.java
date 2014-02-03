@@ -19,15 +19,31 @@ import org.jnode.httpd.routes.post.*;
  * 
  */
 import spark.Spark;
-
+/**
+ * 
+ * @author kreon
+ *
+ */
 public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_PORT = "port";
+	private static final String CONFIG_LINK_REG = "linkreg";
+	private static final String CONFIG_POINT_REG = "pointreg";
+	private static final String CONFIG_EXTERNAL = "external";
+
 	private static final Logger logger = Logger.getLogger(HttpdModule.class);
-	private Short port;
+	private short port;
+	private boolean linkreg;
+	private boolean pointreg;
+	private String external;
 
 	public HttpdModule(String configFile) throws JnodeModuleException {
 		super(configFile);
 		port = Short.valueOf(properties.getProperty(CONFIG_PORT, "8080"));
+		linkreg = Boolean.valueOf(properties.getProperty(CONFIG_LINK_REG,
+				"false"));
+		pointreg = Boolean.valueOf(properties.getProperty(CONFIG_POINT_REG,
+				"false"));
+		external = properties.getProperty(CONFIG_EXTERNAL);
 	}
 
 	@Override
@@ -39,31 +55,41 @@ public class HttpdModule extends JnodeModule {
 	public void start() {
 
 		Spark.setPort(port);
-
+		if (external != null) {
+			Spark.externalStaticFileLocation(external);
+		}
 		Spark.staticFileLocation("/www");
 
 		Spark.before(new SecureFilter("/secure/*"));
-
+		/**** PUBLIC LINKS *****/
 		Spark.get(new SelfRoute());
 		Spark.get(new SelfRoute("/"));
 		Spark.get(new SelfRoute(""));
+		if (pointreg) {
+			Spark.get(new BecomePointRoute(true));
+			Spark.get(new PointRequestConfirmRoute());
+			Spark.post(new PointRequestRoute());
+		} else {
+			Spark.get(new BecomePointRoute(false));
+		}
+		if (linkreg) {
+			Spark.get(new BecomeLinkRoute(true));
+			Spark.post(new LinkRequestRoute());
+		} else {
+			Spark.get(new BecomeLinkRoute(false));
+		}
+		/**** SECURE LINKS ****/
 		Spark.get(new HealthRoute());
 		Spark.get(new LinksRoute());
-		Spark.get(new BecomePointRoute());
 		Spark.get(new LinkoptionsRoute());
 		Spark.get(new EchoareasRoute());
 		Spark.get(new FileareasRoute());
 		Spark.get(new RoutingsRoute());
-		Spark.get(new PointRequestConfirmRoute());
-
-		Spark.post(new LinkRoute("/secure/link"));
-		Spark.post(new LinkoptionRoute("/secure/linkoption"));
-		Spark.post(new EchoareaRoute("/secure/echoarea"));
-		Spark.post(new FileareaRoute("/secure/filearea"));
-		Spark.post(new RoutingRoute("/secure/routing"));
-
-		Spark.post(new LinkRequestRoute());
-		Spark.post(new PointRequestRoute());
+		Spark.post(new LinkRoute());
+		Spark.post(new LinkoptionRoute());
+		Spark.post(new EchoareaRoute());
+		Spark.post(new FileareaRoute());
+		Spark.post(new RoutingRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();

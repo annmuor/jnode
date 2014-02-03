@@ -9,8 +9,8 @@ import spark.Route;
 
 public class EchoareaRoute extends Route {
 
-	public EchoareaRoute(String path) {
-		super(path);
+	public EchoareaRoute() {
+		super("/secure/echoarea");
 	}
 
 	@Override

@@ -8,8 +8,8 @@ import spark.Route;
 
 public class RoutingRoute extends Route {
 
-	public RoutingRoute(String path) {
-		super(path);
+	public RoutingRoute() {
+		super("/secure/routing");
 	}
 
 	@Override
