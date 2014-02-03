@@ -1,11 +1,16 @@
 package org.jnode.nntp;
 
+import jnode.event.IEvent;
+import jnode.event.IEventHandler;
+import jnode.event.Notifier;
 import jnode.logger.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jnode.nntp.event.GroupSelectedEvent;
 import org.jnode.nntp.exception.EndOfSessionException;
 import org.jnode.nntp.exception.ProcessorNotFoundException;
 import org.jnode.nntp.exception.UnknownCommandException;
+import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NntpCommand;
 import org.jnode.nntp.model.NntpResponse;
 
@@ -14,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +36,8 @@ public class NntpClient implements Runnable {
     private BufferedReader in;
     private Socket socket;
 
+    private NewsGroup selectedGroup;
+
     public NntpClient(Socket socket) {
         try {
             this.socket = socket;
@@ -44,6 +50,13 @@ public class NntpClient implements Runnable {
 
     @Override
     public void run() {
+        Notifier.INSTANSE.register(GroupSelectedEvent.class, new IEventHandler() {
+            @Override
+            public void handle(IEvent event) {
+                GroupSelectedEvent groupSelectedEvent = (GroupSelectedEvent) event;
+                selectedGroup = groupSelectedEvent.getSelectedGroup();
+            }
+        });
 
         // Send greetings. Posting is not implemented yet.
         send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
@@ -53,7 +66,7 @@ public class NntpClient implements Runnable {
         try {
             while ((command = in.readLine()) != null) {
                 logger.l4("[C] " + command);
-                Collection<String> response = process(command);
+                Collection<String> response = process(command, selectedGroup);
                 send(response);
             }
 
@@ -86,10 +99,12 @@ public class NntpClient implements Runnable {
 
     /**
      * Process command from client.
+     *
      * @param command command.
+     * @param selectedGroup
      * @return response.
      */
-    private Collection<String> process(String command) {
+    private Collection<String> process(String command, NewsGroup selectedGroup) {
         NntpCommand parsedCommand = findCommand(command);
         if (parsedCommand != null) {
             Processor processor = ProcessorResolver.processor(parsedCommand);
@@ -97,7 +112,7 @@ public class NntpClient implements Runnable {
                 logger.l4("Can't find processor for command '" + command + "'.");
                 throw new ProcessorNotFoundException();
             }
-            return processor.process(parsedCommand.getParams());
+            return processor.process(parsedCommand.getParams(), selectedGroup == null ? null : selectedGroup.getId());
         }
 
         throw new UnknownCommandException();

@@ -17,7 +17,7 @@ public class XoverProcessor implements Processor {
     private static final String DELIMITER = "\t";
 
     @Override
-    public Collection<String> process(Collection<String> params) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId) {
 
         // todo fix params.iterator().next()
         String[] parts = StringUtils.split(params.iterator().next(), "-");
@@ -30,7 +30,7 @@ public class XoverProcessor implements Processor {
               //  messages.add(dataProvider.messageById(parts[0])); // todo
                 break;
             case 2:
-                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1]));
+                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1], selectedGroupId));
                 break;
             default:
         }

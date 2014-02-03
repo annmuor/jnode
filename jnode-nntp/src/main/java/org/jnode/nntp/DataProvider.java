@@ -11,7 +11,7 @@ public interface DataProvider {
     Collection<NewsMessage> messagesByGroupName(String groupName);
 
 
-    Collection<NewsMessage> messagesByIdRange(String fromId, String toId);
+    Collection<NewsMessage> messagesByIdRange(String fromId, String toId, long groupId);
 
     NewsMessage messageById(String id);
 }

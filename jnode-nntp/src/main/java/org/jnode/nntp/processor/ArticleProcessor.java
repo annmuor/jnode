@@ -15,7 +15,7 @@ public class ArticleProcessor implements Processor {
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
-    public Collection<String> process(Collection<String> params) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId) {
 
                                                                                                 // todo fix params.iterator().next()
         String id = params.iterator().next();

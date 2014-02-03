@@ -9,7 +9,7 @@ import java.util.Collection;
 public class ModeReaderProcessor implements Processor {
 
     @Override
-    public Collection<String> process(Collection<String> params) {
+    public Collection<String> process(Collection<String> params, Long id) {
         return Arrays.asList(NntpResponse.ModeReader.POSTING_PROHIBITED);
     }
 }
