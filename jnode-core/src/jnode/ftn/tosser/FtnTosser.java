@@ -700,42 +700,47 @@ public class FtnTosser {
 		return msgs;
 	}
 
-	public synchronized List<Message> getMessages2(FtnAddress address) {
+	public List<Message> getMessages2(FtnAddress address) {
 		LinkedList<Message> messages = new LinkedList<>();
-		messages.addAll(packNetmail(address));
-		Link link = getLinkByFtnAddress(address);
-		if (link != null) {
-			messages.addAll(packEchomail(link, address));
-			messages.addAll(packFilemail(link, address));
-			if (messages.isEmpty()) {
-				File inbound = new File(getInbound());
-				final File[] listFiles = inbound.listFiles();
-				if (listFiles != null) {
-					for (File file : listFiles) {
-						String loname = file.getName().toLowerCase();
-						if (loname.matches("^out_" + link.getId() + "\\..*$")) {
-							boolean packed = true;
-							try {
-								new ZipFile(file).close();
-							} catch (Exception e) {
-								packed = false;
-							}
-							try {
-								Message m = new Message(file);
-								if (packed) {
-									m.setMessageName(generateEchoBundle());
-								} else {
-									m.setMessageName(generate8d() + ".pkt");
+		String key = address.toString().intern();
+		synchronized (key) {
+			messages.addAll(packNetmail(address));
+			Link link = getLinkByFtnAddress(address);
+			if (link != null) {
+				messages.addAll(packEchomail(link, address));
+				messages.addAll(packFilemail(link, address));
+				if (messages.isEmpty()) {
+					File inbound = new File(getInbound());
+					final File[] listFiles = inbound.listFiles();
+					if (listFiles != null) {
+						for (File file : listFiles) {
+							String loname = file.getName().toLowerCase();
+							if (loname.matches("^out_" + link.getId()
+									+ "\\..*$")) {
+								boolean packed = true;
+								try {
+									new ZipFile(file).close();
+								} catch (Exception e) {
+									packed = false;
 								}
-								messages.add(m);
-							} catch (Exception e) {
-								// ignore
-							}
+								try {
+									Message m = new Message(file);
+									if (packed) {
+										m.setMessageName(generateEchoBundle());
+									} else {
+										m.setMessageName(generate8d() + ".pkt");
+									}
+									messages.add(m);
+								} catch (Exception e) {
+									// ignore
+								}
 
+							}
 						}
 					}
 				}
 			}
+
 		}
 		return messages;
 	}
