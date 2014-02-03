@@ -739,6 +739,7 @@ public class FtnTosser {
 										m.setMessageName(generate8d() + ".pkt");
 									}
 									messages.add(m);
+									break;
 								} catch (Exception e) {
 									// ignore
 								}
