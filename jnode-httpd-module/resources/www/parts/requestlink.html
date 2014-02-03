@@ -1,32 +1,14 @@
-<html>
-<head>
-<title>jNode::Web</title>
-<script src="/js/jnode.js" type="text/javascript"></script>
-<link rel="stylesheet" type="text/css" href="/css/jnode.css" />
-</head>
-<body>
-	<h1>jNode Web Site</h1>
-	<ul class="css-menu-1">
-		<li><a href="/index.html">Info</a></li>
-		<li><a href="/requestpoint.html">Become a point</a></li>
-		<li><a href="/requestlink.html">Become a link</a></li>
-		<li><a href="/secure/index.html">Configuration</a></li>
-	</ul>
-	<form action="/linkrequest/new" method="post">
-		<table class="info">
-			<tr>
-				<th>FTN Address</th>
-				<td><input type="text" size="16" name="addr" /></td>
-			</tr>
-			<tr>
-				<th>Host:port</th>
-				<td><input type="text" size="10" name="host" />:<input
-					type="text" size="5" name="port" /></td>
-			</tr>
-		</table>
-		<input type="submit" name="_s" value="Proccess" class="button" />
-	</form>
-	<hr width="100%" />
-	<small>Powered by <a href="https://github.com/kreon/jnode">jNode</a></small>
-</body>
-</html>
+<form action="/linkrequest/new" method="post">
+	<table class="info">
+		<tr>
+			<th>FTN-адрес</th>
+			<td><input type="text" size="16" name="addr" /></td>
+		</tr>
+		<tr>
+			<th>Хост:Порт</th>
+			<td><input type="text" size="10" name="host" />:<input
+				type="text" size="5" name="port" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="_s" value="Отправить" class="button" />
+</form>

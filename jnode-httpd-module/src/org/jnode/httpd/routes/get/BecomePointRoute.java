@@ -28,7 +28,7 @@ public class BecomePointRoute extends Route {
 		if (!enabled) {
 			return HTML
 					.start(false)
-					.append("<b>Sorry, automatic point requests are disabled by sysop")
+					.append("<b>К сожалению, запрос пойнта отключен сисопом</b>")
 					.footer().get();
 		}
 		StringBuilder sb = new StringBuilder();

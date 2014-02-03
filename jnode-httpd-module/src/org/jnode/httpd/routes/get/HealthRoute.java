@@ -22,13 +22,13 @@ public class HealthRoute extends Route {
 		int total = Math.round(runtime.totalMemory() / (1024 * 1024));
 		String text = String.format(
 				FORMAT_TABLE,
-				String.format(FORMAT_TR, "CPU cores",
+				String.format(FORMAT_TR, "Количество ядер",
 						"" + runtime.availableProcessors())
-						+ String.format(FORMAT_TR, "Running threads",
+						+ String.format(FORMAT_TR, "Количество потоков",
 								Thread.activeCount())
-						+ String.format(FORMAT_TR, "Memory usage", "Max: "
-								+ max + "MB / Used: " + total + " MB / Free: "
-								+ free + " MB"));
+						+ String.format(FORMAT_TR, "Использования памяти",
+								"Доступно: " + max + "Мб / Использовано: "
+										+ (total - free) + " Мб"));
 		return HTML.start(true).append(text).footer().get();
 	}
 }

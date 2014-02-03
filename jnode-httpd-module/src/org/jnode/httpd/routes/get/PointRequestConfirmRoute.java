@@ -40,19 +40,19 @@ public class PointRequestConfirmRoute extends Route {
 						ORMManager.get(Link.class).save(l);
 						ORMManager.get(PointRequest.class).delete(pr);
 						writeMails(pr);
-						text = "You are welcome! Check your email for your passwords ;-)";
+						text = "Проверьте вашу почту для получения дальнейших инструкций";
 					} else {
-						text = "Sorry, this point aka already exists";
+						text = "Данный пойнт уже зарегистрирован в системе";
 					}
 				}
 			} else {
-				text = "Sorry, request with this key not found";
+				text = "Неверный ключ подтверждения";
 			}
 		} else {
-			text = "Invalid request";
+			text = "Неверный запрос";
 		}
 		return HTML.start(false)
-				.append("<h3>Point Confirmation</h3><b>" + text + "</b>")
+				.append("<b>Статус: " + text + "</b>")
 				.footer().get();
 	}
 

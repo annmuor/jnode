@@ -79,6 +79,7 @@ public class HttpdModule extends JnodeModule {
 		}
 		
 		Spark.before(new SecureFilter("/secure/*"));
+		Spark.after(new CharsetFilter());
 		
 		/**** SECURE LINKS ****/
 		Spark.get(new HealthRoute());

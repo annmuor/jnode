@@ -51,7 +51,7 @@ public class LinksRoute extends Route {
 			sortLinks(links);
 			for (Link object : links) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Options</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Изменить</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Настройки</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Удалить</a></td></tr>",
 								object.getLinkName(), object.getLinkAddress(),
 								object.getProtocolAddress(),
 								object.getProtocolPassword(),

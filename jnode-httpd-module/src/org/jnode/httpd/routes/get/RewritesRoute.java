@@ -35,7 +35,7 @@ public class RewritesRoute extends spark.Route {
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
-							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td>"
+							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Удалить</a></td>"
 							+ "</tr>", r.getNice(), r.getType().name(),
 							r.isLast(),
 

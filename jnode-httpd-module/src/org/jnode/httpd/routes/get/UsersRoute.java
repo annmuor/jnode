@@ -28,8 +28,8 @@ public class UsersRoute extends Route {
 		for (WebAdmin admin : admins) {
 			sb.append(String
 					.format("<tr><td>%s</td><td>"
-							+ "<a href=\"#\" onclick=\"changePassword(%d);\" class=\"css-link-1\">Change password</a>&nbsp;"
-							+ "<a href=\"#\" onclick=\"deleteUser(%d);\" class=\"css-link-1\">Delete</a>&nbsp;",
+							+ "<a href=\"#\" onclick=\"changePassword(%d);\" class=\"css-link-1\">Пароль</a>&nbsp;"
+							+ "<a href=\"#\" onclick=\"deleteUser(%d);\" class=\"css-link-1\">Удалить</a>&nbsp;",
 							admin.getUsername(), admin.getId(), admin.getId()));
 		}
 

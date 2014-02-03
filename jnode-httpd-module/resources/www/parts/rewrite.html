@@ -1,17 +1,17 @@
-<a href="#new" onclick="fnew();" class="css-link-1">New rewrite</a>
+<a href="#new" onclick="fnew();" class="css-link-1">Создать</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="8" class="center">Rewrites</th>
+		<th colspan="8" class="center">Трекинги</th>
 	</tr>
 	<tr>
-		<th>Nice</th>
-		<th>Type/last</th>
-		<th>From Address</th>
-		<th>From Name</th>
-		<th>To Address</th>
-		<th>To Name</th>
-		<th>Subject</th>
-		<th>CRUD</th>
+		<th>Приоритет</th>
+		<th>Тип/last</th>
+		<th>Адрес отправителя</th>
+		<th>Имя отправителя</th>
+		<th>Адрес получателя</th>
+		<th>Имя получателя</th>
+		<th>Тема</th>
+		<th>Операции</th>
 	</tr>
 	%s
 </table>
@@ -22,12 +22,12 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th class="center" colspan="6">New rewrite</th>
+			<th class="center" colspan="6">Новый трекинг</th>
 		</tr>
 		<tr>
-			<th>Nice</th>
+			<th>Приоритет</th>
 			<td><input type="text" size="5" name="n" id="_n" /></td>
-			<th>Type</th>
+			<th>Тип</th>
 			<td><select name="t" id="_t">
 					<option>NETMAIL</option>
 					<option>ECHOMAIL</option>
@@ -36,39 +36,39 @@
 			</td>
 		</tr>
 		<tr>
-			<th>Orig From Address</th>
+			<th>Старый адрес отправителя</th>
 			<td><input type="text" size="15" name="ofa" id="_ofa" /></td>
-			<th>New From Address</th>
+			<th>Новый адрес отправителя</th>
 			<td><input type="text" size="15" name="nfa" id="_nfa" /></td>
 		</tr>
 		<tr>
-			<th>Orig From Name</th>
+			<th>Старое имя отправителя</th>
 			<td><input type="text" size="15" name="ofn" id="_ofn" /></td>
-			<th>New From Name</th>
+			<th>Новое имя отправителя</th>
 			<td><input type="text" size="15" name="nfn" id="_nfn" /></td>
 		</tr>
 
 		<tr>
-			<th>Orig To Address</th>
+			<th>Старый адрес получателя</th>
 			<td><input type="text" size="15" name="ota" id="_ota" /></td>
-			<th>New To Address</th>
+			<th>Новый адрес получателя</th>
 			<td><input type="text" size="15" name="nta" id="_nta" /></td>
 		</tr>
 
 		<tr>
-			<th>Orig To Name</th>
+			<th>Старое имя получателя</th>
 			<td><input type="text" size="15" name="otn" id="_otn" /></td>
-			<th>New To Name</th>
+			<th>Новое имя получателя</th>
 			<td><input type="text" size="15" name="ntn" id="_ntn" /></td>
 		</tr>
 		<tr>
-			<th>Orig Subject</th>
+			<th>Старая тема</th>
 			<td><input type="text" size="15" name="os" id="_os" /></td>
-			<th>New Subject</th>
+			<th>Новая тема</th>
 			<td><input type="text" size="15" name="ns" id="_ns" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Proccess" class="button" />
+	<input type="submit" name="_s" value="Отправить" class="button" />
 </form>
 <script>
 	function fnew() {

@@ -98,3 +98,21 @@ table.links td input {
 	font-weight: bold;
 	background-color: #d0d0d0;
 }
+
+table.menu {
+	
+}
+
+table.menu th {
+	border: 1px solid black;
+	color: #f0f0f0;
+	font-weight: bold;
+	background-color: #606060;
+	padding: 6px 10px 6px 10px;
+}
+
+table.menu th a {
+	text-decoration: none;
+	font-weight: bold;
+	color: #f0f0f0;
+}

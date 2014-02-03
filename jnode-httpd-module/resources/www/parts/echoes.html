@@ -1,13 +1,13 @@
 <a href="#new" onclick="fnew();" class="button">New area</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="4" class="center">Echoareas on this node</th>
+		<th colspan="4" class="center">Эхи на узле</th>
 	</tr>
 	<tr>
-		<th>Name</th>
-		<th>Description</th>
+		<th>Имя</th>
+		<th>Описание</th>
 		<th>R/W/G</th>
-		<th>CRUD</th>
+		<th>Операции</th>
 	</tr>
 	%s
 </table>
@@ -18,23 +18,27 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th colspan="3">Name</th>
-			<td colspan="3"><input type="text" name="name" id="_name" /></td>
+			<th>Имя</th>
+			<td><input type="text" name="name" id="_name" /></td>
 		</tr>
 		<tr>
-			<th colspan="3">Description</th>
-			<td colspan="3"><input type="text" name="descr" id="_descr" /></td>
+			<th>Описание</th>
+			<td><input type="text" name="descr" id="_descr" /></td>
 		</tr>
 		<tr>
-			<th>Read Lvl</th>
+			<th>Уровень доступа ( чтение )</th>
 			<td><input type="text" size="3" name="rl" id="_rl" /></td>
-			<th>Write Lvl</th>
+		</tr>
+		<tr>
+			<th>Уровень доступа ( запись )</th>
 			<td><input type="text" size="3" name="wl" id="_wl" /></td>
-			<th>Group</th>
+		</tr>
+		<tr>
+			<th>Уровень доступа ( группа )</th>
 			<td><input type="text" size="5" name="gr" id="_gr" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Proccess" class="button" />
+	<input type="submit" name="_s" value="Отправить" class="button" />
 </form>
 <script>
 	function _edit(e) {
@@ -55,7 +59,7 @@
 		document.getElementById("_name").readOnly = false;
 		_value("_id", "0");
 		_value("_name", "");
-		_value("_descr", "Created echoarea");
+		_value("_descr", "Эха, созданная сисопом");
 		_value("_rl", "0");
 		_value("_wl", "0");
 		_value("_gr", "");

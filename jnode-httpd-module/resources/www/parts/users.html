@@ -1,28 +1,31 @@
 <table class="links" id="users">
 	<tr>
-		<th>Username</th>
-		<th>Control</th>
+		<th>Имя пользователя</th>
+		<th>Операции</th>
 	</tr>
 	%s
 </table>
-
+<BR />
 <form action="/secure/user/create" method="post"
 	onsubmit="return checkPasswords();">
 	<table class="info">
 		<tr>
-			<th>Username</th>
-			<td><input type="text" name="username" id="user1"/></td>
+			<th colspan="2">Новый пользователь</th>
 		</tr>
 		<tr>
-			<th>Password</th>
+			<th>Имя пользователя</th>
+			<td><input type="text" name="username" id="user1" /></td>
+		</tr>
+		<tr>
+			<th>Пароль</th>
 			<td><input type="password" name="password" id="pass1" /></td>
 		</tr>
 		<tr>
-			<th>Confirm password</th>
+			<th>Подтверждение</th>
 			<td><input type="password" id="pass2" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="s" value="Process" />
+	<input type="submit" name="s" value="Отправить" />
 </form>
 
 <form action="/secure/user/password" method="post" id="pwd_form">
@@ -59,7 +62,7 @@
 
 	function checkForm() {
 		var user = _var("user1");
-		if(user.length < 3) {
+		if (user.length < 3) {
 			alert("Username is too short. 3 is min length");
 			return false;
 		}

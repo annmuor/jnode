@@ -30,16 +30,16 @@ public class SelfRoute extends Route {
 
 		String text = String.format(
 				FORMAT_TABLE,
-				String.format(FORMAT_TR, "Station Name", info.getStationName())
-						+ String.format(FORMAT_TR, "Station Location",
+				String.format(FORMAT_TR, "Имя узла", info.getStationName())
+						+ String.format(FORMAT_TR, "Расположение узла",
 								info.getLocation())
-						+ String.format(FORMAT_TR, "Sysop's Name",
+						+ String.format(FORMAT_TR, "Сисоп",
 								info.getSysop())
-						+ String.format(FORMAT_TR, "FTN Address(es)",
+						+ String.format(FORMAT_TR, "FTN-адрес(а)",
 								getAddrList(info.getAddressList()))
-						+ String.format(FORMAT_TR, "Version",
+						+ String.format(FORMAT_TR, "Версия софта",
 								MainHandler.getVersion())
-						+ String.format(FORMAT_TR, "OS", getOS()));
+						+ String.format(FORMAT_TR, "ОС", getOS()));
 		return HTML.start(false).append(text).footer().get();
 	}
 

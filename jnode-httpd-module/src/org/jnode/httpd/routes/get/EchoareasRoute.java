@@ -29,7 +29,7 @@ public class EchoareasRoute extends Route {
 			for (Echoarea e : ORMManager.get(Echoarea.class).getOrderAnd(
 					"name", true)) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">Edit</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">Изменить</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Удалить</a></td></tr>",
 								e.getName(), e.getDescription(),
 								e.getReadlevel(), e.getWritelevel(),
 								e.getGroup(), e.getId(), e.getId()));
