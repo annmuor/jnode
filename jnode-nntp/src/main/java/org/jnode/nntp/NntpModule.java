@@ -23,11 +23,6 @@ public class NntpModule extends JnodeModule {
 
     public NntpModule(String configFile) throws JnodeModuleException {
         super(configFile);
-        try {
-            new MainHandler(configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
