@@ -16,7 +16,7 @@ public class BecomePointRoute extends Route {
 	public BecomePointRoute(boolean enabled) {
 		super("/requestpoint.html");
 		this.enabled = enabled;
-		if (!enabled) {
+		if (enabled) {
 			if (requestPoint == null) {
 				requestPoint = HTML.getContents("/parts/requestpoint.html");
 			}

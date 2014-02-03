@@ -3,7 +3,6 @@ package jnode.ftn;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +31,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import jnode.core.ConcurrentDateFormatAccess;
+import jnode.core.FileUtils;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
@@ -60,8 +60,8 @@ import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TosserQueue;
 import jnode.ndl.FtnNdlAddress;
-import jnode.ndl.NodelistScanner;
 import jnode.ndl.FtnNdlAddress.Status;
+import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
@@ -82,7 +82,6 @@ public final class FtnTools {
 	public static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
-	private static final int BLOCK_SIZE = 4096;
 
 	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
@@ -1569,7 +1568,7 @@ public final class FtnTools {
 		mail.setSeenby("");
 		String path = getFilePath(area.getName(), filename);
 		File newFile = new File(path);
-		if (move(attach, newFile, true)) {
+		if (FileUtils.move(attach, newFile, true)) {
 			mail.setFilepath(newFile.getAbsolutePath());
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
@@ -1697,46 +1696,6 @@ public final class FtnTools {
 			}
 		}
 
-	}
-/**
- * Замена File.renameTo
- * 
- * @param source
- * @param dest
- * @param override
- * @return
- */
-	public static boolean move(File source, File dest, boolean override) {
-		if (!source.exists()) {
-			return false;
-		}
-		if (dest.exists() && !override) {
-			return false;
-		}
-
-		try {
-			FileInputStream fis = new FileInputStream(source);
-			FileOutputStream fos = new FileOutputStream(dest);
-			int len = 0;
-			byte[] block = new byte[BLOCK_SIZE];
-			do {
-				len = fis.read(block);
-				if (len > 0) {
-					fos.write(block, 0, len);
-				}
-			} while (len > 0);
-			fos.close();
-			fis.close();
-			if (source.length() == dest.length()) {
-				source.delete();
-				return true;
-			}
-		} catch (IOException e) {
-			logger.l2("Error in move() ", e);
-		} catch (RuntimeException e) {
-			logger.l3("Runtime exception in move()", e);
-		}
-		return false;
 	}
 
 }

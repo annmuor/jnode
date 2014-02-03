@@ -11,6 +11,7 @@ import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.*;
 import org.jnode.httpd.routes.get.*;
 import org.jnode.httpd.routes.post.*;
+import org.jnode.httpd.util.HTML;
 
 /**
  * HttpdModule - модуль, слушающий порт и отдающий странички
@@ -19,10 +20,11 @@ import org.jnode.httpd.routes.post.*;
  * 
  */
 import spark.Spark;
+
 /**
  * 
  * @author kreon
- *
+ * 
  */
 public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_PORT = "port";
@@ -44,6 +46,7 @@ public class HttpdModule extends JnodeModule {
 		pointreg = Boolean.valueOf(properties.getProperty(CONFIG_POINT_REG,
 				"false"));
 		external = properties.getProperty(CONFIG_EXTERNAL);
+		HTML.setExternalPath(external);
 	}
 
 	@Override
@@ -77,10 +80,10 @@ public class HttpdModule extends JnodeModule {
 		} else {
 			Spark.get(new BecomeLinkRoute(false));
 		}
-		
+
 		Spark.before(new SecureFilter("/secure/*"));
 		Spark.after(new CharsetFilter());
-		
+
 		/**** SECURE LINKS ****/
 		Spark.get(new HealthRoute());
 		Spark.get(new LinksRoute());
@@ -90,7 +93,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new RoutingsRoute());
 		Spark.get(new RewritesRoute());
 		Spark.get(new UsersRoute());
-		
+
 		Spark.post(new LinkRoute());
 		Spark.post(new LinkoptionRoute());
 		Spark.post(new EchoareaRoute());

@@ -13,9 +13,9 @@ public class BecomeLinkRoute extends Route {
 	public BecomeLinkRoute(boolean enabled) {
 		super("/requestlink.html");
 		this.enabled = enabled;
-		if (!enabled) {
+		if (enabled) {
 			if (request == null) {
-				request = HTML.getContents("/parts/requeslink.html");
+				request = HTML.getContents("/parts/requestlink.html");
 			}
 		}
 	}

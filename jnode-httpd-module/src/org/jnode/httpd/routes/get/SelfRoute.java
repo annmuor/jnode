@@ -26,6 +26,10 @@ public class SelfRoute extends Route {
 
 	@Override
 	public Object handle(Request req, Response resp) {
+		String index = HTML.getContents("index.html");
+		if (index.length() > 0) {
+			return index;
+		}
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
 
 		String text = String.format(
@@ -33,8 +37,7 @@ public class SelfRoute extends Route {
 				String.format(FORMAT_TR, "Имя узла", info.getStationName())
 						+ String.format(FORMAT_TR, "Расположение узла",
 								info.getLocation())
-						+ String.format(FORMAT_TR, "Сисоп",
-								info.getSysop())
+						+ String.format(FORMAT_TR, "Сисоп", info.getSysop())
 						+ String.format(FORMAT_TR, "FTN-адрес(а)",
 								getAddrList(info.getAddressList()))
 						+ String.format(FORMAT_TR, "Версия софта",

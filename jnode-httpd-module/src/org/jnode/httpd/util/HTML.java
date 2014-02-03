@@ -1,5 +1,8 @@
 package org.jnode.httpd.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -11,6 +14,7 @@ public class HTML {
 	private static String footer = null;
 	private static String menu = null;
 	private static String secureMenu = null;
+	private static String externalPath;
 
 	private StringBuilder data;
 
@@ -69,10 +73,22 @@ public class HTML {
 		return this;
 	}
 
+	@SuppressWarnings("resource")
 	public static String getContents(String path) {
-		String search = "www" + path;
-		InputStream is = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(search);
+		// check for external
+		InputStream is = null;
+		if (externalPath != null) {
+			File s = new File(externalPath + File.separator + path);
+			try {
+				is = new FileInputStream(s);
+			} catch (FileNotFoundException e) {
+			}
+		}
+		if (is == null) {
+			String search = "www" + path;
+			is = Thread.currentThread().getContextClassLoader()
+					.getResourceAsStream(search);
+		}
 		byte[] buf = new byte[MAX_SIZE];
 		if (is != null) {
 			StringBuilder sb = new StringBuilder();
@@ -92,4 +108,9 @@ public class HTML {
 		}
 		return "";
 	}
+
+	public static void setExternalPath(String externalPath) {
+		HTML.externalPath = externalPath;
+	}
+
 }

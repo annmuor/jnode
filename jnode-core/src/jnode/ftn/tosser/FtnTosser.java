@@ -1,5 +1,6 @@
 package jnode.ftn.tosser;
 
+import jnode.core.FileUtils;
 import jnode.dto.*;
 import jnode.event.NewEchomailEvent;
 import jnode.event.NewFilemailEvent;
@@ -223,7 +224,9 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						logger.l2("Error while tossing: " + e.getLocalizedMessage(), e);
+						logger.l2(
+								"Error while tossing: "
+										+ e.getLocalizedMessage(), e);
 					}
 				} else if (loname.matches("(s|u)inb\\d*.pkt")) {
 					try {
@@ -256,7 +259,9 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						logger.l2("Error while tossing: " + e.getLocalizedMessage(), e);
+						logger.l2(
+								"Error while tossing: "
+										+ e.getLocalizedMessage(), e);
 					}
 				} else if (loname.matches("^[a-z0-9]{8}\\.tic$")) {
 					if (!MainHandler.getCurrentInstance().getBooleanProperty(
@@ -292,7 +297,7 @@ public class FtnTosser {
 							Filemail mail = new Filemail();
 							File newFile = new File(getFilePath(area.getName(),
 									tic.getFile()));
-							if (move(attach, newFile, true)) {
+							if (FileUtils.move(attach, newFile, true)) {
 								mail.setFilepath(newFile.getAbsolutePath());
 							} else {
 								mail.setFilepath(attach.getAbsolutePath());
