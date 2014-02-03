@@ -13,6 +13,10 @@ public class CharsetFilter extends Filter {
 	public void handle(Request request, Response response) {
 		if (request.pathInfo().endsWith(".html")) {
 			response.type("text/html; charset=utf-8");
+			response.header("Cache-Control",
+					"no-cache, no-store, must-revalidate");
+			response.header("Pragma", "no-cache");
+			response.header("Expires", "0");
 		}
 	}
 

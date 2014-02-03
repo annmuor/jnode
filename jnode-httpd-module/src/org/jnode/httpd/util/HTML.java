@@ -6,6 +6,7 @@ import java.io.InputStream;
 import jnode.ftn.FtnTools;
 
 public class HTML {
+	private static final int MAX_SIZE = 65535;
 	private static String header = null;
 	private static String footer = null;
 	private static String menu = null;
@@ -72,15 +73,15 @@ public class HTML {
 		String search = "www" + path;
 		InputStream is = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(search);
+		byte[] buf = new byte[MAX_SIZE];
 		if (is != null) {
 			StringBuilder sb = new StringBuilder();
 			try {
 				int n = 0;
 				do {
-					byte[] buf = new byte[1024];
 					n = is.read(buf);
 					if (n > 0) {
-						sb.append(new String(buf, 0, n));
+						sb.append(new String(buf, 0, n, "UTF-8"));
 					}
 				} while (n > 0);
 				is.close();
