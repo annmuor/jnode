@@ -454,7 +454,9 @@ public class FtnTosser {
 				mail.addAll(ORMManager.get(Netmail.class).getAnd("send", "=",
 						false, "to_address", "=", address.toString(),
 						"route_via", "null"));
-				mail.addAll(getMail(link));
+				if (link != null) {
+					mail.addAll(getMail(link));
+				}
 				if (!mail.isEmpty()) {
 					try {
 
