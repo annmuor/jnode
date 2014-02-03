@@ -152,14 +152,16 @@ public class FtnTosser {
 		mail.setPath(write2D(echomail.getPath(), false));
 		mail.setMsgid(echomail.getMsgid());
 		ORMManager.get(Echomail.class).save(mail);
-		for (Subscription sub : getSubscription(area)) {
-			if (link == null
-					|| !sub.getLink().equals(link)
-					&& !getOptionBooleanDefFalse(sub.getLink(),
-							LinkOption.BOOLEAN_PAUSE)) {
-				ORMManager.get(EchomailAwaiting.class).save(
-						new EchomailAwaiting(sub.getLink(), mail));
-				pollLinks.add(sub.getLink());
+		if (mail.getId() != null) {
+			for (Subscription sub : getSubscription(area)) {
+				if (link == null
+						|| !sub.getLink().equals(link)
+						&& !getOptionBooleanDefFalse(sub.getLink(),
+								LinkOption.BOOLEAN_PAUSE)) {
+					ORMManager.get(EchomailAwaiting.class).save(
+							new EchomailAwaiting(sub.getLink(), mail));
+					pollLinks.add(sub.getLink());
+				}
 			}
 		}
 		Notifier.INSTANSE.notify(new NewEchomailEvent(mail));
@@ -310,21 +312,25 @@ public class FtnTosser {
 							mail.setSeenby(write4D(tic.getSeenby()));
 							mail.setCreated(new Date());
 							ORMManager.get(Filemail.class).save(mail);
-							for (FileSubscription sub : getSubscription(area)) {
-								if (source != null) {
-									if (sub.getLink().getId()
-											.equals(source.getId())) {
-										continue;
+							if (mail.getId() != null) {
+								for (FileSubscription sub : getSubscription(area)) {
+									if (source != null) {
+										if (sub.getLink().getId()
+												.equals(source.getId())) {
+											continue;
+										}
 									}
-								}
-								if (!getOptionBooleanDefFalse(sub.getLink(),
-										LinkOption.BOOLEAN_PAUSE)) {
-									ORMManager.get(FilemailAwaiting.class)
-											.save(new FilemailAwaiting(sub
-													.getLink(), mail));
-									if (getOptionBooleanDefFalse(sub.getLink(),
-											LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
-										poll.add(sub.getLink());
+									if (!getOptionBooleanDefFalse(
+											sub.getLink(),
+											LinkOption.BOOLEAN_PAUSE)) {
+										ORMManager.get(FilemailAwaiting.class)
+												.save(new FilemailAwaiting(sub
+														.getLink(), mail));
+										if (getOptionBooleanDefFalse(
+												sub.getLink(),
+												LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+											poll.add(sub.getLink());
+										}
 									}
 								}
 							}

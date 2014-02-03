@@ -1535,10 +1535,12 @@ public final class FtnTools {
 				+ getPrimaryFtnAddress().toString() + ")\n");
 		mail.setText(b.toString());
 		ORMManager.get(Echomail.class).save(mail);
-		for (Subscription s : ORMManager.get(Subscription.class).getAnd(
-				"echoarea_id", "=", area)) {
-			ORMManager.get(EchomailAwaiting.class).save(
-					new EchomailAwaiting(s.getLink(), mail));
+		if (mail.getId() != null) {
+			for (Subscription s : ORMManager.get(Subscription.class).getAnd(
+					"echoarea_id", "=", area)) {
+				ORMManager.get(EchomailAwaiting.class).save(
+						new EchomailAwaiting(s.getLink(), mail));
+			}
 		}
 	}
 
