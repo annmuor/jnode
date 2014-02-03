@@ -19,7 +19,7 @@ public class Message {
 	private Long unixtime = new Date().getTime() / 1000L;
 	private File file;
 
-	public Message(File file) throws Exception {
+	public Message(File file) throws IOException {
 		super();
 		this.file = file;
 		messageName = file.getName();

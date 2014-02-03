@@ -30,7 +30,7 @@ public class RoutingsRoute extends spark.Route {
 			Link l = ORMManager.get(Link.class)
 					.getById(r.getRouteVia().getId());
 			sb.append(String
-					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
+					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Удалить</a></td></tr>",
 							r.getNice(), r.getFromAddr(), r.getFromName(),
 							r.getToAddr(), r.getToName(), r.getSubject(),
 							(l != null) ? l.getLinkAddress() : "NULL",

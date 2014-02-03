@@ -1,10 +1,14 @@
 package jnode.protocol.binkp;
 
+import java.io.IOException;
+
 import jnode.dto.Link;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.ThreadPool;
+import jnode.protocol.binkp.connector.BinkpAbstractConnector;
+import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 
 public class BinkpAsyncClientPool implements Runnable {
 	private static final Logger logger = Logger
@@ -29,17 +33,37 @@ public class BinkpAsyncClientPool implements Runnable {
 				l = PollQueue.getSelf().getNext();
 			}
 			try {
-				logger.l2(String.format("Connecting to %s:%d",
-						l.getProtocolHost(), l.getProtocolPort()));
-				BinkpAsyncConnector conn = BinkpAsyncConnector.connect(
-						l.getProtocolHost(), l.getProtocolPort());
-				if (conn != null) {
-					ThreadPool.execute(conn);
+				BinkpAbstractConnector conn = null;
+				String pa = l.getProtocolAddress();
+				for (String key : BinkpConnectorRegistry.getSelf().getKeys()) {
+					if (l.getProtocolAddress().startsWith(key)) {
+						conn = createConnector(pa, key);
+						break;
+					}
 				}
+				if (conn == null) {
+					conn = new BinkpAsyncConnector(l.getProtocolAddress());
+				}
+				ThreadPool.execute(conn);
 			} catch (RuntimeException e) {
-				logger.l2("Runtime exception: " + e.getLocalizedMessage());
+				logger.l2("Runtime exception: " + e.getLocalizedMessage(), e);
+			} catch (IOException e) {
+				logger.l2(e.getLocalizedMessage(), e);
 			}
 		}
 	}
 
+	protected BinkpAbstractConnector createConnector(String protocolAddress,
+			String key) throws IOException {
+		Class<? extends BinkpAbstractConnector> connectorClass = BinkpConnectorRegistry
+				.getSelf().getConnector(key);
+		try {
+			return connectorClass.getConstructor(String.class).newInstance(
+					protocolAddress.substring(key.length()));
+		} catch (Exception e) {
+			throw new IOException("Error instatiating class "
+					+ connectorClass.getName() + " ( " + protocolAddress
+					+ " ) ", e);
+		}
+	}
 }

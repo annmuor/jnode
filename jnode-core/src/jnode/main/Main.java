@@ -12,10 +12,7 @@ import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
-import jnode.main.threads.NetmailFallback;
-import jnode.main.threads.ThreadPool;
-import jnode.main.threads.TimerPoll;
-import jnode.main.threads.TosserQueue;
+import jnode.main.threads.*;
 import jnode.module.JnodeModule;
 import jnode.orm.ORMManager;
 import jnode.protocol.binkp.BinkpAsyncClientPool;
@@ -87,8 +84,12 @@ public class Main {
 						.getIntegerProperty(POLL_PERIOD, 0) * 1000);
 		logger.l4("Started TosserTask");
 		mainTimer.schedule(new TosserTask(), 10000, 10000);
+		logger.l4("Started PollQueueTask");
+		mainTimer.schedule(new PollQueueTask(), 10000, 10000);
 		logger.l4("Started StatPoster");
 		mainTimer.schedule(new NetmailFallback(), 9000, 3600000);
+        logger.l4("Started HealthReporter");
+        mainTimer.schedule(new HealthReporter(), 60000L, 600000L);
 		new StatPoster(mainTimer);
 		new JscriptExecutor();
 		logger.l4("Started JscriptExecutor");
@@ -149,4 +150,14 @@ public class Main {
 		}
 
 	}
+	
+	private static final class PollQueueTask extends TimerTask {
+
+		@Override
+		public void run() {
+			PollQueue.getSelf().poll();
+		}
+
+	}
+
 }

@@ -15,6 +15,8 @@ import java.security.NoSuchAlgorithmException;
 
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
+import jnode.protocol.binkp.types.BinkpCommand;
+import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {
@@ -95,10 +97,10 @@ public class BinkpProtocolTools {
 	public static int write(BinkpFrame frame, SocketChannel socket) {
 		if (frame != null) {
 			try {
-				ByteBuffer buf = ByteBuffer.wrap(frame.getBytes());
-				socket.write(buf);
+				socket.write(ByteBuffer.wrap(frame.getBytes()));
 				return 1;
 			} catch (IOException e) {
+				e.printStackTrace();
 				return 0;
 			}
 		}
@@ -106,21 +108,7 @@ public class BinkpProtocolTools {
 	}
 
 	public static boolean messageEquals(Message message, String arg) {
-		String[] args = arg.split(" ");
-		boolean ret = false;
-		try {
-			Long len = Long.valueOf(args[1]);
-			Long unixtime = Long.valueOf(args[2]);
-			if (message.getMessageName().equalsIgnoreCase(args[0])) {
-				if (message.getMessageLength() == len.longValue()) {
-					if (message.getUnixtime().equals(unixtime)) {
-						ret = true;
-					}
-				}
-			}
-		} catch (RuntimeException e) {
-		}
-		return ret;
+		return (getString(message).equals(arg));
 	}
 
 	public static Message createMessage(String arg, boolean secure) {

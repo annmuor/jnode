@@ -17,10 +17,27 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.2</version>
                 <executions>
                     <execution>
-                        <id>dist-core</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <shortRevisionLength>8</shortRevisionLength>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>release</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
@@ -28,14 +45,29 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
                             <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-core-${project.version}</finalName>
+                            <finalName>jnode-${project.version}-release</finalName>
+                            <descriptors>
+                                <descriptor>distribution-release.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>core</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+                            <finalName>jnode-${project.version}-core</finalName>
                             <descriptors>
                                 <descriptor>distribution-core.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>dist-contrib</id>
+                        <id>rss</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
@@ -43,24 +75,9 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
                             <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-contrib-${project.version}</finalName>
+                            <finalName>jnode-${project.version}-rss</finalName>
                             <descriptors>
-                                <descriptor>distribution-contrib.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>dist-contrib-xmlrpc</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assembly</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                            <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
-                            <finalName>jnode-contrib-xmlrpc-${project.version}</finalName>
-                            <descriptors>
-                                <descriptor>distribution-contrib-xmlrpc.xml</descriptor>
+                                <descriptor>distribution-rss.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -69,24 +86,4 @@
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-core</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-rss</artifactId>
-            <version>1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>jnode</groupId>
-            <artifactId>jnode-xmlrpc-server</artifactId>
-            <version>0.6-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
 </project>

@@ -16,6 +16,7 @@ import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.SelectArg;
 import com.j256.ormlite.stmt.StatementBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.j256.ormlite.stmt.Where;
@@ -51,7 +52,7 @@ public abstract class GenericDAO<T> {
 	abstract protected Class<?> getType();
 
 	@SuppressWarnings("unchecked")
-	private Dao<T, ?> getDao() {
+	Dao<T, ?> getDao() {
 		return (Dao<T, ?>) daoMap.get(getType());
 	}
 
@@ -81,7 +82,7 @@ public abstract class GenericDAO<T> {
 			case "eq":
 			case "=":
 			case "==":
-				wh.eq(args[i].toString(), args[i + 2]);
+				wh.eq(args[i].toString(), new SelectArg(args[i + 2]));
 				break;
 			case "null":
 				wh.isNull(args[i].toString());
@@ -94,33 +95,33 @@ public abstract class GenericDAO<T> {
 			case "ne":
 			case "!=":
 			case "<>":
-				wh.ne(args[i].toString(), args[i + 2]);
+				wh.ne(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "gt":
 			case ">":
-				wh.gt(args[i].toString(), args[i + 2]);
+				wh.gt(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "ge":
 			case ">=":
-				wh.ge(args[i].toString(), args[i + 2]);
+				wh.ge(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "lt":
 			case "<":
-				wh.lt(args[i].toString(), args[i + 2]);
+				wh.lt(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "le":
 			case "<=":
-				wh.le(args[i].toString(), args[i + 2]);
+				wh.le(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "like":
 			case "~":
-				wh.like(args[i].toString(), args[i + 2]);
+				wh.like(args[i].toString(),  new SelectArg(args[i + 2]));
 				break;
 			case "in":
-				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
+				wh.in(args[i].toString(),  (Iterable<?>) args[i + 2]);
 				break;
 			case "between":
-				wh.between(args[i].toString(), args[i + 2], args[i + 3]);
+				wh.between(args[i].toString(),  new SelectArg(args[i + 2]),  new SelectArg(args[i + 3]));
 				i += 1;
 				break;
 			}

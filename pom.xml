@@ -11,6 +11,13 @@
     <url>http://fidonode.in/jnode/</url>
     <inceptionYear>2012</inceptionYear>
 
+    <scm>
+        <connection>scm:git:https://github.com/kreon/jnode.git</connection>
+        <developerConnection>scm:git:https://github.com/kreon/jnode.git</developerConnection>
+        <url>https://github.com/kreon/jnode</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ormlite.version>4.48</ormlite.version>
@@ -66,16 +73,6 @@
         </modules>
     </profile>
     <profile>
-        <id>xmlrpc</id>
-        <modules>
-        	<module>jnode-core</module>
-        	<module>jnode-xmlrpc-server</module>
-        	<module>jnode-xmlrpc-common</module>
-        	<module>jnode-xmlrpc-client</module>
-        	<module>jnode-assembly</module>
-        </modules>
-    </profile>
-    <profile>
         <id>all</id>
         <activation>
             <activeByDefault>true</activeByDefault>
@@ -88,11 +85,8 @@
         	<module>jnode-dumb-module</module>
         	<module>jnode-xmpp</module>
         	<module>jnode-pointchecker-module</module>
-            <module>jnode-xmlrpc-server</module>
-        	<module>jnode-xmlrpc-common</module>
-        	<module>jnode-xmlrpc-client</module>
-        	<module>jnode-assembly</module>
             <module>jnode-nntp</module>
+        	<module>jnode-assembly</module>            
         </modules>
     </profile>
 </profiles>

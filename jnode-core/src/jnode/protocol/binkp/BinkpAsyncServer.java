@@ -6,11 +6,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.main.threads.ThreadPool;
-
-import com.j256.ormlite.logger.LocalLog;
+import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 
 public class BinkpAsyncServer implements Runnable {
 	private static final Logger logger = Logger
@@ -52,14 +52,17 @@ public class BinkpAsyncServer implements Runnable {
 								logger.l2(String.format(
 										"Incoming connection from %s:%d",
 										addr.getHostString(), addr.getPort()));
-								ThreadPool.execute(BinkpAsyncConnector
-										.accept(client));
+								ThreadPool.execute(new BinkpAsyncConnector(
+										client));
 							}
 						}
 					} catch (IOException e) {
-						logger.l2("Error in accept(): " + e.getLocalizedMessage());
-					} catch(RuntimeException e) {
-						logger.l2("RuntimeException: " + e.getLocalizedMessage());
+						logger.l2("Error in accept(): "
+								+ e.getLocalizedMessage(), e);
+					} catch (RuntimeException e) {
+						logger.l2(
+								"RuntimeException: " + e.getLocalizedMessage(),
+								e);
 					}
 				}
 			}
@@ -67,12 +70,4 @@ public class BinkpAsyncServer implements Runnable {
 			logger.l1("Server error occured!", e);
 		}
 	}
-
-	public static void main(String[] args) throws Exception {
-		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
-		new MainHandler("/home/kreon/jnode-test/test.conf");
-		new ThreadPool(10);
-		ThreadPool.execute(new BinkpAsyncServer());
-	}
-
 }

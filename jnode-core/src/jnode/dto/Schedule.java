@@ -3,9 +3,8 @@ package jnode.dto;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import jnode.core.ConcurrentDateFormatAccess;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -16,8 +15,8 @@ import java.util.Date;
  */
 @DatabaseTable(tableName = "schedule")
 public class Schedule {
-    private static final DateFormat DATE_DAY_FORMAT = new SimpleDateFormat("MMMM dd yyyy");
-    private static final DateFormat DATE_HOUR_FORMAT = new SimpleDateFormat("MMMM dd yyyy HH");
+    private static final ConcurrentDateFormatAccess DATE_DAY_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy");
+    private static final ConcurrentDateFormatAccess DATE_HOUR_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy HH");
     @DatabaseField(columnName = "id", generatedId = true)
     private Long id;
     @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")
@@ -59,14 +58,14 @@ public class Schedule {
             return false;
         }
 
-        switch(getType()){
+        switch (getType()) {
             case HOURLY:
-                if (isSameHour(getLastRunDate(), new Date())){
+                if (isSameHour(getLastRunDate(), new Date())) {
                     return false;
                 }
                 break;
             default:
-                if (isSameDay(getLastRunDate(), new Date())){
+                if (isSameDay(getLastRunDate(), new Date())) {
                     return false;
                 }
                 break;

@@ -9,8 +9,8 @@ import spark.Route;
 
 public class LinkoptionRoute extends Route {
 
-	public LinkoptionRoute(String path) {
-		super(path);
+	public LinkoptionRoute() {
+		super("/secure/linkoption");
 	}
 
 	@Override

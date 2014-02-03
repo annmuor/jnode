@@ -24,12 +24,11 @@ public class JSONUtil {
 
 			@Override
 			public String convert(Link object) {
-				return String.format("{%s, %s, %s, %s, %s, %s, %s}",
+				return String.format("{%s, %s, %s, %s, %s, %s}",
 						pair("id", object.getId()),
 						pair("name", object.getLinkName()),
 						pair("addr", object.getLinkAddress()),
-						pair("host", object.getProtocolHost()),
-						pair("port", object.getProtocolPort()),
+						pair("address", object.getProtocolAddress()),
 						pair("password", object.getProtocolPassword()),
 						pair("pktpassword", object.getPaketPassword()));
 			}
@@ -74,7 +73,7 @@ public class JSONUtil {
 
 			}
 		});
-		
+
 		map.put(Route.class, new JSONConverter<Route>() {
 
 			@Override

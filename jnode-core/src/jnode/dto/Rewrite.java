@@ -15,6 +15,8 @@ public class Rewrite {
 		NETMAIL, ECHOMAIL
 	}
 
+	@DatabaseField(generatedId = true)
+	private Long id;
 	@DatabaseField(canBeNull = false, defaultValue = "0", columnName = "nice")
 	private Long nice;
 	@DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, index = true, columnName = "type")
@@ -41,6 +43,14 @@ public class Rewrite {
 	private String new_to_name;
 	@DatabaseField(columnName = "ns", defaultValue = "*")
 	private String new_subject;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Type getType() {
 		return type;

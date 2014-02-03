@@ -33,6 +33,15 @@ function _value(name, value) {
 	}
 }
 
+function _var(name) {
+	var _var = document.getElementById(name);
+	if (_var) {
+		return _var.value;
+	} else {
+		return null;
+	}
+}
+
 function _getXmlHttp() {
 	var xmlhttp;
 	try {

@@ -6,9 +6,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
+import java.io.OutputStream;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jnode.core.ConcurrentDateFormatAccess;
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
 import jnode.logger.Logger;
@@ -56,7 +56,7 @@ public class FtnMessage {
 	private boolean isNetmail;
 	private String msgid;
 
-	private static final DateFormat FORMAT = new SimpleDateFormat(
+	private static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
@@ -148,6 +148,10 @@ public class FtnMessage {
 		return msgid;
 	}
 
+	public void setMsgid(String msgid) {
+		this.msgid = msgid;
+	}
+
 	public boolean isNetmail() {
 		return isNetmail;
 	}
@@ -166,7 +170,16 @@ public class FtnMessage {
 
 	public byte[] pack() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DataOutputStream os = new DataOutputStream(bos);
+		write(bos);
+		try {
+			bos.close();
+		} catch (IOException e) {
+		}
+		return bos.toByteArray();
+	}
+
+	public void write(OutputStream _os) {
+		DataOutputStream os = new DataOutputStream(_os);
 		try {
 			os.write(new byte[] { 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNode()));
@@ -197,6 +210,9 @@ public class FtnMessage {
 				os.writeBytes(toAddr.topt());
 			}
 			StringBuilder sb = new StringBuilder();
+			if (msgid != null) {
+				os.writeBytes(String.format("\001MSGID: %s\r", msgid));
+			}
 			sb.append(text);
 			if (sb.charAt(sb.length() - 1) != '\n') {
 				sb.append('\n');
@@ -208,11 +224,9 @@ public class FtnMessage {
 			os.write(sb.toString().replaceAll("\n", "\r")
 					.getBytes(FtnTools.CP_866));
 			os.write(0);
-			os.close();
 		} catch (IOException e) {
 			// zzz
 		}
-		return bos.toByteArray();
 	}
 
 	public void unpack(byte[] data) throws LastMessageException {
@@ -275,7 +289,10 @@ public class FtnMessage {
 					if (!eofKluges) {
 						Matcher m = msgid.matcher(line);
 						if (m.matches()) {
-							this.msgid = m.group(1).toUpperCase();
+							this.msgid = m.group(1);
+							if (!isNetmail) { // TODO: msgid in netmail
+								continue;
+							}
 						}
 						m = tzutc.matcher(line);
 						// TODO
@@ -288,19 +305,19 @@ public class FtnMessage {
 							if (m.matches()) {
 								String kluge = m.group(1);
 								String arg = m.group(2);
-                                switch (kluge) {
-                                    case "INTL":
-                                        String tmp[] = arg.split(" ");
-                                        toAddr = new FtnAddress(tmp[0]);
-                                        fromAddr = new FtnAddress(tmp[1]);
-                                        break;
-                                    case "TOPT":
-                                        toAddr.setPoint(new Integer(arg));
-                                        break;
-                                    case "FMPT":
-                                        fromAddr.setPoint(new Integer(arg));
-                                        break;
-                                }
+								switch (kluge) {
+								case "INTL":
+									String tmp[] = arg.split(" ");
+									toAddr = new FtnAddress(tmp[0]);
+									fromAddr = new FtnAddress(tmp[1]);
+									break;
+								case "TOPT":
+									toAddr.setPoint(new Integer(arg));
+									break;
+								case "FMPT":
+									fromAddr.setPoint(new Integer(arg));
+									break;
+								}
 								continue;
 							}
 						}
@@ -353,13 +370,15 @@ public class FtnMessage {
 		} catch (IOException | LastMessageException | ParseException e) {
 			throw new LastMessageException(e);
 		}
-    }
+	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("Message %s -> %s\nFrom: %s\nTo: %s\nDate: %s\nSubject: %s\nArea: %s\n-------------\n%s\n-------------\n",
-						fromAddr, toAddr, fromName, toName, date, subject,
-						area, text);
+				.format("MSG FROM %s@%s, TO %s@%s, ATTRS %d, MSGID %s, TYPE %s, AREA %s, SUBJECT %s",
+						fromName, fromAddr.toString(), toName, toAddr
+								.toString(), attribute, msgid,
+						(isNetmail) ? "netmail" : "echomail", (isNetmail) ? "-"
+								: area, subject);
 	}
 }

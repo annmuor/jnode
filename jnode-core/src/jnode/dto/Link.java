@@ -20,10 +20,8 @@ public class Link {
 	private String paketPassword;
 	@DatabaseField(columnName = "password", defaultValue = "-", canBeNull = false)
 	private String protocolPassword;
-	@DatabaseField(columnName = "host")
-	private String protocolHost;
-	@DatabaseField(columnName = "port")
-	private Integer protocolPort;
+	@DatabaseField(columnName = "address", defaultValue = "-", canBeNull = false)
+	private String protocolAddress;
 
 	public Long getId() {
 		return id;
@@ -66,28 +64,53 @@ public class Link {
 	}
 
 	public String getProtocolHost() {
-		return protocolHost;
+		if (protocolAddress.equals("-")) {
+			return "-";
+		} else {
+			String[] parts = protocolAddress.split(":");
+			return parts[0];
+		}
 	}
 
 	public void setProtocolHost(String protocolHost) {
-		this.protocolHost = protocolHost;
+		protocolAddress = protocolHost;
 	}
 
 	public Integer getProtocolPort() {
-		return protocolPort;
+		if ("-".equals(protocolAddress)) {
+			return 0;
+		} else {
+			String[] parts = protocolAddress.split(":");
+			if (parts.length == 1) {
+				return 24554; // TODO fix this ?
+			}
+			return Integer.valueOf(parts[parts.length - 1]);
+		}
 	}
 
 	public void setProtocolPort(Integer protocolPort) {
-		this.protocolPort = protocolPort;
+		if (!"-".endsWith(protocolAddress)) {
+			protocolAddress += ":" + protocolPort;
+			if (protocolPort != 24554) {// TODO fix this ?
+				protocolAddress = getLinkAddress() + ":" + protocolPort;
+			}
+		}
 	}
 
-	@Override
-	public String toString() {
-		return "Link [id=" + id + ", linkName=" + linkName + ", linkAddress="
-				+ linkAddress + ", paketPassword=" + paketPassword
-				+ ", protocolPassword=" + protocolPassword + ", protocolHost="
-				+ protocolHost + ", protocolPort=" + protocolPort + "]";
+	public String getProtocolAddress() {
+		return protocolAddress;
 	}
+
+	public void setProtocolAddress(String protocolAddress) {
+		this.protocolAddress = protocolAddress;
+	}
+
+    @Override
+    public String toString() {
+        return "Link [id=" + id + ", linkName=" + linkName + ", " +
+                "linkAddress=" + linkAddress
+                + ", protocolAddress=" + protocolAddress + "]";
+    }
 
 	@Override
 	public int hashCode() {

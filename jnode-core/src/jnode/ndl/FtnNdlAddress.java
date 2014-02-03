@@ -1,8 +1,16 @@
 package jnode.ndl;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import jnode.ftn.types.FtnAddress;
 
 public class FtnNdlAddress extends FtnAddress {
+	private static final Pattern IBN_PATTERN = Pattern.compile(
+			".*,IBN(:[^,]+)?.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern INA_PATTERN = Pattern.compile(
+			".*,INA(:[^,]+)?.*", Pattern.CASE_INSENSITIVE);
+
 	public static enum Status {
 		HOLD, DOWN, HUB, HOST, PVT, NORMAL
 	}
@@ -74,4 +82,36 @@ public class FtnNdlAddress extends FtnAddress {
 				+ "]";
 	}
 
+	public int getBinkpPort() {
+		if (line != null) {
+			Matcher m = IBN_PATTERN.matcher(line);
+			if (m.matches()) {
+				if (m.group(1) != null) {
+					try {
+						String[] r = m.group(1).split(":");
+						return Integer.valueOf(r[r.length - 1]);
+					} catch (NumberFormatException e) {
+						return 24554;
+					}
+				} else {
+					return 24554;
+				}
+			}
+		}
+		return -1;
+	}
+
+	public String getInetHost() {
+		if (line != null) {
+			Matcher m = INA_PATTERN.matcher(line);
+			if (m.matches()) {
+				if (m.group(1) != null) {
+					return m.group(1).substring(1);
+				} else {
+					return "-";
+				}
+			}
+		}
+		return null;
+	}
 }

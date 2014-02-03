@@ -1,28 +1,36 @@
 package org.jnode.httpd.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jnode.ftn.FtnTools;
+
 public class HTML {
+	private static final int MAX_SIZE = 65535;
 	private static String header = null;
 	private static String footer = null;
 	private static String menu = null;
 	private static String secureMenu = null;
+	private static String externalPath;
 
 	private StringBuilder data;
 
 	private HTML() {
 		if (header == null) {
-			header = getContents("/header.html");
+			header = String.format(getContents("/parts/header.html"), FtnTools
+					.getPrimaryFtnAddress().toString());
 		}
 		if (footer == null) {
-			footer = getContents("/footer.html");
+			footer = getContents("/parts/footer.html");
 		}
 		if (menu == null) {
-			menu = getContents("/menu.html");
+			menu = getContents("/parts/menu.html");
 		}
 		if (secureMenu == null) {
-			secureMenu = getContents("/secure/menu.html");
+			secureMenu = getContents("/parts/secure_menu.html");
 		}
 		data = new StringBuilder();
 	}
@@ -65,19 +73,31 @@ public class HTML {
 		return this;
 	}
 
+	@SuppressWarnings("resource")
 	public static String getContents(String path) {
-		String search = "www" + path;
-		InputStream is = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(search);
+		// check for external
+		InputStream is = null;
+		if (externalPath != null) {
+			File s = new File(externalPath + File.separator + path);
+			try {
+				is = new FileInputStream(s);
+			} catch (FileNotFoundException e) {
+			}
+		}
+		if (is == null) {
+			String search = "www" + path;
+			is = Thread.currentThread().getContextClassLoader()
+					.getResourceAsStream(search);
+		}
+		byte[] buf = new byte[MAX_SIZE];
 		if (is != null) {
 			StringBuilder sb = new StringBuilder();
 			try {
 				int n = 0;
 				do {
-					byte[] buf = new byte[1024];
 					n = is.read(buf);
 					if (n > 0) {
-						sb.append(new String(buf, 0, n));
+						sb.append(new String(buf, 0, n, "UTF-8"));
 					}
 				} while (n > 0);
 				is.close();
@@ -88,4 +108,9 @@ public class HTML {
 		}
 		return "";
 	}
+
+	public static void setExternalPath(String externalPath) {
+		HTML.externalPath = externalPath;
+	}
+
 }

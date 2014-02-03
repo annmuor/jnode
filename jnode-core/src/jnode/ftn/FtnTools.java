@@ -13,9 +13,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -32,7 +30,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import jnode.dto.Dupe;
+import jnode.core.ConcurrentDateFormatAccess;
+import jnode.core.FileUtils;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import jnode.dto.EchomailAwaiting;
@@ -61,8 +60,8 @@ import jnode.main.MainHandler;
 import jnode.main.threads.PollQueue;
 import jnode.main.threads.TosserQueue;
 import jnode.ndl.FtnNdlAddress;
-import jnode.ndl.NodelistScanner;
 import jnode.ndl.FtnNdlAddress.Status;
+import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
@@ -80,11 +79,11 @@ public final class FtnTools {
 	public static final Charset CP_866 = Charset.forName("CP866");
 	private static final String ROUTE_VIA = "\001Via %s "
 			+ MainHandler.getVersion() + " %s";
-	public static final DateFormat FORMAT = new SimpleDateFormat(
+	public static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
-	private static Hashtable<String, IRobot> robotMaps = new Hashtable<>();
+	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
 	/**
 	 * Сортировщик 2D-адресов
@@ -491,10 +490,12 @@ public final class FtnTools {
 	 */
 	public static String getOption(Link link, String option) {
 		String value = "";
-		LinkOption opt = ORMManager.get(LinkOption.class).getFirstAnd(
-				"link_id", "=", link, "name", "=", option.toLowerCase());
-		if (opt != null) {
-			value = opt.getValue();
+		if (link.getId() != null) {
+			LinkOption opt = ORMManager.get(LinkOption.class).getFirstAnd(
+					"link_id", "=", link, "name", "=", option.toLowerCase());
+			if (opt != null) {
+				value = opt.getValue();
+			}
 		}
 		return value;
 	}
@@ -549,9 +550,11 @@ public final class FtnTools {
 		if (text.charAt(text.length() - 1) != '\n') {
 			text.append('\n');
 		}
-		text.append(String.format(ROUTE_VIA, MainHandler.getCurrentInstance()
-				.getInfo().getAddressList().toString(),
-				FORMAT.format(new Date())));
+		for (FtnAddress address : MainHandler.getCurrentInstance().getInfo()
+				.getAddressList()) {
+			text.append(String.format(ROUTE_VIA, address.toString(),
+					FORMAT.format(new Date())));
+		}
 		message.setText(text.toString());
 		return message;
 	}
@@ -586,96 +589,106 @@ public final class FtnTools {
 		if (filename.matches("^[a-f0-9]{8}\\.pkt$")) {
 			File out = createInboundFile(message.isSecure());
 			FileOutputStream fos = new FileOutputStream(out);
-			InputStream is = message.getInputStream();
-			int len;
-			while ((len = is.available()) > 0) {
-				byte[] buf;
-				if (len > 1024) {
-					buf = new byte[1024];
-				} else {
-					buf = new byte[len];
+			int len = 0;
+			do {
+				byte[] buf = new byte[1024];
+				len = message.getInputStream().read(buf);
+				if (len > 0) {
+					fos.write(buf, 0, len);
 				}
-				is.read(buf);
-				fos.write(buf);
-			}
-			is.close();
+			} while (len > 0);
 			fos.close();
 		} else if (filename
 				.matches("^\\w{8}\\.(mo|tu|we|th|fr|sa|su)[0-9a-z]$")) {
-
-			ZipInputStream zis = new ZipInputStream(message.getInputStream());
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
-				String name = ze.getName().toLowerCase();
-				logger.l4("found " + filename + "#" + name);
-				int idx = name.lastIndexOf('/');
-				if (idx >= 0) {
-					name = name.substring(idx + 1);
-				}
-				idx = name.lastIndexOf('\\');
-				if (idx >= 0) {
-					name = name.substring(idx + 1);
-				}
-				if (name.matches("^[a-f0-9]{8}\\.pkt$")) {
-					File out = createInboundFile(message.isSecure());
-					FileOutputStream fos = new FileOutputStream(out);
-					int len;
-					while ((len = zis.available()) > 0) {
-						byte[] buf;
-						if (len > 1024) {
-							buf = new byte[1024];
-						} else {
-							buf = new byte[len];
-						}
-						zis.read(buf);
-						fos.write(buf);
-					}
-					fos.close();
-				}
-			}
-			zis.close();
+			unpackBundle(message);
 		} else if (message.isSecure()) {
-			filename = filename.replaceAll("^[\\./\\\\]+", "_");
-			File f = new File(getInbound() + File.separator + filename);
-			boolean ninetoa = false;
-			boolean ztonull = false;
-			boolean underll = false;
-			while (f.exists()) {
-				if ((ninetoa && ztonull) || underll) {
-					logger.l2("All possible files exists. Please delete something before continue");
-					break;
-				} else {
-					char[] array = filename.toCharArray();
-					char c = array[array.length - 1];
-					if ((c >= '0' && c <= '8') || (c >= 'a' && c <= 'y')) {
-						c++;
-					} else if (c == '9') {
-						c = 'a';
-						ninetoa = true;
-					} else if (c == 'z') {
-						c = '0';
-						ztonull = true;
-					} else {
-						c = '_';
-						underll = true;
+			File f = guessFilename(filename, false);
+			if (f != null) {
+				FileOutputStream fos = new FileOutputStream(f);
+				int len = 0;
+				do {
+					byte[] buf = new byte[1024];
+					len = message.getInputStream().read(buf);
+					if (len > 0) {
+						fos.write(buf, 0, len);
 					}
-					array[array.length - 1] = c;
-					filename = new String(array);
-					f = new File(getInbound() + File.separator + filename);
-				}
+				} while (len > 0);
+				fos.close();
+				logger.l3("File saved " + f.getAbsolutePath() + " ("
+						+ f.length() + ")");
 			}
-			FileOutputStream fos = new FileOutputStream(f);
-			while (message.getInputStream().available() > 0) {
-				byte[] block = new byte[1024];
-				int len = message.getInputStream().read(block);
-				fos.write(block, 0, len);
-			}
-			fos.close();
-			logger.l3("File saved " + f.getAbsolutePath() + " (" + f.length()
-					+ ")");
 		} else {
 			logger.l2("File rejected via unsecure " + filename);
 		}
+	}
+
+	protected static void unpackBundle(Message message) throws IOException {
+		logger.l4("Unpacking " + message.getMessageName());
+		ZipInputStream zis = new ZipInputStream(message.getInputStream());
+		ZipEntry ze;
+		while ((ze = zis.getNextEntry()) != null) {
+			String name = ze.getName().toLowerCase();
+			logger.l5("found " + name);
+			int idx = name.lastIndexOf('/');
+			if (idx >= 0) {
+				name = name.substring(idx + 1);
+			}
+			idx = name.lastIndexOf('\\');
+			if (idx >= 0) {
+				name = name.substring(idx + 1);
+			}
+			if (name.matches("^[a-f0-9]{8}\\.pkt$")) {
+				File out = createInboundFile(message.isSecure());
+				FileOutputStream fos = new FileOutputStream(out);
+				int len = 0;
+				do {
+					byte[] buf = new byte[1024];
+					len = zis.read(buf);
+					if (len > 0) {
+						fos.write(buf, 0, len);
+					}
+				} while (len > 0);
+				fos.close();
+				logger.l4(name + " was written as " + out.getName());
+			} else {
+				logger.l3(name + " was deleted as unknown");
+			}
+		}
+		zis.close();
+	}
+
+	public static File guessFilename(String filename, boolean read) {
+		filename = filename.replaceAll("^[\\./\\\\]+", "_");
+		File f = new File(getInbound() + File.separator + filename);
+		boolean ninetoa = false;
+		boolean ztonull = false;
+		boolean underll = false;
+		while ((read) ? !f.exists() : f.exists()) {
+			if ((ninetoa && ztonull) || underll) {
+				logger.l2("All possible files exists. Please delete something before continue");
+				f = null;
+				break;
+			} else {
+				char[] array = filename.toCharArray();
+				char c = array[array.length - 1];
+				if ((c >= '0' && c <= '8') || (c >= 'a' && c <= 'y')) {
+					c++;
+				} else if (c == '9') {
+					c = 'a';
+					ninetoa = true;
+				} else if (c == 'z') {
+					c = '0';
+					ztonull = true;
+				} else {
+					c = '_';
+					underll = true;
+				}
+				array[array.length - 1] = c;
+				filename = new String(array);
+				f = new File(getInbound() + File.separator + filename);
+			}
+		}
+		return f;
 	}
 
 	/**
@@ -746,15 +759,18 @@ public final class FtnTools {
 				switch (i) {
 				case 0:
 					FtnAddress nfa = new FtnAddress(fields[i]);
-					Matcher msgid = Pattern
-							.compile(
-									"^\001MSGID: " + message.getFromAddr()
-											+ " (\\S+)$", Pattern.MULTILINE)
-							.matcher(message.getText());
-					if (msgid.find()) {
-						message.setText(msgid.replaceFirst("\001MSGID: " + nfa
-								+ " $1"));
-					}
+					if (message.getMsgid() != null) {
+						Matcher msgid = Pattern.compile(
+								"^" + message.getFromAddr() + " (\\S+)$")
+								.matcher(message.getMsgid());
+						if (msgid.find()) {
+							String msg = msgid.replaceFirst(nfa + " $1");
+							message.setText(message.getText().replace(
+									message.getMsgid(), msg));
+							message.setMsgid(msg);
+
+						}
+					} // TODO : netmail msgid
 					Matcher origin = Pattern.compile(
 							"^ \\* Origin: (.*) \\(" + message.getFromAddr()
 									+ "\\)$", Pattern.MULTILINE).matcher(
@@ -912,6 +928,7 @@ public final class FtnTools {
 				.getInfo().getAddressList()) {
 			if (routeTo.isPointOf(testAddress)) {
 				ourPoint = true;
+				break;
 			}
 		}
 		return ourPoint;
@@ -928,11 +945,27 @@ public final class FtnTools {
 	public static void writeReply(FtnMessage fmsg, String subject, String text) {
 		FtnAddress from = getPrimaryFtnAddress();
 		StringBuilder sb = new StringBuilder();
+		if (fmsg.getMsgid() != null) {
+			sb.append("\001REPLY: " + fmsg.getMsgid() + "\n");
+		}
 		sb.append(text);
+		sb.append(quote(fmsg));
+		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
+				fmsg.getFromName(), subject, sb.toString());
+	}
+
+	public static String quote(FtnMessage fmsg) {
+		StringBuilder sb = new StringBuilder();
 		sb.append("\n\n========== Original message ==========\n");
 		sb.append("From: " + fmsg.getFromName() + " (" + fmsg.getFromAddr()
 				+ ")\n");
-		sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr() + ")\n");
+		if (fmsg.isNetmail()) {
+			sb.append("To: " + fmsg.getToName() + " (" + fmsg.getToAddr()
+					+ ")\n");
+		} else {
+			sb.append("Area: " + fmsg.getArea() + "\nTo: " + fmsg.getToName()
+					+ "\n");
+		}
 		sb.append("Date: " + fmsg.getDate() + "\n");
 		sb.append("Subject: " + fmsg.getSubject() + "\n");
 		if (fmsg.getText() != null) {
@@ -941,8 +974,7 @@ public final class FtnTools {
 					.replaceAll(" \\* Origin:", " + Origin:"));
 		}
 		sb.append("========== Original message ==========\n");
-		writeNetmail(from, fmsg.getFromAddr(), fmsg.getToName(),
-				fmsg.getFromName(), subject, sb.toString());
+		return sb.toString();
 	}
 
 	public static void writeNetmail(FtnAddress from, FtnAddress to,
@@ -966,10 +998,9 @@ public final class FtnTools {
 		FtnMessage message = new FtnMessage();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\nHello, %s!\n\n",
+		sb.append(String.format("\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n",
 				from.toString(), generate8d(), MainHandler.getVersion(),
-				MainHandler.getVersion(), toName));
+				MainHandler.getVersion()));
 		sb.append(text);
 		sb.append("\n\n--- " + MainHandler.getVersion() + "\n");
 		message.setDate(new Date());
@@ -1104,13 +1135,14 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Паковка сообщений
+	 * Паковка сообщений На удаление !
 	 * 
 	 * @param messages
 	 * @param link
 	 * @return
 	 */
-	public static List<Message> pack(List<FtnMessage> messages, Link link) {
+	@Deprecated
+	protected static List<Message> pack(List<FtnMessage> messages, Link link) {
 		boolean packNetmail = getOptionBooleanDefFalse(link,
 				LinkOption.BOOLEAN_PACK_NETMAIL);
 		boolean packEchomail = getOptionBooleanDefTrue(link,
@@ -1259,11 +1291,12 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Кривые пакеты - в инбаунд
+	 * Кривые пакеты - в инбаунд -- на удаление
 	 * 
 	 * @param pkt
 	 */
-	public static void moveToBad(FtnPkt pkt) {
+	@Deprecated
+	protected static void moveToBad(FtnPkt pkt) {
 		ByteArrayInputStream bis = new ByteArrayInputStream(pkt.pack());
 		Message message = new Message(String.format("%s_%d.pkt", generate8d(),
 				new Date().getTime() / 1000), bis.available());
@@ -1309,7 +1342,7 @@ public final class FtnTools {
 	 */
 	public static Echoarea getAreaByName(String name, Link link) {
 		Echoarea ret;
-		name = name.toLowerCase().replace("'", "\\'");
+		name = name.toLowerCase();
 		ret = ORMManager.get(Echoarea.class).getFirstAnd("name", "=", name);
 		if (ret == null) {
 			if (link == null
@@ -1318,9 +1351,12 @@ public final class FtnTools {
 				ret = new Echoarea();
 				ret.setName(name);
 				ret.setDescription("Autocreated echoarea");
-				ret.setReadlevel(0L);
-				ret.setWritelevel(0L);
-				ret.setGroup("");
+				ret.setReadlevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setWritelevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setGroup((link != null) ? getOptionString(link,
+						LinkOption.SARRAY_LINK_GROUPS).split(" ")[0] : "");
 				logger.l3("Echoarea " + name.toUpperCase() + " created");
 				ORMManager.get(Echoarea.class).save(ret);
 				if (link != null) {
@@ -1360,9 +1396,12 @@ public final class FtnTools {
 				ret = new Filearea();
 				ret.setName(name);
 				ret.setDescription("Autocreated filearea");
-				ret.setReadlevel(0L);
-				ret.setWritelevel(0L);
-				ret.setGroup("");
+				ret.setReadlevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setWritelevel((link != null) ? getOptionLong(link,
+						LinkOption.LONG_LINK_LEVEL) : 0);
+				ret.setGroup((link != null) ? getOptionString(link,
+						LinkOption.SARRAY_LINK_GROUPS).split(" ")[0] : "");
 				logger.l3("Filearea " + name + " created");
 				ORMManager.get(Filearea.class).save(ret);
 				if (link != null) {
@@ -1385,7 +1424,7 @@ public final class FtnTools {
 	}
 
 	public static boolean isADupe(Echoarea area, String msgid) {
-		return ORMManager.get(Dupe.class).getFirstAnd("msgid", "=", msgid,
+		return ORMManager.get(Echomail.class).getFirstAnd("msgid", "=", msgid,
 				"echoarea_id", "=", area) != null;
 	}
 
@@ -1482,9 +1521,10 @@ public final class FtnTools {
 		mail.setSeenBy("");
 		mail.setToName(toName);
 		mail.setSubject(subject);
+		mail.setMsgid(getPrimaryFtnAddress().toString() + " "
+				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
-		b.append(String.format(
-				"\001MSGID: %s %s\n\001PID: %s\n\001TID: %s\n\n",
+		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
 				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
@@ -1526,19 +1566,14 @@ public final class FtnTools {
 				+ (mail.getCreated().getTime() / 1000) + " "
 				+ mail.getCreated().toString() + "\r\n");
 		mail.setSeenby("");
-
-		new File(FtnTosser.getFileechoPath() + File.separator + area.getName())
-				.mkdir();
 		String path = getFilePath(area.getName(), filename);
 		File newFile = new File(path);
-		if (newFile.exists()) {
-			newFile.delete();
-		}
-		if (attach.renameTo(new File(path))) {
-			mail.setFilepath(path);
+		if (FileUtils.move(attach, newFile, true)) {
+			mail.setFilepath(newFile.getAbsolutePath());
 		} else {
 			mail.setFilepath(attach.getAbsolutePath());
-			logger.l2("Failed to rename "+attach.getAbsolutePath()+" to "+path);
+			logger.l2("Failed to rename " + attach.getAbsolutePath() + " to "
+					+ path);
 		}
 		ORMManager.get(Filemail.class).save(mail);
 
@@ -1554,8 +1589,16 @@ public final class FtnTools {
 	}
 
 	public static String getFilePath(String area, String attach) {
-		return (FtnTosser.getFileechoPath() + File.separator + area
-				+ File.separator + attach).toLowerCase();
+		String areaPath = FtnTosser.getFileechoPath() + File.separator + area;
+		File f = new File(areaPath);
+		if (!f.isDirectory()) {
+			if (f.exists()) {
+				f.renameTo(new File(areaPath + "." + generate8d()));
+				f = new File(areaPath);
+			}
+			f.mkdirs();
+		}
+		return (f.getAbsolutePath() + File.separator + attach).toLowerCase();
 	}
 
 	public static String md5(String protocolPassword) {
@@ -1654,4 +1697,5 @@ public final class FtnTools {
 		}
 
 	}
+
 }

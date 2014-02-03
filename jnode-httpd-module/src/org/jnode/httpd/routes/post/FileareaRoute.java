@@ -10,8 +10,8 @@ import spark.Route;
 
 public class FileareaRoute extends Route {
 
-	public FileareaRoute(String path) {
-		super(path);
+	public FileareaRoute() {
+		super("/secure/filearea");
 	}
 
 	@Override

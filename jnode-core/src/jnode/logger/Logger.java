@@ -3,34 +3,25 @@ package jnode.logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-/**
- * 1 - fatal<br>
- * 2 - error, warn<br>
- * 3 - info<br>
- * 4 - debug<br>
- * 5 - trace
- */
+import jnode.core.ConcurrentDateFormatAccess;
+
 public final class Logger {
-	public static final int LOG_L5 = 5;
-	public static final int LOG_L4 = 4;
-	public static final int LOG_L3 = 3;
-	public static final int LOG_L2 = 2;
-	public static final int LOG_L1 = 1;
-	public static int Loglevel = LOG_L5;
+    public static final int LOG_L5 = 5;
+    public static final int LOG_L4 = 4;
+    public static final int LOG_L3 = 3;
+    public static final int LOG_L2 = 2;
+    public static final int LOG_L1 = 1;
+    public static int Loglevel = LOG_L5;
 
-	private final String className;
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-			"dd-MM-yyyy HH:mm:ss");
-	private static final String LOG_FORMAT = "%s [%08d] %s %s";
+    private final String className;
+    private static final String LOG_FORMAT = "%s [%08d] %s %s";
+    private static final ConcurrentDateFormatAccess DATE_FORMAT = new ConcurrentDateFormatAccess("dd-MM-yy HH:mm:ss");
 
-	public static Logger getLogger(Class<?> clazz) {
-		String className = clazz.getSimpleName();
+    public static Logger getLogger(Class<?> clazz) {
+        String className = clazz.getSimpleName();
         return getLogger(className);
-	}
+    }
 
     public static Logger getLogger(String name) {
         StringBuilder b = new StringBuilder(20);
@@ -42,33 +33,32 @@ public final class Logger {
     }
 
     private Logger(String className) {
-		this.className = className;
-	}
+        this.className = className;
+    }
 
-    private boolean isNeedLog(int type){
+    private boolean isNeedLog(int type) {
         return Loglevel >= type;
     }
 
-	private void log(int type, String log) {
-		if (isNeedLog(type)) {
-			System.out.println(String.format(LOG_FORMAT, DATE_FORMAT
-					.format(new Date()), Thread.currentThread().getId(),
-					className, log));
-		}
-	}
+    private void log(int type, String log) {
+        if (isNeedLog(type)) {
+            System.out.println(String.format(LOG_FORMAT, DATE_FORMAT.currentDateAsString(), Thread.currentThread()
+                    .getId(), className, log));
+        }
+    }
 
-	private String th2s(Throwable e) {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(bos);
-		e.printStackTrace(ps);
-		ps.close();
-		try {
-			bos.close();
-		} catch (IOException e1) {
+    private String th2s(Throwable e) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+        e.printStackTrace(ps);
+        ps.close();
+        try {
+            bos.close();
+        } catch (IOException e1) {
             return "[LOGGING INTERNAL ERROR]" + bos.toString();
-		}
-		return bos.toString();
-	}
+        }
+        return bos.toString();
+    }
 
     public boolean isNeedLog5() {
         return isNeedLog(LOG_L5);
@@ -91,43 +81,43 @@ public final class Logger {
     }
 
     public void l5(String log) {
-		log(LOG_L5, log);
-	}
+        log(LOG_L5, log);
+    }
 
-	public void l4(String log) {
-		log(LOG_L4, log);
-	}
+    public void l4(String log) {
+        log(LOG_L4, log);
+    }
 
-	public void l3(String log) {
-		log(LOG_L3, log);
-	}
+    public void l3(String log) {
+        log(LOG_L3, log);
+    }
 
-	public void l2(String log) {
-		log(LOG_L2, log);
-	}
+    public void l2(String log) {
+        log(LOG_L2, log);
+    }
 
-	public void l1(String log) {
-		log(LOG_L1, log);
-	}
+    public void l1(String log) {
+        log(LOG_L1, log);
+    }
 
-	public void l5(String log, Throwable e) {
-		log(LOG_L1, log + ": " + th2s(e));
-	}
+    public void l5(String log, Throwable e) {
+        log(LOG_L1, log + ": " + th2s(e));
+    }
 
-	public void l4(String log, Throwable e) {
-		log(LOG_L1, log + ": " + th2s(e));
-	}
+    public void l4(String log, Throwable e) {
+        log(LOG_L1, log + ": " + th2s(e));
+    }
 
-	public void l3(String log, Throwable e) {
-		log(LOG_L1, log + ": " + th2s(e));
-	}
+    public void l3(String log, Throwable e) {
+        log(LOG_L1, log + ": " + th2s(e));
+    }
 
-	public void l2(String log, Throwable e) {
-		log(LOG_L1, log + ": " + th2s(e));
-	}
+    public void l2(String log, Throwable e) {
+        log(LOG_L1, log + ": " + th2s(e));
+    }
 
-	public void l1(String log, Throwable e) {
-		log(LOG_L1, log + ": " + th2s(e));
-	}
+    public void l1(String log, Throwable e) {
+        log(LOG_L1, log + ": " + th2s(e));
+    }
 
 }

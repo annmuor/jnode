@@ -28,11 +28,18 @@ public class PollQueue {
 	private LinkedList<Link> queue = new LinkedList<Link>();
 
 	public synchronized void add(Link link) {
-		if (link.getProtocolPort() > 0 && !"-".equals(link.getProtocolHost())) {
-			if (!queue.contains(link)) {
+		if (link.getProtocolAddress() != null
+				&& !link.getProtocolAddress().isEmpty()
+				&& !"-".equals(link.getProtocolAddress())) {
+			if (!queue.contains(link) && !isActive(link)) {
 				queue.addLast(link);
-				this.notify();
 			}
+		}
+	}
+
+	public synchronized void poll() {
+		for (int i = 0; i < queue.size(); i++) {
+			this.notify();
 		}
 	}
 

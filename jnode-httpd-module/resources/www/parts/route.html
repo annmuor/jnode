@@ -1,17 +1,17 @@
-<a href="#new" onclick="fnew();" class="css-link-1">New routing</a>
+<a href="#new" onclick="fnew();" class="css-link-1">Новый маршрут</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="8" class="center">Routing</th>
+		<th colspan="8" class="center">Маршруты</th>
 	</tr>
 	<tr>
-		<th>Nice</th>
-		<th>From Address</th>
-		<th>From Name</th>
-		<th>To Address</th>
-		<th>To Name</th>
-		<th>Subject</th>
-		<th>Via</th>
-		<th>CRUD</th>
+		<th>Приоритет</th>
+		<th>Адрес отправителя</th>
+		<th>Имя отправителя</th>
+		<th>Адрес получателя</th>
+		<th>Имя получателя</th>
+		<th>Тема</th>
+		<th>Целевой узел</th>
+		<th>Операции</th>
 	</tr>
 	%s
 </table>
@@ -22,30 +22,31 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th class="center" colspan="6">New routing</th>
+			<th class="center" colspan="6">Новый маршрут</th>
 		</tr>
 		<tr>
-			<th>Nice</th>
+			<th>Приоритет</th>
 			<td><input type="text" name="nice" id="_nice" size="5" /></td>
-			<th>From Address</th>
+			<th>Адрес отправителя</th>
 			<td><input type="text" name="fa" id="_fa" size="15" /></td>
-			<th>From Name</th>
+			<th>Имя отправителя</th>
 			<td><input type="text" name="fn" id="_fn" size="15" /></td>
 		</tr>
 		<tr>
-			<th>To Address</th>
+			<th>Адрес получателя</th>
 			<td><input type="text" name="ta" id="_ta" size="15" /></td>
-			<th>To Name</th>
+			<th>Имя получателя</th>
 			<td><input type="text" name="tn" id="_tn" size="15" /></td>
-			<th>Subject</th>
+			<th>Тема</th>
 			<td><input type="text" name="s" id="_s" size="15" /></td>
 		</tr>
 		<tr>
-			<th colspan="3">Via</th>
-			<td colspan="3"><select name="v" id="_v">%s</select></td>
+			<th>Целевой узел</th>
+			<td colspan="3"><select name="v" id="_v">%s
+			</select></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Proccess" class="button" />
+	<input type="submit" name="_s" value="Отправить" class="button" />
 </form>
 <script>
 	function fnew() {

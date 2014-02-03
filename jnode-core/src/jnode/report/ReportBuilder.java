@@ -1,7 +1,7 @@
 package jnode.report;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import jnode.core.ConcurrentDateFormatAccess;
+
 import java.util.*;
 
 /**
@@ -24,7 +24,7 @@ public class ReportBuilder {
             }
         });
         formatters.put("D", new FieldFormatter() {
-            private final DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+            private final ConcurrentDateFormatAccess dateFormat = new ConcurrentDateFormatAccess("dd.MM.yyyy");
 
             @Override
             public String formatValue(Object s) {
