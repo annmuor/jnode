@@ -60,7 +60,6 @@ public class HttpdModule extends JnodeModule {
 		}
 		Spark.staticFileLocation("/www");
 
-		Spark.before(new SecureFilter("/secure/*"));
 		/**** PUBLIC LINKS *****/
 		Spark.get(new SelfRoute());
 		Spark.get(new SelfRoute("/"));
@@ -78,6 +77,9 @@ public class HttpdModule extends JnodeModule {
 		} else {
 			Spark.get(new BecomeLinkRoute(false));
 		}
+		
+		Spark.before(new SecureFilter("/secure/*"));
+		
 		/**** SECURE LINKS ****/
 		Spark.get(new HealthRoute());
 		Spark.get(new LinksRoute());
@@ -85,11 +87,16 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new EchoareasRoute());
 		Spark.get(new FileareasRoute());
 		Spark.get(new RoutingsRoute());
+		Spark.get(new RewritesRoute());
+		Spark.get(new UsersRoute());
+		
 		Spark.post(new LinkRoute());
 		Spark.post(new LinkoptionRoute());
 		Spark.post(new EchoareaRoute());
 		Spark.post(new FileareaRoute());
 		Spark.post(new RoutingRoute());
+		Spark.post(new RewriteRoute());
+		Spark.post(new UserRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();

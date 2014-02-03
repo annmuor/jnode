@@ -1,0 +1,80 @@
+<table class="links" id="users">
+	<tr>
+		<th>Username</th>
+		<th>Control</th>
+	</tr>
+	%s
+</table>
+
+<form action="/secure/user/create" method="post"
+	onsubmit="return checkPasswords();">
+	<table class="info">
+		<tr>
+			<th>Username</th>
+			<td><input type="text" name="username" id="user1"/></td>
+		</tr>
+		<tr>
+			<th>Password</th>
+			<td><input type="password" name="password" id="pass1" /></td>
+		</tr>
+		<tr>
+			<th>Confirm password</th>
+			<td><input type="password" id="pass2" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="s" value="Process" />
+</form>
+
+<form action="/secure/user/password" method="post" id="pwd_form">
+	<input type="hidden" id="pwd_id" name="id" /> <input type="hidden"
+		id="pwd_pass" name="password" />
+</form>
+<form action="/secure/user/delete" method="post" id="del_form">
+	<input type="hidden" id="del_id" name="id" />
+</form>
+<script>
+	function changePassword(id) {
+		var pass1 = prompt("Enter new password");
+		var pass2 = prompt("Confirm new password");
+		if (pass1.length >= 6) {
+			if (pass1 == pass2) {
+				_value("pwd_id", id);
+				_value("pwd_pass", pass1);
+				document.getElementById("pwd_form").submit();
+			} else {
+				alert("Password mismatches :(");
+			}
+		} else {
+			alert("Password is too short, 6 is min length");
+		}
+	}
+
+	function deleteUser(id) {
+		var ok = confirm("Are you sure want to delete this user?");
+		if (ok) {
+			_value("del_id", id);
+			document.getElementById("del_form").submit();
+		}
+	}
+
+	function checkForm() {
+		var user = _var("user1");
+		if(user.length < 3) {
+			alert("Username is too short. 3 is min length");
+			return false;
+		}
+		var pass1 = _var("pass1");
+		var pass2 = _var("pass2");
+		if (pass1.length >= 6) {
+			if (pass1 == pass2) {
+				return true;
+			} else {
+				alert("Password mismatches :(");
+				return false;
+			}
+		} else {
+			alert("Password is too short, 6 is min length");
+			return false;
+		}
+	}
+</script>
