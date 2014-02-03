@@ -16,6 +16,7 @@
                 <include>jnode:jnode-httpd-module</include>
                 <include>jnode:jnode-mail-module</include>
                 <include>jnode:jnode-rss</include>
+                <include>jnode:jnode-nntp</include>
             </includes>
             <binaries>
                 <outputDirectory>jnode/lib</outputDirectory>
