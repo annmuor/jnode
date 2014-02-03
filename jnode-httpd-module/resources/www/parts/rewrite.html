@@ -1,0 +1,112 @@
+<a href="#new" onclick="fnew();" class="css-link-1">New rewrite</a>
+<table class="links" id="echoes">
+	<tr>
+		<th colspan="8" class="center">Rewrites</th>
+	</tr>
+	<tr>
+		<th>Nice</th>
+		<th>Type/last</th>
+		<th>From Address</th>
+		<th>From Name</th>
+		<th>To Address</th>
+		<th>To Name</th>
+		<th>Subject</th>
+		<th>CRUD</th>
+	</tr>
+	%s
+</table>
+
+<BR />
+<span class="info" id="_error"></span>
+<form action="/secure/rewrite" method="post">
+	<input type="hidden" name="id" id="_id" value="0" />
+	<table class="info" id="new">
+		<tr>
+			<th class="center" colspan="6">New rewrite</th>
+		</tr>
+		<tr>
+			<th>Nice</th>
+			<td><input type="text" size="5" name="n" id="_n" /></td>
+			<th>Type</th>
+			<td><select name="t" id="_t">
+					<option>NETMAIL</option>
+					<option>ECHOMAIL</option>
+			</select><BR/> 
+			 Last? <input type="checkbox" name="l" id="_l">
+			</td>
+		</tr>
+		<tr>
+			<th>Orig From Address</th>
+			<td><input type="text" size="15" name="ofa" id="_ofa" /></td>
+			<th>New From Address</th>
+			<td><input type="text" size="15" name="nfa" id="_nfa" /></td>
+		</tr>
+		<tr>
+			<th>Orig From Name</th>
+			<td><input type="text" size="15" name="ofn" id="_ofn" /></td>
+			<th>New From Name</th>
+			<td><input type="text" size="15" name="nfn" id="_nfn" /></td>
+		</tr>
+
+		<tr>
+			<th>Orig To Address</th>
+			<td><input type="text" size="15" name="ota" id="_ota" /></td>
+			<th>New To Address</th>
+			<td><input type="text" size="15" name="nta" id="_nta" /></td>
+		</tr>
+
+		<tr>
+			<th>Orig To Name</th>
+			<td><input type="text" size="15" name="otn" id="_otn" /></td>
+			<th>New To Name</th>
+			<td><input type="text" size="15" name="ntn" id="_ntn" /></td>
+		</tr>
+		<tr>
+			<th>Orig Subject</th>
+			<td><input type="text" size="15" name="os" id="_os" /></td>
+			<th>New Subject</th>
+			<td><input type="text" size="15" name="ns" id="_ns" /></td>
+		</tr>
+	</table>
+	<input type="submit" name="_s" value="Proccess" class="button" />
+</form>
+<script>
+	function fnew() {
+		_value("_n", "1000");
+		_value("_t", "NETMAIL");
+		_value("_ofa", "*");
+		_value("_nfa", "*");
+		_value("_ofn", "*");
+		_value("_nfn", "*");
+		_value("_ota", "*");
+		_value("_nta", "*");
+		_value("_otn", "*");
+		_value("_ntn", "*");
+		_value("_os", "*");
+		_value("_ns", "*");
+	}
+	var code = _getParameterByName("code");
+	if (code) {
+		_fill("_error", "Error: ");
+		var text = "Unknown error occured";
+		if (code == "ENAME") {
+			text = "Echoarea name is invalid";
+		} else if (code == "EXISTS") {
+			text = "Echoarea with that name already exists";
+		} else if (code == "INVALID") {
+			text = "Level values are invalid";
+		}
+		_fill("_error", text);
+	}
+</script>
+
+<form action="/secure/rewrite" method="post" id="_delete">
+	<input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+	function del(id) {
+		_value("_did", id);
+		document.getElementById("_delete").submit();
+	}
+</script>

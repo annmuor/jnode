@@ -1,5 +1,8 @@
 package org.jnode.httpd.routes.get;
 
+import java.util.List;
+
+import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 
@@ -24,6 +27,7 @@ public class SelfRoute extends Route {
 	@Override
 	public Object handle(Request req, Response resp) {
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
+
 		String text = String.format(
 				FORMAT_TABLE,
 				String.format(FORMAT_TR, "Station Name", info.getStationName())
@@ -31,8 +35,8 @@ public class SelfRoute extends Route {
 								info.getLocation())
 						+ String.format(FORMAT_TR, "Sysop's Name",
 								info.getSysop())
-						+ String.format(FORMAT_TR, "FTN Address(es)", info
-								.getAddressList().toString())
+						+ String.format(FORMAT_TR, "FTN Address(es)",
+								getAddrList(info.getAddressList()))
 						+ String.format(FORMAT_TR, "Version",
 								MainHandler.getVersion())
 						+ String.format(FORMAT_TR, "OS", getOS()));
@@ -43,5 +47,19 @@ public class SelfRoute extends Route {
 		return System.getProperty("os.name") + " "
 				+ System.getProperty("os.version") + " ("
 				+ System.getProperty("os.arch") + ")";
+	}
+
+	private String getAddrList(List<FtnAddress> list) {
+		boolean first = true;
+		StringBuilder sb = new StringBuilder();
+		for (FtnAddress address : list) {
+			if (first) {
+				first = false;
+			} else {
+				sb.append(", ");
+			}
+			sb.append(address.toString());
+		}
+		return sb.toString();
 	}
 }
