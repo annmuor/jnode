@@ -592,11 +592,15 @@ public class FtnTosser {
 
 	private void deleteEAmail(EchomailAwaiting e) {
 		ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
+				e.getLink(), "echomail_id", "null");
+		ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
 				e.getLink(), "echomail_id", "=", e.getMail());
 
 	}
 
 	private void deleteFAMail(FilemailAwaiting f) {
+		ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
+				f.getLink(), "filemail_id", "null");
 		ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
 				f.getLink(), "filemail_id", "=", f.getMail());
 
