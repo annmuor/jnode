@@ -124,6 +124,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	protected int total_recv_bytes = 0;
 	protected int total_sent_files = 0;
 	protected int total_recv_files = 0;
+	protected long lastTimeout;
 
 	protected LinkedList<BinkpFrame> frames = new LinkedList<>();
 	private long time = 0;
@@ -155,6 +156,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		if (time == 0) {
 			time = new Date().getTime();
 		}
+		addTimeout(); // it's ok :-)
 		if (frame.getCommand() != null) {
 			switch (frame.getCommand()) {
 			case M_NUL:
@@ -539,6 +541,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected void checkForMessages() {
+		checkTimeout();
 		if (connectionState != STATE_TRANSFER) {
 			return;
 		}
@@ -582,6 +585,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			busy("Too much connections");
 			finish("From greet()");
 		}
+		addTimeout();
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
 		ourAddress.addAll(info.getAddressList());
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "SYS "
@@ -623,6 +627,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected boolean isConnected() {
+		checkTimeout();
 		return !((frames.isEmpty() && connectionState == STATE_END) || connectionState == STATE_ERROR);
 	}
 
@@ -635,6 +640,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				if (n > 0) {
 					sent_bytes += n;
 					total_sent_bytes += n;
+					addTimeout();
 					return new BinkpFrame(buf, n);
 				} else {
 					currentInputStream.close();
@@ -681,7 +687,20 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	}
 
+	private void checkTimeout() {
+		long last = new Date().getTime();
+		if (last - lastTimeout > staticMaxTimeout) {
+			connectionState = STATE_ERROR;
+			finish("Connection timeout");
+		}
+	}
+
+	private void addTimeout() {
+		lastTimeout = new Date().getTime();
+	}
+
 	protected void checkEOB() {
+		checkTimeout();
 		if (connectionState == STATE_END || connectionState == STATE_ERROR) {
 			finish("connectionState = END|ERROR");
 		}
