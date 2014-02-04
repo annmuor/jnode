@@ -57,7 +57,7 @@
             <directory>${basedir}/../builder/docs</directory>
             <outputDirectory>jnode/docs</outputDirectory>
             <includes>
-                <include>*.*</include>
+                <include>*</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -94,6 +94,14 @@
             <excludes>
                 <exclude>*/**</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/../</directory>
+            <outputDirectory>jnode/</outputDirectory>
+            <includes>
+                <include>LICENSE</include>
+                <include>NOTICE</include>
+            </includes>
         </fileSet>
     </fileSets>
 </assembly>

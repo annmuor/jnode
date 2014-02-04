@@ -27,6 +27,14 @@
             </binaries>
         </moduleSet>
     </moduleSets>
-
-
+    <fileSets>
+            <fileSet>
+            <directory>${basedir}/../</directory>
+            <outputDirectory>jnode/</outputDirectory>
+            <includes>
+                <include>LICENSE</include>
+                <include>NOTICE</include>
+            </includes>
+        </fileSet>
+    </fileSets>
 </assembly>

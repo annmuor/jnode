@@ -65,9 +65,9 @@
         	<module>jnode-core</module>
         	<module>jnode-httpd-module</module>
         	<module>jnode-mail-module</module>
-        	<module>jnode-rss</module>
+        	<module>jnode-rss-module</module>
         	<module>jnode-dumb-module</module>
-        	<module>jnode-xmpp</module>
+        	<module>jnode-xmpp-module</module>
         	<module>jnode-pointchecker-module</module>
         </modules>
     </profile>
@@ -80,9 +80,9 @@
         	<module>jnode-core</module>
         	<module>jnode-httpd-module</module>
         	<module>jnode-mail-module</module>
-        	<module>jnode-rss</module>
+        	<module>jnode-rss-module</module>
         	<module>jnode-dumb-module</module>
-        	<module>jnode-xmpp</module>
+        	<module>jnode-xmpp-module</module>
         	<module>jnode-pointchecker-module</module>
         	<module>jnode-assembly</module>
         </modules>
