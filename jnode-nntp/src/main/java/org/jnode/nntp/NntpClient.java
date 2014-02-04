@@ -14,10 +14,9 @@ import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NntpCommand;
 import org.jnode.nntp.model.NntpResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,8 +31,8 @@ public class NntpClient implements Runnable {
 
     private static final String DELIMITER = " ";
 
-    private PrintWriter out;
-    private BufferedReader in;
+    private OutputStream out;
+    private InputStream in;
     private Socket socket;
 
     private NewsGroup selectedGroup;
@@ -41,8 +40,8 @@ public class NntpClient implements Runnable {
     public NntpClient(Socket socket) {
         try {
             this.socket = socket;
-            this.out = new PrintWriter(socket.getOutputStream(), true);
-            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.out = socket.getOutputStream();
+            this.in = socket.getInputStream();
         } catch (IOException e) {
             logger.l1("NNTP client can't be initialised.", e);
         }
@@ -59,12 +58,13 @@ public class NntpClient implements Runnable {
         });
 
         // Send greetings. Posting is not implemented yet.
-        send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
 
         String command = StringUtils.EMPTY;
 
         try {
-            while ((command = in.readLine()) != null) {
+            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
+
+            while ((command = IOUtils.toString(in)) != null) {
                 logger.l4("[C] " + command);
                 Collection<String> response = process(command, selectedGroup);
                 send(response);
@@ -89,10 +89,10 @@ public class NntpClient implements Runnable {
      *
      * @param response response.
      */
-    private void send(Collection<String> response) {
+    private void send(Collection<String> response) throws IOException {
         for (String message : response) {
             logger.l4("[S] " + message);
-            out.println(message);
+            IOUtils.write(message, out);
         }
         out.flush();
     }
