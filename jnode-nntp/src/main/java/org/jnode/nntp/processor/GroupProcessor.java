@@ -1,11 +1,13 @@
 package org.jnode.nntp.processor;
 
 import jnode.event.Notifier;
+import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.event.GroupSelectedEvent;
 import org.jnode.nntp.model.NewsGroup;
+import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -24,7 +26,6 @@ public class GroupProcessor implements Processor {
 
         Collection<String> response = new LinkedList<>();
 
-/*
         String resposeCode = NntpResponse.Group.GROUP_SUCCESSFULLY_SELECTED;
         resposeCode = StringUtils.replace(resposeCode, "{number}", Long.toString(group.getNumberOfArticles()));
         resposeCode = StringUtils.replace(resposeCode, "{low}", Long.toString(group.getReportedLowWatermark()));
@@ -32,9 +33,6 @@ public class GroupProcessor implements Processor {
         resposeCode = StringUtils.replace(resposeCode, "{group}", groupName);
 
         response.add(resposeCode);
-*/
-
-        response.add("221 37 1 38 node.stat");
 
         return response;
     }
