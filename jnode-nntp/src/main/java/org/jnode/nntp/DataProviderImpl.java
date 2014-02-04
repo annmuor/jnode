@@ -19,13 +19,7 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public NewsGroup newsGroup(final String groupName) {
-        // todo use query
-        Echoarea area = Collections2.filter(echoareaDAO.getAll(), new Predicate<Echoarea>() {
-            @Override
-            public boolean apply(Echoarea input) {
-                return input.getName().equalsIgnoreCase(groupName);
-            }
-        }).iterator().next();
+        Echoarea area = echoareaDAO.getFirstAnd("name", groupName);
         return convert(area);
     }
 
@@ -35,21 +29,15 @@ public class DataProviderImpl implements DataProvider {
         newsGroup.setName(area.getName());
         newsGroup.setReportedLowWatermark(countLowWatermark(area.getId()));
         newsGroup.setReportedHighWatermark(countHighWatermark(area.getId()));
-        newsGroup.setNumberOfArticles(newsGroup.getReportedHighWatermark() - newsGroup.getReportedLowWatermark());
-
-
+        newsGroup.setNumberOfArticles((long) countArticles(area.getId()));
         return newsGroup;
     }
 
     private Long countHighWatermark(Long areaId) {
-
         long watermark = 0;
 
-        // todo use query
-        for (Echomail echomail : echomailDao.getAll()) {
-            if (echomail.getArea().getId().equals(areaId) && echomail.getId() > watermark) {
+        for (Echomail echomail : echomailDao.getAnd("echoarea_id", areaId)) {
                 watermark = echomail.getId();
-            }
         }
 
         // +1 because client didn't recognize id 0
@@ -60,11 +48,8 @@ public class DataProviderImpl implements DataProvider {
 
         long watermark = 0;
 
-        // todo use query
-        for (Echomail echomail : echomailDao.getAll()) {
-            if (echomail.getArea().getId().equals(areaId) && echomail.getId() < watermark) {
+        for (Echomail echomail : echomailDao.getAnd("echoarea_id", areaId)) {
                 watermark = echomail.getId();
-            }
         }
 
         // +1 because client didn't recognize id 0
@@ -72,13 +57,7 @@ public class DataProviderImpl implements DataProvider {
     }
 
     private int countArticles(final Long areaId) {
-        // todo use query
-        return Collections2.filter(echomailDao.getAll(), new Predicate<Echomail>() {
-            @Override
-            public boolean apply(Echomail input) {
-                return input.getArea().getId().equals(areaId);
-            }
-        }).size();
+        return echomailDao.getAnd("echoarea_id", areaId).size();
     }
 
     @Override
@@ -93,12 +72,8 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public Collection<NewsMessage> messagesByGroupName(final String groupName) {
-        return Collections2.transform(Collections2.filter(echomailDao.getAll(), new Predicate<Echomail>() {
-            @Override
-            public boolean apply(Echomail input) {
-                return input.getArea().getName().equalsIgnoreCase(groupName);
-            }
-        }), new Function<Echomail, NewsMessage>() {
+        Echoarea echoarea = echoareaDAO.getFirstAnd("name", groupName);
+        return Collections2.transform(echomailDao.getAnd("echoarea_id", echoarea.getId()), new Function<Echomail, NewsMessage>() {
             @Override
             public NewsMessage apply(Echomail input) {
                 return convert(input);
@@ -124,10 +99,10 @@ public class DataProviderImpl implements DataProvider {
     public Collection<NewsMessage> messagesByIdRange(String fromId, String toId, final long groupId) {
         // -1 because id was incremented during watermark counting
         final Range range = Range.closed(Long.valueOf(fromId) - 1, Long.valueOf(toId) - 1);
-        return Collections2.transform(Collections2.filter(echomailDao.getAll(), new Predicate<Echomail>() {
+        return Collections2.transform(Collections2.filter(echomailDao.getAnd("echoarea_id", groupId), new Predicate<Echomail>() {
             @Override
             public boolean apply(Echomail input) {
-                return input.getArea().getId().equals(groupId) && range.contains(input.getId());
+                return range.contains(input.getId());
             }
         }), new Function<Echomail, NewsMessage>() {
             @Override
