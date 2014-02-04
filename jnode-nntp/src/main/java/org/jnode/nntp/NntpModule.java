@@ -2,7 +2,6 @@ package org.jnode.nntp;
 
 import jnode.event.IEvent;
 import jnode.logger.Logger;
-import jnode.main.MainHandler;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 
@@ -19,7 +18,8 @@ public class NntpModule extends JnodeModule {
 
     private Logger logger = Logger.getLogger(NntpModule.class);
 
-    private static final int PORT = 1119;
+    private static final String DEFAULT_PORT = "1119";
+    private static final String PORT_PROPERTY = "nntp.port";
 
     public NntpModule(String configFile) throws JnodeModuleException {
         super(configFile);
@@ -28,14 +28,10 @@ public class NntpModule extends JnodeModule {
     @Override
     public void start() {
         while (!Thread.currentThread().isInterrupted()) {
-            try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            String port = properties.getProperty(PORT_PROPERTY, DEFAULT_PORT);
+            logger.l4("Using the following port for NNTP: " + port);
+            try (ServerSocket serverSocket = new ServerSocket(Integer.valueOf(port))) {
                 Socket socket = serverSocket.accept();
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
                 logger.l4("New client accepted.");
                 new Thread(new NntpClient(socket)).start();
