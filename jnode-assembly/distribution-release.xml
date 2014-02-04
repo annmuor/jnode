@@ -33,35 +33,35 @@
 
     <fileSets>
         <fileSet>
-            <directory>${basedir}/../builder/lib</directory>
+            <directory>${basedir}/../jdbc-drivers</directory>
             <outputDirectory>jnode/lib</outputDirectory>
             <includes>
                 <include>*.jar</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/../builder/nodelist</directory>
+            <directory>${basedir}/../docs/nodelist</directory>
             <outputDirectory>jnode/nodelist</outputDirectory>
             <includes>
-                <include>nodelist</include>
+                <include>NODELIST</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/../builder/bin</directory>
+            <directory>${basedir}/../docs/bin</directory>
             <outputDirectory>jnode/bin</outputDirectory>
             <includes>
                 <include>*.*</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/../builder/docs</directory>
+            <directory>${basedir}/../docs/docs</directory>
             <outputDirectory>jnode/docs</outputDirectory>
             <includes>
-                <include>*</include>
+                <include>*.*</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/../builder/etc</directory>
+            <directory>${basedir}/../docs/configs</directory>
             <outputDirectory>jnode/etc</outputDirectory>
             <includes>
                 <include>*.*</include>
@@ -96,7 +96,7 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/../</directory>
+            <directory>${basedir}/..</directory>
             <outputDirectory>jnode/</outputDirectory>
             <includes>
                 <include>LICENSE</include>
