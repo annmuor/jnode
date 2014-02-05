@@ -14,7 +14,7 @@ public class ListProcessor implements Processor {
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
-    public Collection<String> process(Collection<String> params, Long id) {
+    public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId) {
 
         Collection<String> response = new LinkedList<>();
         response.add(NntpResponse.List.LIST_OF_NEWSGROUPS);

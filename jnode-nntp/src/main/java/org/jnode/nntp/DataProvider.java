@@ -14,4 +14,5 @@ public interface DataProvider {
     Collection<NewsMessage> messagesByIdRange(String fromId, String toId, long groupId);
 
     NewsMessage messageById(String id);
+    NewsMessage messageByMessageId(String messageId);
 }

@@ -19,7 +19,11 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public NewsGroup newsGroup(final String groupName) {
-        Echoarea area = echoareaDAO.getFirstAnd("name", groupName);
+        Echoarea area = echoareaDAO.getFirstAnd("name", "=", groupName);
+        if (area == null) {
+            // area not found
+            return null;
+        }
         return convert(area);
     }
 
@@ -36,7 +40,7 @@ public class DataProviderImpl implements DataProvider {
     private Long countHighWatermark(Long areaId) {
         long watermark = 0;
 
-        for (Echomail echomail : echomailDao.getAnd("echoarea_id", areaId)) {
+        for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
                 watermark = echomail.getId();
         }
 
@@ -48,7 +52,7 @@ public class DataProviderImpl implements DataProvider {
 
         long watermark = 0;
 
-        for (Echomail echomail : echomailDao.getAnd("echoarea_id", areaId)) {
+        for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
                 watermark = echomail.getId();
         }
 
@@ -57,7 +61,7 @@ public class DataProviderImpl implements DataProvider {
     }
 
     private int countArticles(final Long areaId) {
-        return echomailDao.getAnd("echoarea_id", areaId).size();
+        return echomailDao.getAnd("echoarea_id", "=", areaId).size();
     }
 
     @Override
@@ -72,8 +76,8 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public Collection<NewsMessage> messagesByGroupName(final String groupName) {
-        Echoarea echoarea = echoareaDAO.getFirstAnd("name", groupName);
-        return Collections2.transform(echomailDao.getAnd("echoarea_id", echoarea.getId()), new Function<Echomail, NewsMessage>() {
+        Echoarea echoarea = echoareaDAO.getFirstAnd("name", "=", groupName);
+        return Collections2.transform(echomailDao.getAnd("echoarea_id", "=", echoarea.getId()), new Function<Echomail, NewsMessage>() {
             @Override
             public NewsMessage apply(Echomail input) {
                 return convert(input);
@@ -101,7 +105,7 @@ public class DataProviderImpl implements DataProvider {
     public Collection<NewsMessage> messagesByIdRange(String fromId, String toId, final long groupId) {
         // -1 because id was incremented during watermark counting
         final Range range = Range.closed(Long.valueOf(fromId) - 1, Long.valueOf(toId) - 1);
-        return Collections2.transform(Collections2.filter(echomailDao.getAnd("echoarea_id", groupId), new Predicate<Echomail>() {
+        return Collections2.transform(Collections2.filter(echomailDao.getAnd("echoarea_id", "=", groupId), new Predicate<Echomail>() {
             @Override
             public boolean apply(Echomail input) {
                 return range.contains(input.getId());
@@ -117,5 +121,10 @@ public class DataProviderImpl implements DataProvider {
     @Override
     public NewsMessage messageById(String id) {
         return convert(echomailDao.getById(id));
+    }
+
+    @Override
+    public NewsMessage messageByMessageId(String messageId) {
+        throw new UnsupportedOperationException();
     }
 }

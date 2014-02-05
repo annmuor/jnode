@@ -9,7 +9,7 @@ import java.util.Collection;
 public class QuitProcessor implements Processor {
 
     @Override
-    public Collection<String> process(Collection<String> params, Long id) {
+    public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId) {
         throw new EndOfSessionException();
     }
 }

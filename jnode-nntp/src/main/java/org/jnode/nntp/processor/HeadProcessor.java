@@ -16,7 +16,7 @@ public class HeadProcessor implements Processor {
     private static final String DELIMITER = "\n";
 
     @Override
-    public Collection<String> process(Collection<String> params, Long selectedGroupId) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId) {
 
         // todo refactor params.iterator().next()
         String id = params.iterator().next();

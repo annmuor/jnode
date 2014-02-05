@@ -17,13 +17,26 @@ public class GroupProcessor implements Processor {
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
-    public Collection<String> process(Collection<String> params, Long id) {
+    public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId) {
 
         String groupName = params.iterator().next();
         NewsGroup group = dataProvider.newsGroup(groupName);
+        if (group == null) {
+            return responseNotFound();
+        }
 
         Notifier.INSTANSE.notify(new GroupSelectedEvent(group));
 
+        return responseGroup(groupName, group);
+    }
+
+    private Collection<String> responseNotFound() {
+        Collection<String> response = new LinkedList<>();
+        response.add(NntpResponse.Group.NO_SUCH_NEWSGROUP);
+        return response;
+    }
+
+    private Collection<String> responseGroup(String groupName, NewsGroup group) {
         Collection<String> response = new LinkedList<>();
 
         String resposeCode = NntpResponse.Group.GROUP_SUCCESSFULLY_SELECTED;

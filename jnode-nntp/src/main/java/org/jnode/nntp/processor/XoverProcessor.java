@@ -17,7 +17,7 @@ public class XoverProcessor implements Processor {
     private static final String DELIMITER = "\t";
 
     @Override
-    public Collection<String> process(Collection<String> params, Long selectedGroupId) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId) {
 
         // todo fix params.iterator().next()
         String[] parts = StringUtils.split(params.iterator().next(), "-");

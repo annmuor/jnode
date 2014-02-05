@@ -43,7 +43,7 @@ public class NntpResponse {
          * n             Returned article number
          * message-id    Article message-id
          */
-        public static final String ARTICLE_FOLLOWS_1 = "220 0|{n} {message-id} Article follows (multi-line)";
+        public static final String ARTICLE_FOLLOWS_1 = "220 0 {message-id} Article follows (multi-line)";
 
         /**
          * n             Returned article number
