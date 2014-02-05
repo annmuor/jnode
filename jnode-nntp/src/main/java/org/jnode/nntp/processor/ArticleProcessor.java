@@ -27,15 +27,15 @@ public class ArticleProcessor implements Processor {
 
         String responseCode = NntpResponse.Article.ARTICLE_FOLLOWS_2;
         responseCode = StringUtils.replace(responseCode, "{n}", Long.toString(message.getId()));
-        responseCode = StringUtils.replace(responseCode, "{message-id}", Long.toString(message.getId())); // todo Message-ID
+        responseCode = StringUtils.replace(responseCode, "{message-id}", message.getMessageId());
 
         response.add(responseCode);
-        response.add("Path: example.com!not-for-mail");                                         // todo Path
+        response.add("Path: " + message.getPath());
         response.add("From: " + message.getFrom());
         response.add("Newsgroup: " + message.getGroupName());
         response.add("Subject: " + message.getSubject());
         response.add("Date: " + message.getCreatedDate());
-        response.add("Message-ID: " + Long.toString(message.getId()));                          // todo Message-ID
+        response.add("Message-ID: " + message.getMessageId());
         response.add(StringUtils.EMPTY);
         response.add(message.getBody());
         response.add(NntpResponse.END_OF_RESPONSE);

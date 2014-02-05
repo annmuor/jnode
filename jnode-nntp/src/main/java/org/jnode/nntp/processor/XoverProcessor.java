@@ -46,7 +46,7 @@ public class XoverProcessor implements Processor {
             builder.append(message.getSubject()).append(DELIMITER);
             builder.append(message.getFrom()).append(DELIMITER);
             builder.append(message.getCreatedDate().toString()).append(DELIMITER);
-            builder.append(Long.toString(message.getId())).append(DELIMITER);
+            builder.append(message.getMessageId()).append(DELIMITER);
             builder.append(1).append(DELIMITER); // todo References header content
             builder.append(1).append(DELIMITER); // todo :bytes metadata item
             builder.append(1).append(DELIMITER); // todo :lines metadata item

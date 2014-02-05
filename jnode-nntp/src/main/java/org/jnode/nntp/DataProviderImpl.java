@@ -85,11 +85,13 @@ public class DataProviderImpl implements DataProvider {
         NewsMessage newsMessage = new NewsMessage();
 
         newsMessage.setId(echomail.getId());
+        newsMessage.setPath(echomail.getPath());
         newsMessage.setGroupName(echomail.getArea().getName());
         newsMessage.setFrom(echomail.getFromName() + " " + echomail.getFromFTN());
         newsMessage.setSubject(echomail.getSubject());
         newsMessage.setCreatedDate(echomail.getDate());
         newsMessage.setBody(echomail.getText());
+        newsMessage.setMessageId(echomail.getMsgid());
 
         return newsMessage;
     }

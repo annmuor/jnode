@@ -25,13 +25,13 @@ public class HeadProcessor implements Processor {
 
         Collection<String> response = new LinkedList<>();
 
-        response.add("221 " + message.getId() + " <" + message.getId() + "@xxx.com> \r");
-        response.add("Path: news.foo.bar!not-for-mail");
+        response.add("221 " + message.getId() + message.getMessageId() + "\r");
+        response.add("Path: " + message.getPath());
         response.add("From: " + message.getFrom());
         response.add("Newsgroups: " + message.getGroupName());
         response.add("Subject: " + message.getSubject());
         response.add("Date: 6 Oct 2000 04:38:40");
-        response.add("Message-ID: <" + message.getId() + "@xxx.com>");  // todo message-id
+        response.add("Message-ID: " + message.getMessageId());
         response.add(NntpResponse.END_OF_RESPONSE);
 
         return response;

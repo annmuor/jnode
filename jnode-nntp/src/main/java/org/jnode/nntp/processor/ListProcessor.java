@@ -20,7 +20,14 @@ public class ListProcessor implements Processor {
         response.add(NntpResponse.List.LIST_OF_NEWSGROUPS);
 
         for (NewsGroup newsGroup : dataProvider.newsGroups()) {
-            response.add(newsGroup.getName() + " " + newsGroup.getReportedHighWatermark() + " " + newsGroup.getReportedLowWatermark() + " " + "y");
+
+            /*
+                http://tools.ietf.org/html/rfc3977#section-7.6.3
+                "y" Posting is permitted.
+                "n" Posting is not permitted.
+                "m" Postings will be forwarded to the newsgroup moderator.
+             */
+            response.add(newsGroup.getName() + " " + newsGroup.getReportedHighWatermark() + " " + newsGroup.getReportedLowWatermark() + " " + "n");
         }
 
         response.add(NntpResponse.END_OF_RESPONSE);
