@@ -21,8 +21,6 @@ public class ProcessorResolver {
     }
 
     public static Processor processor(NntpCommand command) {
-        // todo map.contains
-
         return map.get(command);
     }
 
