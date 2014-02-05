@@ -32,6 +32,7 @@ import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
+import jnode.logger.Redirector;
 import jnode.main.threads.*;
 import jnode.module.JnodeModule;
 import jnode.orm.ORMManager;
@@ -53,6 +54,7 @@ public class Main {
 	private static final String BINKD_THREADS = "binkp.threads";
 	private static final String LOG_LEVEL = "log.level";
 	private static final String MODULES = "modules";
+	private static final String LOGFILE = "log.file";
 
 	public static void main(String[] args) {
 		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
@@ -60,9 +62,12 @@ public class Main {
 			System.out.println("Usage: $0 <config-file>");
 			System.exit(-1);
 		}
+
 		try {
 			new MainHandler(args[0]);
-		} catch (IOException e) {
+            tryRedirectLog();
+
+        } catch (IOException e) {
 			GUIConfigurator.main(args);
 			logger.l1("Bad configuration", e);
 			return;
@@ -159,7 +164,14 @@ public class Main {
 		});
 	}
 
-	private static final class TosserTask extends TimerTask {
+    private static void tryRedirectLog() {
+        String redirectMask = MainHandler.getCurrentInstance().getProperty(LOGFILE, "");
+        if (redirectMask.length() != 0){
+            new Redirector(redirectMask).invoke();
+        }
+    }
+
+    private static final class TosserTask extends TimerTask {
 		@Override
 		public void run() {
 			try {
