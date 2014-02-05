@@ -19,20 +19,14 @@ public class XoverProcessor implements Processor {
     @Override
     public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId) {
 
-        // todo fix params.iterator().next()
-        String[] parts = StringUtils.split(params.iterator().next(), "-");
+        String range = params.iterator().next();
 
-        // todo do not read all messages in one time!
         Collection<NewsMessage> messages = Lists.newLinkedList();
 
-        switch (parts.length) {
-            case 1:
-              //  messages.add(dataProvider.messageById(parts[0])); // todo
-                break;
-            case 2:
-                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1], selectedGroupId));
-                break;
-            default:
+        if (range.contains("-")) {
+            messagesByRange(selectedGroupId, range, messages);
+        } else {
+           messages.add(dataProvider.messageById(range));
         }
 
         Collection<String> response = Lists.newLinkedList();
@@ -58,5 +52,18 @@ public class XoverProcessor implements Processor {
         response.add(NntpResponse.END_OF_RESPONSE);
 
         return response;
+    }
+
+    private void messagesByRange(Long selectedGroupId, String range, Collection<NewsMessage> messages) {
+        String[] parts = StringUtils.split(range, "-");
+        switch (parts.length) {
+            case 1:
+                messages.add(dataProvider.messageById(parts[0]));
+                break;
+            case 2:
+                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1], selectedGroupId));
+                break;
+            default:
+        }
     }
 }

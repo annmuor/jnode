@@ -27,8 +27,10 @@ public class NntpResponse {
     }
 
     public static class Head {
-        public static final String HEADERS_FOLLOW = "221 {message-number} {message-id}";
-
+        public static final String HEADERS_FOLLOW = "221 {n} {message-id}";
+        public static final String NO_NEWSGROUP_SELECTED = "412 No newsgroup selected";
+        public static final String NO_ARTICLE_WITH_THAT_NUMBER =  "423 No article with that number";
+        public static final String CURRENT_ARTICLE_NUMBER_IS_INVALID = "420 Current article number is invalid";
     }
 
     public static class ModeReader {

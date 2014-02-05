@@ -41,7 +41,9 @@ public class DataProviderImpl implements DataProvider {
         long watermark = 0;
 
         for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
+            if (echomail.getId() > watermark) {
                 watermark = echomail.getId();
+            }
         }
 
         // +1 because client didn't recognize id 0
@@ -53,7 +55,9 @@ public class DataProviderImpl implements DataProvider {
         long watermark = 0;
 
         for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
+            if (echomail.getId() < watermark) {
                 watermark = echomail.getId();
+            }
         }
 
         // +1 because client didn't recognize id 0

@@ -27,7 +27,7 @@ public class ArticleProcessor implements Processor {
         }
 
         // try to find message by id
-        NewsMessage message  = dataProvider.messageById(id);
+        NewsMessage message = dataProvider.messageById(id);
         if (message == null) {
             // try to find message by message id
             message = dataProvider.messageByMessageId(id);
@@ -65,7 +65,8 @@ public class ArticleProcessor implements Processor {
         response.add(message.getBody());
         response.add(NntpResponse.END_OF_RESPONSE);
 
-        return response;    }
+        return response;
+    }
 
     private Collection<String> responseCantFind() {
         return null;
