@@ -7,11 +7,12 @@ import jnode.logger.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.event.ArticleSelectedEvent;
+import org.jnode.nntp.event.AuthUserEvent;
 import org.jnode.nntp.event.GroupSelectedEvent;
 import org.jnode.nntp.exception.EndOfSessionException;
 import org.jnode.nntp.exception.ProcessorNotFoundException;
 import org.jnode.nntp.exception.UnknownCommandException;
-import org.jnode.nntp.model.NewsGroup;
+import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NntpCommand;
 import org.jnode.nntp.model.NntpResponse;
 
@@ -37,8 +38,9 @@ public class NntpClient implements Runnable {
     private BufferedReader in;
     private Socket socket;
 
-    private NewsGroup selectedGroup;
+    private Long selectedGroupId;
     private Long selectedArticleId;
+    private Auth auth;
 
     public NntpClient(Socket socket) {
         try {
@@ -56,13 +58,19 @@ public class NntpClient implements Runnable {
             @Override
             public void handle(IEvent event) {
                 GroupSelectedEvent groupSelectedEvent = (GroupSelectedEvent) event;
-                selectedGroup = groupSelectedEvent.getSelectedGroup();
+                selectedGroupId = groupSelectedEvent.getSelectedGroup().getId();
             }
         });
         Notifier.INSTANSE.register(ArticleSelectedEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 selectedArticleId = ((ArticleSelectedEvent) event).getSelectedArticleId();
+            }
+        });
+        Notifier.INSTANSE.register(AuthUserEvent.class, new IEventHandler() {
+            @Override
+            public void handle(IEvent event) {
+                 auth = ((AuthUserEvent) event).getAuth();
             }
         });
 
@@ -118,7 +126,7 @@ public class NntpClient implements Runnable {
                 logger.l4("Can't find processor for command '" + command + "'.");
                 throw new ProcessorNotFoundException();
             }
-            return processor.process(parsedCommand.getParams(), selectedGroup == null ? null : selectedGroup.getId(), selectedArticleId);
+            return processor.process(parsedCommand.getParams(), selectedGroupId, selectedArticleId, auth);
         }
 
         throw new UnknownCommandException();

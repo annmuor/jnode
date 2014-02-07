@@ -49,6 +49,7 @@ public class DataProviderServiceTest {
     }
 
     public void prepareNewsGroups() {
+/*
 
         GenericDAO<NewsGroup> dao = ORMManager.get(NewsGroup.class);
         dao.executeRaw("DELETE FROM news_group WHERE name LIKE 'group%'");
@@ -80,6 +81,7 @@ public class DataProviderServiceTest {
         ng3.setCreatedDate(new Date());
         dao.save(ng3);
 
+*/
     }
 
     private int random2() {

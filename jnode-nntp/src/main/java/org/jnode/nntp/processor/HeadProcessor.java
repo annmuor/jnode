@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
+import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsMessage;
 import org.jnode.nntp.model.NntpResponse;
 
@@ -15,7 +16,7 @@ public class HeadProcessor implements Processor {
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
-    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
 
         String id;
         if (params.isEmpty()) {
@@ -25,7 +26,7 @@ public class HeadProcessor implements Processor {
         }
 
         // try to find message by id
-        NewsMessage message = dataProvider.messageById(id);
+        NewsMessage message = dataProvider.messageById(id, selectedGroupId);
         if (message == null) {
             // try to find message by message id
             message = dataProvider.messageByMessageId(id);

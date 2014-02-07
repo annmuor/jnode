@@ -1,48 +1,62 @@
 package org.jnode.nntp;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Range;
+import com.google.common.collect.Lists;
 import jnode.dao.GenericDAO;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
+import jnode.dto.Entity;
+import jnode.dto.Link;
+import jnode.dto.Netmail;
 import jnode.orm.ORMManager;
+import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NewsMessage;
 
 import java.util.Collection;
 
 public class DataProviderImpl implements DataProvider {
+
     private GenericDAO<Echoarea> echoareaDAO = ORMManager.get(Echoarea.class);
     private GenericDAO<Echomail> echomailDao = ORMManager.get(Echomail.class);
+    private GenericDAO<Netmail> netmailDao = ORMManager.get(Netmail.class);
+    private GenericDAO<Link> linkDao = ORMManager.get(Link.class);
 
     @Override
-    public NewsGroup newsGroup(final String groupName) {
+    public NewsGroup newsGroup(final String groupName, Auth auth) {
+        if (Constants.NETMAIL_NEWSGROUP_NAME.equalsIgnoreCase(groupName)) {
+            return netmail(auth);
+        }
+
         Echoarea area = echoareaDAO.getFirstAnd("name", "=", groupName);
         if (area == null) {
             // area not found
             return null;
         }
-        return convert(area);
+        return convert(area, auth);
     }
 
-    private NewsGroup convert(Echoarea area) {
+    private NewsGroup convert(Echoarea area, Auth auth) {
+
+        Collection<Entity> entities = retrieveEntities(area.getId(), auth);
+
         NewsGroup newsGroup = new NewsGroup();
         newsGroup.setId(area.getId());
         newsGroup.setName(area.getName());
-        newsGroup.setReportedLowWatermark(countLowWatermark(area.getId()));
-        newsGroup.setReportedHighWatermark(countHighWatermark(area.getId()));
-        newsGroup.setNumberOfArticles((long) countArticles(area.getId()));
+        newsGroup.setReportedLowWatermark(countLowWatermark(entities));
+        newsGroup.setReportedHighWatermark(countHighWatermark(entities));
+        newsGroup.setNumberOfArticles(countArticles(entities));
         return newsGroup;
     }
 
-    private Long countHighWatermark(Long areaId) {
+    private Long countHighWatermark(Collection<Entity> entities) {
+
         long watermark = 0;
 
-        for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
-            if (echomail.getId() > watermark) {
-                watermark = echomail.getId();
+        for (Entity entity : entities) {
+            if (entity.getId() > watermark) {
+                watermark = entity.getId();
             }
         }
 
@@ -50,13 +64,13 @@ public class DataProviderImpl implements DataProvider {
         return watermark + 1;
     }
 
-    private long countLowWatermark(Long areaId) {
+    private long countLowWatermark(Collection<Entity> entities) {
 
         long watermark = 0;
 
-        for (Echomail echomail : echomailDao.getAnd("echoarea_id", "=", areaId)) {
-            if (echomail.getId() < watermark) {
-                watermark = echomail.getId();
+        for (Entity entity : entities) {
+            if (entity.getId() < watermark) {
+                watermark = entity.getId();
             }
         }
 
@@ -64,27 +78,30 @@ public class DataProviderImpl implements DataProvider {
         return watermark + 1;
     }
 
-    private int countArticles(final Long areaId) {
-        return echomailDao.getAnd("echoarea_id", "=", areaId).size();
+    private Collection<Entity> retrieveEntities(Long areaId, Auth auth) {
+        Collection<Entity> entities = Lists.newArrayList();
+
+        if (Constants.NETMAIL_NEWSGROUP_ID.equals(areaId)) {
+            entities.addAll(netmailDao.getOr(
+                    "to_address", "=", auth.getFtnAddress(),
+                    "from_address", "=", auth.getFtnAddress())
+            );
+        } else {
+            entities.addAll(echomailDao.getAnd("echoarea_id", "=", areaId));
+        }
+        return entities;
+    }
+
+    private int countArticles(Collection<Entity> entities) {
+        return entities.size();
     }
 
     @Override
-    public Collection<NewsGroup> newsGroups() {
+    public Collection<NewsGroup> newsGroups(final Auth auth) {
         return Collections2.transform(echoareaDAO.getAll(), new Function<Echoarea, NewsGroup>() {
             @Override
             public NewsGroup apply(Echoarea input) {
-                return convert(input);
-            }
-        });
-    }
-
-    @Override
-    public Collection<NewsMessage> messagesByGroupName(final String groupName) {
-        Echoarea echoarea = echoareaDAO.getFirstAnd("name", "=", groupName);
-        return Collections2.transform(echomailDao.getAnd("echoarea_id", "=", echoarea.getId()), new Function<Echomail, NewsMessage>() {
-            @Override
-            public NewsMessage apply(Echomail input) {
-                return convert(input);
+                return convert(input, auth);
             }
         });
     }
@@ -106,29 +123,79 @@ public class DataProviderImpl implements DataProvider {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Collection<NewsMessage> messagesByIdRange(String fromId, String toId, final long groupId) {
+    public Collection<NewsMessage> messagesByIdRange(String fromId, String toId, final long groupId, Auth auth) {
+
         // -1 because id was incremented during watermark counting
-        final Range range = Range.closed(Long.valueOf(fromId) - 1, Long.valueOf(toId) - 1);
-        return Collections2.transform(Collections2.filter(echomailDao.getAnd("echoarea_id", "=", groupId), new Predicate<Echomail>() {
-            @Override
-            public boolean apply(Echomail input) {
-                return range.contains(input.getId());
-            }
-        }), new Function<Echomail, NewsMessage>() {
-            @Override
-            public NewsMessage apply(Echomail input) {
-                return convert(input);
-            }
-        });
+        long trueFromId = Long.valueOf(fromId) - 1;
+        long trueToId = Long.valueOf(toId) - 1;
+
+        if (Constants.NETMAIL_NEWSGROUP_ID.equals(groupId)) {
+            return Collections2.transform(netmailDao.getOr(
+                    "to_address", "=", auth.getFtnAddress(),
+                    "from_address", "=", auth.getFtnAddress()), new Function<Netmail, NewsMessage>() {
+                @Override
+                public NewsMessage apply(Netmail input) {
+                    return convert(input);
+                }
+            });
+
+        } else {
+            return Collections2.transform(echomailDao.getAnd(
+                    "echoarea_id", "=", groupId,
+                    "id", "<=", trueFromId,
+                    "id", ">=", trueToId), new Function<Echomail, NewsMessage>() {
+                @Override
+                public NewsMessage apply(Echomail input) {
+                    return convert(input);
+                }
+            });
+        }
+    }
+
+    private NewsMessage convert(Netmail netmail) {
+        NewsMessage newsMessage = new NewsMessage();
+
+        newsMessage.setId(netmail.getId());
+        newsMessage.setGroupName(Constants.NETMAIL_NEWSGROUP_NAME);
+        newsMessage.setFrom(netmail.getFromName() + " " + netmail.getFromFTN());
+        newsMessage.setSubject(netmail.getSubject());
+        newsMessage.setCreatedDate(netmail.getDate());
+        newsMessage.setBody(netmail.getText());
+
+        return newsMessage;
     }
 
     @Override
-    public NewsMessage messageById(String id) {
-        return convert(echomailDao.getById(id));
+    public NewsMessage messageById(String id, Long groupId) {
+        if (Constants.NETMAIL_NEWSGROUP_ID.equals(groupId)) {
+            return convert(netmailDao.getById(id));
+        } else {
+            return convert(echomailDao.getById(id));
+        }
     }
 
     @Override
     public NewsMessage messageByMessageId(String messageId) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public NewsGroup netmail(Auth auth) {
+        Collection<Entity> entities = retrieveEntities(Constants.NETMAIL_NEWSGROUP_ID, auth);
+
+        NewsGroup newsGroup = new NewsGroup();
+        newsGroup.setId(Constants.NETMAIL_NEWSGROUP_ID);
+        newsGroup.setName(Constants.NETMAIL_NEWSGROUP_NAME);
+        newsGroup.setNumberOfArticles(countArticles(entities));
+        newsGroup.setReportedLowWatermark(countLowWatermark(entities));
+        newsGroup.setReportedHighWatermark(countHighWatermark(entities));
+        return newsGroup;
+    }
+
+    @Override
+    public Link link(Auth auth, String pass) {
+        return linkDao.getFirstAnd(
+                "ftn_address", "=", auth.getFtnAddress(),
+                "password", "=", pass);
     }
 }

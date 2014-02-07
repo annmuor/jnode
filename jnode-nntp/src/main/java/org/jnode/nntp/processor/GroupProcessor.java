@@ -6,6 +6,7 @@ import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.event.GroupSelectedEvent;
+import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NntpResponse;
 
@@ -17,10 +18,10 @@ public class GroupProcessor implements Processor {
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
-    public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId) {
+    public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId, Auth auth) {
 
         String groupName = params.iterator().next();
-        NewsGroup group = dataProvider.newsGroup(groupName);
+        NewsGroup group = dataProvider.newsGroup(groupName, auth);
         if (group == null) {
             return responseNotFound();
         }

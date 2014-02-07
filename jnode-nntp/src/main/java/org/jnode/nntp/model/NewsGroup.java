@@ -2,9 +2,8 @@ package org.jnode.nntp.model;
 
 public class NewsGroup extends NntpEntity {
 
-    private long groupUniquePrefix;
     private String name;
-    private Long numberOfArticles;
+    private int numberOfArticles;
     private Long reportedLowWatermark;
     private Long reportedHighWatermark;
 
@@ -16,19 +15,11 @@ public class NewsGroup extends NntpEntity {
         this.name = name;
     }
 
-    public long getGroupUniquePrefix() {
-        return groupUniquePrefix;
-    }
-
-    public void setGroupUniquePrefix(long groupUniquePrefix) {
-        this.groupUniquePrefix = groupUniquePrefix;
-    }
-
-    public Long getNumberOfArticles() {
+    public int getNumberOfArticles() {
         return numberOfArticles;
     }
 
-    public void setNumberOfArticles(Long numberOfArticles) {
+    public void setNumberOfArticles(int numberOfArticles) {
         this.numberOfArticles = numberOfArticles;
     }
 

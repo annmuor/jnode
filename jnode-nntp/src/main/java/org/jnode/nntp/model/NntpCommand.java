@@ -4,6 +4,8 @@ import java.util.Collection;
 
 public enum NntpCommand {
     ARTICLE("ARTICLE"),
+    AUTHINFO_USER("AUTHINFO user"),
+    AUTHINFO_PASS("AUTHINFO pass"),
     BODY,
     CAPABILITIES,
     DATE,

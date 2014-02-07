@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;
+import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsMessage;
 import org.jnode.nntp.model.NntpResponse;
 
@@ -17,16 +18,16 @@ public class XoverProcessor implements Processor {
     private static final String DELIMITER = "\t";
 
     @Override
-    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId) {
+    public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
 
         String range = params.iterator().next();
 
         Collection<NewsMessage> messages = Lists.newLinkedList();
 
         if (range.contains("-")) {
-            messagesByRange(selectedGroupId, range, messages);
+            messagesByRange(selectedGroupId, range, messages, auth);
         } else {
-           messages.add(dataProvider.messageById(range));
+           messages.add(dataProvider.messageById(range, selectedGroupId));
         }
 
         Collection<String> response = Lists.newLinkedList();
@@ -54,14 +55,14 @@ public class XoverProcessor implements Processor {
         return response;
     }
 
-    private void messagesByRange(Long selectedGroupId, String range, Collection<NewsMessage> messages) {
+    private void messagesByRange(Long selectedGroupId, String range, Collection<NewsMessage> messages, Auth auth) {
         String[] parts = StringUtils.split(range, "-");
         switch (parts.length) {
             case 1:
-                messages.add(dataProvider.messageById(parts[0]));
+                messages.add(dataProvider.messageById(parts[0], selectedGroupId));
                 break;
             case 2:
-                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1], selectedGroupId));
+                messages.addAll(dataProvider.messagesByIdRange(parts[0], parts[1], selectedGroupId, auth));
                 break;
             default:
         }

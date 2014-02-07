@@ -10,7 +10,7 @@ import java.util.Date;
  * @author kreon
  */
 @DatabaseTable(tableName = "echomail")
-public class Echomail {
+public class Echomail implements Entity {
 	@DatabaseField(generatedId = true, columnName = "id")
 	private Long id;
 	@DatabaseField(columnName = "echoarea_id", foreign = true, foreignAutoRefresh = true)

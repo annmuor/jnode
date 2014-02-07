@@ -18,6 +18,8 @@ public class ProcessorResolver {
         map.put(NntpCommand.HEAD, new HeadProcessor());
         map.put(NntpCommand.ARTICLE, new ArticleProcessor());
         map.put(NntpCommand.QUIT, new QuitProcessor());
+        map.put(NntpCommand.AUTHINFO_USER, new AuthInfoUserProcessor());
+        map.put(NntpCommand.AUTHINFO_PASS, new AuthInfoPassProcessor());
     }
 
     public static Processor processor(NntpCommand command) {
