@@ -38,7 +38,7 @@ public class Redirector implements Runnable {
     private final Logger logger = Logger.getLogger(Redirector.class);
     private final String pathPrefix;
     private final String zipPrefix;
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
 
     private String lastLogFilename;
 
@@ -53,8 +53,33 @@ public class Redirector implements Runnable {
             return;
         }
 
+        File[] files = getFilesToZip();
         redirect();
+        schedule();
+        zipFiles(files);
+    }
 
+    private void zipFiles(File[] files) {
+        if (files == null){
+            return;
+        }
+        for(File file : files){
+            moveToZip(file.getAbsolutePath());
+        }
+    }
+
+    private File[] getFilesToZip() {
+        File directory = new File(FileUtils.getPathPart(fullLogFileName("1")));
+
+        return directory.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().endsWith(".log");
+            }
+        });
+    }
+
+    private void schedule() {
         Date showDate = getNextLaunchDate();
         Date now = new Date();
         long initialDelay = showDate.getTime() - now.getTime();
@@ -93,8 +118,8 @@ public class Redirector implements Runnable {
         return pathPrefix + logFileName + ".log";
     }
 
-    private String fullZipFileName(String logFileName) {
-        return zipPrefix + logFileName + ".zip";
+    private String fullZipFileName(String filename) {
+        return zipPrefix + filename + ".zip";
     }
 
     @Override
@@ -109,23 +134,29 @@ public class Redirector implements Runnable {
             ThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-
-                    String zipPath = fullZipFileName(oldLogName);
-                    String logPath = fullLogFileName(oldLogName);
-                    try {
-                        FileUtils.zipFile(logPath,
-                                zipPath, new File(logPath).getName());
-                        logger.l5(MessageFormat.format("zip file {0} to {1}",
-                                logPath, zipPath));
-                    } catch (IOException e) {
-                        logger.l1(MessageFormat.format("fail zip file {0} to {1}",
-                                logPath, zipPath), e);
-                    }
-
+                    moveToZip(fullLogFileName(oldLogName));
                 }
             });
         }
+    }
 
+    private void moveToZip(String filename) {
+        String nameInsideZip = new File(filename).getName();
+        String zipPath = fullZipFileName(nameInsideZip);
+        try {
+            FileUtils.zipFile(filename,
+                    zipPath, nameInsideZip);
+            logger.l5(MessageFormat.format("zip file {0} to {1}",
+                    filename, zipPath));
+            if (new File(filename).delete()){
+                logger.l5("delete " + filename);
+            } else {
+                logger.l1("fail delete " + filename);
+            }
+        } catch (IOException e) {
+            logger.l1(MessageFormat.format("fail zip file {0} to {1}",
+                    filename, zipPath), e);
+        }
     }
 
     private static Date getNextLaunchDate() {

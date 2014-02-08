@@ -111,4 +111,15 @@ public final class FileUtils {
         }
     }
 
+    /**
+     * Get path part form full path
+     * @param fullPath full path
+     * @return path part
+     */
+    public static String getPathPart(String fullPath){
+        File temp = new File(fullPath);
+        String absolutePath = temp.getAbsolutePath();
+        return absolutePath.
+                substring(0,absolutePath.lastIndexOf(File.separator));
+    }
 }
