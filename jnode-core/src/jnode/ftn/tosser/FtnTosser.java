@@ -357,8 +357,12 @@ public class FtnTosser {
 							Notifier.INSTANSE
 									.notify(new NewFilemailEvent(mail));
 						} else {
-							logger.l4("File " + attach.getAbsolutePath()
-									+ " not found in inbound, waiting");
+                            if (attach != null){
+                                logger.l4("File " + attach.getAbsolutePath()
+                                        + " not found in inbound, waiting");
+                            } else {
+                                logger.l1("logical error - null attach file, waiting");
+                            }
 							continue;
 						}
 						file.delete();
