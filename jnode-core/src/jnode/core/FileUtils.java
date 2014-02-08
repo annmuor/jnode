@@ -20,13 +20,12 @@
 
 package jnode.core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
@@ -34,6 +33,12 @@ import java.nio.charset.Charset;
 public final class FileUtils {
 	private static final int BLOCK_SIZE = 4096;
 
+    /**
+     * Читает весь файл в строку
+     * @param path путь к файлу
+     * @return строка с содержимым файла
+     * @throws IOException
+     */
 	public static String readFile(String path) throws IOException {
 		try (FileInputStream stream = new FileInputStream(new File(path))) {
 			FileChannel fc = stream.getChannel();
@@ -81,5 +86,29 @@ public final class FileUtils {
 		}
 		return false;
 	}
+
+    /**
+     * zip file
+     * @param inPath source
+     * @param outPath destination
+     * @param nameInsideZip zip entry name
+     * @throws IOException
+     */
+    public static void zipFile(String inPath, String outPath, String nameInsideZip) throws IOException {
+        try(FileInputStream in = new FileInputStream(inPath)){
+            try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outPath))){
+                out.putNextEntry(new ZipEntry(nameInsideZip));
+
+                byte[] buffer = new byte[BLOCK_SIZE];
+                int len;
+
+                while ((len = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, len);
+                }
+
+                out.closeEntry();
+            }
+        }
+    }
 
 }
