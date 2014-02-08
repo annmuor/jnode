@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -202,14 +201,14 @@ public final class FtnTools {
 	 * @param len
 	 * @return
 	 */
-	public static byte[] substr(String s, int len) {
+	public static byte[] substr(String s, int maxlen) {
 		byte[] bytes = s.getBytes(CP_866);
-
-		if (bytes.length > len) {
-			return ByteBuffer.wrap(bytes, 0, len).array();
-		} else {
-			return bytes;
+		int len = (bytes.length > maxlen) ? maxlen : bytes.length;
+		byte[] ret = new byte[len];
+		for (int i = 0; i < len; i++) {
+			ret[i] = bytes[i];
 		}
+		return ret;
 	}
 
 	/**
@@ -685,7 +684,8 @@ public final class FtnTools {
 		boolean underll = false;
 		while ((read) ? !f.exists() : f.exists()) {
 			if ((ninetoa && ztonull) || underll) {
-				logger.l2("All possible files exists. Please delete something before continue");
+				logger.l4(read ? "Files not found"
+						: "Delete something to continue");
 				f = null;
 				break;
 			} else {
