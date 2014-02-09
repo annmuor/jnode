@@ -53,7 +53,8 @@ public class Redirector implements Runnable {
             return;
         }
 
-        File[] files = getFilesToZip();
+
+        File[] files = needZip() ? getFilesToZip() : null;
         redirect();
         schedule();
         zipFiles(files);
@@ -130,7 +131,7 @@ public class Redirector implements Runnable {
         oldOut.close();
         logger.l5("close " + oldOut);
 
-        if (zipPrefix != null && zipPrefix.length() != 0) {
+        if (needZip()) {
             ThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -140,7 +141,14 @@ public class Redirector implements Runnable {
         }
     }
 
+    private boolean needZip() {
+        return zipPrefix != null && zipPrefix.length() != 0;
+    }
+
     private void moveToZip(String filename) {
+        if (!needZip()){
+            return;
+        }
         String nameInsideZip = new File(filename).getName();
         String zipPath = fullZipFileName(nameInsideZip);
         try {
