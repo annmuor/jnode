@@ -47,6 +47,8 @@ public class LinkOption {
 	public static final String BOOLEAN_FILEFIX = "filefix";
 	public static final String BOOLEAN_SCRIPTFIX = "scriptfix";
 	public static final String BOOLEAN_PAUSE = "pause";
+	public static final String BOOLEAN_FORWARD_AREAFIX = "forwardareafix";
+	public static final String BOOLEAN_FORWARD_FILEFIX = "forwardfilefix";
 	public static final String LONG_LINK_LEVEL = "level";
 	public static final String SARRAY_LINK_GROUPS = "groups";
 	public static final String STRING_AREAFIX_PWD = "areafixpwd";

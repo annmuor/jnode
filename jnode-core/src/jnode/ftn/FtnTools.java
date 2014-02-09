@@ -1545,7 +1545,6 @@ public final class FtnTools {
 				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
 		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
-				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
 		b.append("\n--- "
