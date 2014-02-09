@@ -167,8 +167,8 @@ public class Main {
 
     private static void tryRedirectLog() {
         String redirectMask = MainHandler.getCurrentInstance().getProperty(LOGFILE, "");
-        String zipMask = MainHandler.getCurrentInstance().getProperty(LOGZIPPATH, "");
         if (redirectMask.length() != 0){
+            String zipMask = MainHandler.getCurrentInstance().getProperty(LOGZIPPATH, "");
             new Redirector(redirectMask, zipMask).invoke();
         }
     }
