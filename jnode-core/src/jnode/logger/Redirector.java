@@ -20,6 +20,9 @@
 
 package jnode.logger;
 
+import jnode.core.FileUtils;
+import jnode.main.threads.ThreadPool;
+
 import java.io.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -27,23 +30,57 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-
 import java.util.concurrent.TimeUnit;
 
 public class Redirector implements Runnable {
     private static final long MILLISEC_IN_DAY = 86400000L;
+
     private final Logger logger = Logger.getLogger(Redirector.class);
     private final String pathPrefix;
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+    private final String zipPrefix;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
 
-    public Redirector(String pathPrefix) {
+    private String lastLogFilename;
+
+    public Redirector(String pathPrefix, String zipPrefix) {
         this.pathPrefix = pathPrefix;
+        this.zipPrefix = zipPrefix;
     }
 
-    public void invoke(){
-        redirect();
+    public void invoke() {
 
+        if (pathPrefix == null) {
+            return;
+        }
+
+
+        File[] files = needZip() ? getFilesToZip() : null;
+        redirect();
+        schedule();
+        zipFiles(files);
+    }
+
+    private void zipFiles(File[] files) {
+        if (files == null){
+            return;
+        }
+        for(File file : files){
+            moveToZip(file.getAbsolutePath());
+        }
+    }
+
+    private File[] getFilesToZip() {
+        File directory = new File(FileUtils.getPathPart(fullLogFileName("1")));
+
+        return directory.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().endsWith(".log");
+            }
+        });
+    }
+
+    private void schedule() {
         Date showDate = getNextLaunchDate();
         Date now = new Date();
         long initialDelay = showDate.getTime() - now.getTime();
@@ -57,9 +94,11 @@ public class Redirector implements Runnable {
                 initialDelay, MILLISEC_IN_DAY, TimeUnit.MILLISECONDS);
     }
 
-    private void redirect() {
+    private String redirect() {
 
-        String logpath = pathPrefix + DATE_FORMAT.format(new Date()) + ".log";
+        String result = lastLogFilename;
+        lastLogFilename = DATE_FORMAT.format(new Date());
+        String logpath = fullLogFileName(lastLogFilename);
 
         try {
             PrintStream out = new PrintStream(
@@ -72,15 +111,60 @@ public class Redirector implements Runnable {
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             logger.l1(MessageFormat.format("fail redirect log to {0}", logpath), e);
         }
+
+        return result;
+    }
+
+    private String fullLogFileName(String logFileName) {
+        return pathPrefix + logFileName + ".log";
+    }
+
+    private String fullZipFileName(String filename) {
+        return zipPrefix + filename + ".zip";
     }
 
     @Override
     public void run() {
         PrintStream oldOut = System.out;
         logger.l5("oldOut " + oldOut);
-        redirect();
+        final String oldLogName = redirect();
         oldOut.close();
         logger.l5("close " + oldOut);
+
+        if (needZip()) {
+            ThreadPool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    moveToZip(fullLogFileName(oldLogName));
+                }
+            });
+        }
+    }
+
+    private boolean needZip() {
+        return zipPrefix != null && zipPrefix.length() != 0;
+    }
+
+    private void moveToZip(String filename) {
+        if (!needZip()){
+            return;
+        }
+        String nameInsideZip = new File(filename).getName();
+        String zipPath = fullZipFileName(nameInsideZip);
+        try {
+            FileUtils.zipFile(filename,
+                    zipPath, nameInsideZip);
+            logger.l5(MessageFormat.format("zip file {0} to {1}",
+                    filename, zipPath));
+            if (new File(filename).delete()){
+                logger.l5("delete " + filename);
+            } else {
+                logger.l1("fail delete " + filename);
+            }
+        } catch (IOException e) {
+            logger.l1(MessageFormat.format("fail zip file {0} to {1}",
+                    filename, zipPath), e);
+        }
     }
 
     private static Date getNextLaunchDate() {

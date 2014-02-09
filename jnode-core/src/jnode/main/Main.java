@@ -55,6 +55,7 @@ public class Main {
 	private static final String LOG_LEVEL = "log.level";
 	private static final String MODULES = "modules";
 	private static final String LOGFILE = "log.file";
+	private static final String LOGZIPPATH = "log.zippath";
 
 	public static void main(String[] args) {
 		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
@@ -167,7 +168,8 @@ public class Main {
     private static void tryRedirectLog() {
         String redirectMask = MainHandler.getCurrentInstance().getProperty(LOGFILE, "");
         if (redirectMask.length() != 0){
-            new Redirector(redirectMask).invoke();
+            String zipMask = MainHandler.getCurrentInstance().getProperty(LOGZIPPATH, "");
+            new Redirector(redirectMask, zipMask).invoke();
         }
     }
 
