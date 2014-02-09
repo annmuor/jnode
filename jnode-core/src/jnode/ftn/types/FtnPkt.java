@@ -33,6 +33,7 @@ import java.util.Locale;
 import jnode.core.ConcurrentDateFormatAccess;
 import jnode.ftn.FtnTools;
 import jnode.ftn.exception.LastMessageException;
+import jnode.install.DefaultVersion;
 import jnode.logger.Logger;
 
 /**
@@ -109,15 +110,21 @@ public class FtnPkt {
 			os.write(new byte[] { 0, 0, 2, 0 });
 			os.writeShort(FtnTools.revShort(fromAddr.getNet()));
 			os.writeShort(FtnTools.revShort(toAddr.getNet()));
-			os.write(new byte[] { (byte) 255, 0 }); // prodcode 19FF ver 0.4
+			os.write(new byte[] { (byte) 255,
+					DefaultVersion.getSelf().getMajorVersion().byteValue() }); // prodcode
+																				// 19FF
+																				// ver
+																				// 1.0
 			os.write(FtnTools.substr(password, 8));
 			for (int i = password.length(); i < 8; i++) {
 				os.write(0);
 			}
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));
-			os.write(new byte[] { 0, 0, 0, 1, 19, 4, 1, 0 });// prodcode 19FF
-																// ver 0.4
+			os.write(new byte[] { 0, 0, 0, 1, 19,
+					DefaultVersion.getSelf().getMinorVersion().byteValue(), 1,
+					0 });// prodcode 19FF
+			// ver 1.5
 			os.writeShort(FtnTools.revShort(fromAddr.getZone()));
 			os.writeShort(FtnTools.revShort(toAddr.getZone()));
 			os.writeShort(FtnTools.revShort(fromAddr.getPoint()));
