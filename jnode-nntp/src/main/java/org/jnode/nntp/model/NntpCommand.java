@@ -29,7 +29,7 @@ public enum NntpCommand {
     NEXT,
     OVER,
     XOVER("XOVER"),
-    POST,
+    POST("POST"),
     QUIT("QUIT"),
     STAT;
 

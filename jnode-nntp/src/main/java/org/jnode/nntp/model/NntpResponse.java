@@ -2,7 +2,14 @@ package org.jnode.nntp.model;
 
 public class NntpResponse {
 
-    public static final String END_OF_RESPONSE = ".";
+    public static final String END = ".";
+
+    public static class Post {
+        public static final String SEND_ARTICLE_TO_BE_POSTED = "340 Send article to be posted";
+        public static final String POSTING_NOT_PERMITTED = "440 Posting not permitted";
+        public static final String ARTICLE_RECEIVED_OK = "240 Article received OK";
+        public static final String POSTING_FAILED = "441 Posting failed";
+    }
 
     public static class AuthInfo {
         public static final String AUTHENTIFICATION_ACCEPTED = "281 Authentication accepted";

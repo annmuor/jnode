@@ -9,6 +9,7 @@ import jnode.dto.Echomail;
 import jnode.dto.Entity;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
+import jnode.dto.Subscription;
 import jnode.orm.ORMManager;
 import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsGroup;
@@ -22,6 +23,12 @@ public class DataProviderImpl implements DataProvider {
     private GenericDAO<Echomail> echomailDao = ORMManager.get(Echomail.class);
     private GenericDAO<Netmail> netmailDao = ORMManager.get(Netmail.class);
     private GenericDAO<Link> linkDao = ORMManager.get(Link.class);
+    private GenericDAO<Subscription> subscriptionDAO = ORMManager.get(Subscription.class);
+
+    @Override
+    public Echoarea echoarea(String echoareaName) {
+        return echoareaDAO.getFirstAnd("name", "=", echoareaName);
+    }
 
     @Override
     public NewsGroup newsGroup(final String groupName, Auth auth) {
@@ -98,7 +105,13 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public Collection<NewsGroup> newsGroups(final Auth auth) {
-        return Collections2.transform(echoareaDAO.getAll(), new Function<Echoarea, NewsGroup>() {
+
+        Collection<Subscription> subscriptions = subscriptionDAO.getAnd("link_id", "=", auth.getLinkId());
+        Collection<Echoarea> echoareas = Lists.newArrayList();
+        for (Subscription subscription : subscriptions) {
+            echoareas.addAll(echoareaDAO.getAnd("id", "=", subscription.getArea().getId()));
+        }
+        return Collections2.transform(echoareas, new Function<Echoarea, NewsGroup>() {
             @Override
             public NewsGroup apply(Echoarea input) {
                 return convert(input, auth);
@@ -197,5 +210,15 @@ public class DataProviderImpl implements DataProvider {
         return linkDao.getFirstAnd(
                 "ftn_address", "=", auth.getFtnAddress(),
                 "password", "=", pass);
+    }
+
+    @Override
+    public void post(Netmail netmail) {
+         netmailDao.save(netmail);
+    }
+
+    @Override
+    public void post(Echomail echomail) {
+         echomailDao.save(echomail);
     }
 }

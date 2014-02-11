@@ -12,7 +12,7 @@ import java.util.Date;
  * 
  */
 @DatabaseTable(tableName = "netmail")
-public class Netmail implements Entity {
+public class Netmail implements Entity, Mail {
 	@DatabaseField(columnName = "id", generatedId = true)
 	private Long id;
 	@DatabaseField(columnName = "from_name")

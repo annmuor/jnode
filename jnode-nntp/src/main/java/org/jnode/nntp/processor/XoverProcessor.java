@@ -50,7 +50,7 @@ public class XoverProcessor implements Processor {
             response.add(builder.toString());
         }
 
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }

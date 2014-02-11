@@ -29,8 +29,10 @@ public class AuthInfoPassProcessor implements Processor {
         Collection<String> response = Lists.newLinkedList();
 
         if (link == null) {
-             response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_FAILED_OR_REJECTED);
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_FAILED_OR_REJECTED);
+            auth.reset();
         } else {
+            auth.setLinkId(link.getId());
             response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_ACCEPTED);
         }
 

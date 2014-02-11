@@ -29,7 +29,7 @@ public class ListProcessor extends BaseProcessor implements Processor {
             addNewsGroupToList(response, newsGroup);
         }
 
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }

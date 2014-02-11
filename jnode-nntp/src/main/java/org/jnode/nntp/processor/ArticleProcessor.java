@@ -64,7 +64,7 @@ public class ArticleProcessor implements Processor {
         response.add("Message-ID: " + message.getMessageId());
         response.add(StringUtils.EMPTY);
         response.add(message.getBody());
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }
@@ -89,7 +89,7 @@ public class ArticleProcessor implements Processor {
         response.add("Message-ID: " + message.getMessageId());
         response.add(StringUtils.EMPTY);
         response.add(message.getBody());
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }

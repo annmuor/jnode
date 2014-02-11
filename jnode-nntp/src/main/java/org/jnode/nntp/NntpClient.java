@@ -1,5 +1,6 @@
 package org.jnode.nntp;
 
+import com.google.common.collect.Lists;
 import jnode.event.IEvent;
 import jnode.event.IEventHandler;
 import jnode.event.Notifier;
@@ -9,6 +10,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.event.ArticleSelectedEvent;
 import org.jnode.nntp.event.AuthUserEvent;
 import org.jnode.nntp.event.GroupSelectedEvent;
+import org.jnode.nntp.event.PostEndEvent;
+import org.jnode.nntp.event.PostStartEvent;
 import org.jnode.nntp.exception.EndOfSessionException;
 import org.jnode.nntp.exception.ProcessorNotFoundException;
 import org.jnode.nntp.exception.UnknownCommandException;
@@ -42,6 +45,9 @@ public class NntpClient implements Runnable {
     private Long selectedArticleId;
     private Auth auth;
 
+    private boolean isPost = false;
+    private Collection<String> postParams;
+
     public NntpClient(Socket socket) {
         try {
             this.socket = socket;
@@ -70,34 +76,72 @@ public class NntpClient implements Runnable {
         Notifier.INSTANSE.register(AuthUserEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
-                 auth = ((AuthUserEvent) event).getAuth();
+                auth = ((AuthUserEvent) event).getAuth();
+            }
+        });
+        Notifier.INSTANSE.register(PostStartEvent.class, new IEventHandler() {
+            @Override
+            public void handle(IEvent event) {
+                isPost = true;
+                postParams = Lists.newLinkedList();
+            }
+        });
+        Notifier.INSTANSE.register(PostEndEvent.class, new IEventHandler() {
+            @Override
+            public void handle(IEvent event) {
+                isPost = false;
             }
         });
 
-        String command = StringUtils.EMPTY;
+        String line = StringUtils.EMPTY;
 
         try {
             // Send greetings. Posting is not implemented yet.
             send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
 
-            while ((command = in.readLine()) != null) {
-                logger.l4("[C] " + command);
-                Collection<String> response = process(command);
+            while ((line = in.readLine()) != null) {
+                logger.l4("[C] " + line);
+
+                Collection<String> response = Lists.newLinkedList();
+
+                if (line.equalsIgnoreCase(NntpResponse.END)) {
+                    // end of post
+                    response.addAll(process(NntpCommand.POST, postParams));
+                } else {
+                    if (isPost) {
+                        // post in progress
+                        postParams.add(line);
+                    } else {
+                        // casual line
+                        response.addAll(process(line));
+                    }
+                }
+
                 send(response);
+
             }
 
         } catch (UnknownCommandException uce) {
-            logger.l4("Unknown command '" + command + "'.");
+            logger.l4("Unknown line '" + line + "'.");
         } catch (EndOfSessionException eose) {
             logger.l4("Client cancel session.");
         } catch (Throwable e) {
-            logger.l4("Unknown problem during command processing.", e);
+            logger.l4("Unknown problem during line processing.", e);
         } finally {
             IOUtils.closeQuietly(out);
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(socket);
         }
 
+    }
+
+    private Collection<String> process(NntpCommand command, Collection<String> params) {
+        Processor processor = ProcessorResolver.processor(command);
+        if (processor == null) {
+            logger.l4("Can't find processor for command '" + command + "'.");
+            throw new ProcessorNotFoundException();
+        }
+        return processor.process(params, selectedGroupId, selectedArticleId, auth);
     }
 
     /**
@@ -134,6 +178,7 @@ public class NntpClient implements Runnable {
 
     /**
      * Find command in supported commands.
+     *
      * @param command command.
      * @return supported command.
      */
@@ -170,7 +215,8 @@ public class NntpClient implements Runnable {
 
     /**
      * Prepare command params for process by processor.
-     * @param params command params.
+     *
+     * @param params           command params.
      * @param isOnePartCommand is command include one part only.
      * @return collection of params.
      */

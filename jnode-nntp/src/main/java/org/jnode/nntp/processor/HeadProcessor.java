@@ -55,7 +55,7 @@ public class HeadProcessor implements Processor {
         response.add("Subject: " + message.getSubject());
         response.add("Date: " + message.getCreatedDate());
         response.add("Message-ID: " + message.getMessageId());
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }
@@ -80,7 +80,7 @@ public class HeadProcessor implements Processor {
         response.add("Subject: " + message.getSubject());
         response.add("Date: " + message.getCreatedDate());
         response.add("Message-ID: " + message.getMessageId());
-        response.add(NntpResponse.END_OF_RESPONSE);
+        response.add(NntpResponse.END);
 
         return response;
     }
