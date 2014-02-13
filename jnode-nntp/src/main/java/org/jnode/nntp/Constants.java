@@ -8,5 +8,6 @@ public class Constants {
     public static final String NEWSGROUPS = "newsgroups";
     public static final String SUBJECT = "subject";
     public static final String ORGANIZATION = "organization";
+    public static final String TO = "to";
     public static final String DATE = "date";
 }

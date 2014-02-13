@@ -17,6 +17,7 @@ import org.jnode.nntp.event.PostStartEvent;
 import org.jnode.nntp.exception.NntpException;
 import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NntpResponse;
+import org.jnode.nntp.util.Converter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -68,7 +69,21 @@ public class PostProcessor implements Processor {
         Echomail echomail = new Echomail();
         convertToMail(echomail, params);
         echomail.setArea(findEchoarea(params));
+        echomail.setToName(findTo(params));
         return echomail;
+    }
+
+    private String findTo(Collection<String> params) {
+
+        String to = null;
+        for (String param : params) {
+            if (StringUtils.startsWithIgnoreCase(param, Constants.TO)) {
+                // +1 becaus of ":"
+                to = StringUtils.trim(StringUtils.substring(param, Constants.TO.length() + 1));
+            }
+        }
+
+        return to == null ? "All" : to;
     }
 
     private Echoarea findEchoarea(Collection<String> params) {
@@ -76,7 +91,7 @@ public class PostProcessor implements Processor {
         String echoareaName = null;
 
         for (String param : params) {
-            if (StringUtils.startsWith(param, Constants.NEWSGROUPS)) {
+            if (StringUtils.startsWithIgnoreCase(param, Constants.NEWSGROUPS)) {
                 // +1 becaus of ":"
                 echoareaName = StringUtils.trim(StringUtils.substring(param, Constants.NEWSGROUPS.length() + 1));
                 echoarea = dataProvider.echoarea(echoareaName);
@@ -101,7 +116,22 @@ public class PostProcessor implements Processor {
         StringBuilder message = new StringBuilder();
         for (String param : params) {
             if (StringUtils.startsWithIgnoreCase(param, Constants.FROM)) {
-                // todo from
+                String from = StringUtils.trim(StringUtils.substring(param, Constants.FROM.length() + 1));
+
+                int ind1 = StringUtils.indexOf(from, "<");
+                int ind2 = StringUtils.indexOf(from, ">");
+
+                if (ind1 == -1 || ind2 == -1) {
+                    logger.l1("Incorrect 'from' line: " + from + ".");
+                    continue;
+                }
+
+                String name = StringUtils.substring(from, 0, ind1);
+                String email = StringUtils.substring(from, ind1 + 1, ind2);
+
+                mail.setFromName(name);
+                mail.setFromFTN(Converter.convertEmailToFtn(email));
+
                 continue;
             }
             if (StringUtils.startsWithIgnoreCase(param, Constants.ORGANIZATION)) {
@@ -109,7 +139,8 @@ public class PostProcessor implements Processor {
                 continue;
             }
             if (StringUtils.startsWithIgnoreCase(param, Constants.SUBJECT)) {
-                mail.setSubject(param);
+                String subject = StringUtils.trim(StringUtils.substring(param, Constants.SUBJECT.length() + 1));
+                mail.setSubject(subject);
                 continue;
             }
             if (StringUtils.trim(param).equalsIgnoreCase(StringUtils.EMPTY) && !isBody) {
@@ -140,11 +171,36 @@ public class PostProcessor implements Processor {
 
     }
 
-
     private Netmail convertToNetmail(Collection<String> params) {
         Netmail netmail = new Netmail();
         convertToMail(netmail, params);
+        findTo(netmail, params);
         return netmail;
+    }
+
+    private void findTo(Netmail netmail, Collection<String> params) {
+
+        // todo refactor
+        for (String param : params) {
+            if (StringUtils.startsWithIgnoreCase(param, Constants.TO)) {
+                // +1 becaus of ":"
+                String to = StringUtils.trim(StringUtils.substring(param, Constants.TO.length() + 1));
+
+                int ind1 = StringUtils.indexOf(to, "<");
+                int ind2 = StringUtils.indexOf(to, ">");
+
+                if (ind1 == -1 || ind2 == -1) {
+                    logger.l1("Incorrect 'to' line: " + to + ".");
+                    continue;
+                }
+
+                String name = StringUtils.substring(to, 0, ind1);
+                String email = StringUtils.substring(to, ind1 + 1, ind2);
+
+                netmail.setToName(name);
+                netmail.setToFTN(Converter.convertEmailToFtn(email));
+            }
+        }
     }
 
     // TODO refactor
