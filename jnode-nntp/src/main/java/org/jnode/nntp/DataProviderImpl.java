@@ -155,8 +155,8 @@ public class DataProviderImpl implements DataProvider {
         } else {
             return Collections2.transform(echomailDao.getAnd(
                     "echoarea_id", "=", groupId,
-                    "id", "<=", trueFromId,
-                    "id", ">=", trueToId), new Function<Echomail, NewsMessage>() {
+                    "id", ">=", trueFromId,
+                    "id", "<=", trueToId), new Function<Echomail, NewsMessage>() {
                 @Override
                 public NewsMessage apply(Echomail input) {
                     return convert(input);

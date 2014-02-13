@@ -6,6 +6,7 @@ import jnode.dto.Echomail;
 import jnode.dto.Mail;
 import jnode.dto.Netmail;
 import jnode.event.Notifier;
+import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.jnode.nntp.Constants;
@@ -70,6 +71,7 @@ public class PostProcessor implements Processor {
         convertToMail(echomail, params);
         echomail.setArea(findEchoarea(params));
         echomail.setToName(findTo(params));
+        echomail.setMsgid(echomail.getFromFTN() + " " + FtnTools.generate8d());
         return echomail;
     }
 
