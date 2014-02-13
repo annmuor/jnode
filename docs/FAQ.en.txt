@@ -1,0 +1,76 @@
+**** jNode users F.A.Q. created at 11.01.2014 ****
+**** Updated at 13.02.2014 ****
+
+Q: What is jNode?
+A: This is a Fidonet Technical Network ( FTN ) software platform which covers typical needs of Fidonet node.
+
+Q: Do you have a Wiki?
+A: https://github.com/kreon/jnode/wiki
+
+Q: Where can I get jNode?
+A1: For persons whom know what is git and maven: git clone git://github.com/kreon/jnode.git && mvn package
+A2: Stable releases: https://github.com/kreon/jnode/releases
+A3: Unstable (nighly builds): https://manjago.ci.cloudbees.com/job/jnode/
+  > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
+
+Q: How do I install jNode?
+A1: Just read docs/*
+A2: Typical install: Install JRE 1.7, download & unpack -multidb- release, edit etc/jnode.xxx.conf where xxx is "win" if you're using Windows or OS/2 and "nix" if you're running Linux/BSD/Mac OS X, run bin/run.***, look for web interface password and configure your node via web.
+
+Q: Can I read netmail & echomail via jNode?
+A: No. jNode stores all data in SQL Database and there's no Fidonet editors could read databases.
+
+Q: ...
+A1: Create "technical" point and rewrite rules to forward all .0 netmail to this point.
+A2: Since 1.0 version jNode automatically creates technical point .1 for each new install.
+
+Q: How do I create a "rewrite" ?
+A: Use web interface. Remember that Origin fields are regular expressions, but new fields is not. 
+A2: Exampples:
+Forward all mail from 2:5020/848 to 2:5020/848.1:
+1	NETMAIL/true	^2:5020\/848$ -> 2:5020/848.1	* -> *	* -> *	* -> *	* -> *
+Rewrite netmail from technical point to areafix of uplink.
+10	NETMAIL/true	^2:5020\/848\.1$ -> 2:5020/848	* -> *	^2:5020\/848$ -> 2:5020/4441	afix4441 -> AreaFix	* -> password
+
+Q: Does it works on XXX?
+A: It should works on every system has Java 1.7+ implementation, but really nobody knows.
+It was tested on Windows XP, Windows 7, Linux (various) and OS/2 ( special build for OS/2 JVM )
+
+Q: On what SQL database does it works?
+A: It may work with all databases have jdbc driver. I tested mySQL5, PostgreSQL9 and H2 1.3. PostgeSQL is the best IMHO.
+
+Q: I don't know SQL. How should I do <anything> ?
+A: Ask into this echoarea :-)
+A2: Below you can find some queries.
+
+Subscribe link to echoarea:
+INSERT INTO subscription SELECT l.id AS lid,e.id AS eid FROM links l,echoarea e WHERE NOT EXISTS (SELECT link_id FROM subscription WHERE link_id=l.id AND echoarea_id=e.id) AND e.name='echo_name' AND l.ftn_address='link address';
+Remove "AND l.ftn_address=..." to subscribe ALL your links to that echo;
+
+List of echoareas without subscription:
+SELECT e.name FROM echoarea e WHERE (SELECT COUNT(*) FROM subscription WHERE echoarea_id=e.id)=X;
+Where X is "0" for echoareas without subscription at all and "1" for echoareas with only one (uplink?) subscription.
+
+List of echoareas are subscribed to this link:
+SELECT e.name FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE l.ftn_address='link address';
+
+List of links are subscribed this echoarea:
+SELECT l.ftn_address FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE e.name='echoarea';
+
+
+Q: I've found a bug!
+A: 1. Send me logfile ( with log.level = 5 if possible )
+   2. Write to this echoarea with bug description.
+A2: Create new issue there: https://github.com/kreon/jnode/issues
+
+Q: I want to help your project. What can I do?
+A: We are needed in:
+  - Translators ( English and other languages )
+  - Java Developers
+  - Web Designers ( for web module development )
+  - Contributors whom are able to build and support jNode on 3rd-party resources.
+  - Testers
+A2: Also you can always send us some money :-)
+
+P.S. Feel free mail me about mistakes or additionals in this F.A.Q., Im not very familliar with English.
+
