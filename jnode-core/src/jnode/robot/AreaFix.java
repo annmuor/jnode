@@ -216,6 +216,14 @@ public class AreaFix extends AbstractRobot {
 		List<Echoarea> areas = ORMManager.get(Echoarea.class).getAnd("name",
 				"~", like);
 		if (areas.isEmpty()) {
+			// check-check: let's make an request
+			// TODO: make it :-)
+			Link uplink = ORMManager
+					.get(Link.class)
+					.join(true)
+					.join(LinkOption.class, true, "name", "=",
+							LinkOption.BOOLEAN_FORWARD_AREAFIX, "value", "=",
+							"true").one();
 			sb.append(area + " not found");
 		} else {
 			for (Echoarea earea : areas) {

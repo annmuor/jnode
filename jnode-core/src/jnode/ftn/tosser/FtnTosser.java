@@ -68,7 +68,7 @@ public class FtnTosser {
 				return;
 			}
 		}
-		boolean drop = validateNetmail(netmail);
+		boolean drop = checkNetmailMustDropped(netmail);
 
 		if (drop) {
 			Integer n = bad.get("netmail");

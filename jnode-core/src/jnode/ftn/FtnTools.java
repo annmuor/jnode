@@ -93,6 +93,7 @@ import jnode.robot.IRobot;
  */
 public final class FtnTools {
 	private static final String BINKP_INBOUND = "binkp.inbound";
+	private static final String NETMAIL_VALID = "netmail.only_valid";
 	private static final String SEEN_BY = "SEEN-BY:";
 	private static final String PATH = "\001PATH:";
 	public static final Charset CP_866 = Charset.forName("CP866");
@@ -1455,13 +1456,20 @@ public final class FtnTools {
 	 * @param netmail
 	 * @return
 	 */
-	public static boolean validateNetmail(FtnMessage netmail) {
+	public static boolean checkNetmailMustDropped(FtnMessage netmail) {
+		// дополнительная проверка
+		if (!MainHandler.getCurrentInstance().getBooleanProperty(NETMAIL_VALID,
+				true)) {
+			return false;
+		}
 		boolean validFrom = false;
 		boolean validTo = false;
 		// к нам на узел
 		if (isOurPoint(netmail.getToAddr())) {
 			validTo = true;
 		} else if (getLinkByFtnAddress(netmail.getToAddr()) != null) {
+			validTo = true;
+		} else if (getLinkByFtnAddress(netmail.getToAddr().cloneNode()) != null) {
 			validTo = true;
 		} else {
 			FtnNdlAddress to = NodelistScanner.getInstance().isExists(
@@ -1476,23 +1484,25 @@ public final class FtnTools {
 								.getFromAddr().toString(), netmail.getToAddr()
 								.toString()));
 
-			} else if (to.getStatus().equals(Status.DOWN)) {
-				FtnTools.writeReply(netmail, "Destination is DOWN",
-						"Warning! Destination of your netmail is DOWN.\nMessage rejected");
-				logger.l3(String.format(
-						"Netmail %s -> %s reject ( dest is DOWN )", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
-								.toString()));
-			} else if (to.getStatus().equals(Status.HOLD)) {
-				FtnTools.writeReply(netmail, "Destination is HOLD",
-						"Warning! Destination of your netmail is HOLD");
-				logger.l4(String.format(
-						"Netmail %s -> %s warn ( dest is Hold )", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
-								.toString()));
-				validTo = true;
 			} else {
 				validTo = true;
+				if (to.getStatus().equals(Status.DOWN)) {
+					FtnTools.writeReply(netmail, "Destination is DOWN",
+							"Warning! Destination of your netmail is DOWN.");
+					logger.l3(String.format(
+							"Netmail %s -> %s reject ( dest is DOWN )", netmail
+									.getFromAddr().toString(), netmail
+									.getToAddr().toString()));
+					validTo = true;
+				} else if (to.getStatus().equals(Status.HOLD)) {
+					FtnTools.writeReply(netmail, "Destination is HOLD",
+							"Warning! Destination of your netmail is HOLD");
+					logger.l4(String.format(
+							"Netmail %s -> %s warn ( dest is Hold )", netmail
+									.getFromAddr().toString(), netmail
+									.getToAddr().toString()));
+
+				}
 			}
 		}
 
@@ -1500,6 +1510,8 @@ public final class FtnTools {
 			validFrom = true;
 		} else if (getLinkByFtnAddress(netmail.getFromAddr()) != null) {
 			validFrom = true;
+		} else if (getLinkByFtnAddress(netmail.getFromAddr().cloneNode()) != null) {
+			validTo = true;
 		} else {
 			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
 					netmail.getFromAddr());

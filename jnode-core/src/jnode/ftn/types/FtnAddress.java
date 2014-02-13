@@ -61,14 +61,14 @@ public class FtnAddress implements Serializable {
 		}
 	}
 
-    public FtnAddress(int zone, int net, int node, int point) {
-        this.zone = zone;
-        this.point = point;
-        this.node = node;
-        this.net = net;
-    }
+	public FtnAddress(int zone, int net, int node, int point) {
+		this.zone = zone;
+		this.point = point;
+		this.node = node;
+		this.net = net;
+	}
 
-    public FtnAddress() {
+	public FtnAddress() {
 		zone = MainHandler.getCurrentInstance().getInfo().getZone();
 		net = 0;
 		node = 0;
@@ -176,7 +176,11 @@ public class FtnAddress implements Serializable {
 	}
 
 	public FtnAddress clone() {
-		return new FtnAddress(zone,net,node,point);
+		return new FtnAddress(zone, net, node, point);
+	}
+
+	public FtnAddress cloneNode() {
+		return new FtnAddress(zone, net, node, 0);
 	}
 
 }
