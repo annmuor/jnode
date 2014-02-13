@@ -117,7 +117,9 @@ public class AreaFix extends AbstractRobot {
 	 * @return
 	 */
 	protected String help() {
-		return "Available commands:\n" + "%HELP - this message\n"
+		return "Available commands:\n"
+				+ "%HELP - this message\n"
+				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
 				+ "+echo.area - subscribe echo.area\n"

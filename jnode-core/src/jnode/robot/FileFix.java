@@ -103,6 +103,7 @@ public class FileFix extends AbstractRobot {
 	 */
 	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
+				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of availible fileareas\n"
 				+ "%QUERY - list of subscribed fileareas\n"
 				+ "+file.area - subscribe echo.area\n"

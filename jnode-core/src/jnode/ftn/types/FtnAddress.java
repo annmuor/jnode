@@ -38,11 +38,12 @@ public class FtnAddress implements Serializable {
 	protected int net;
 	protected int node;
 	protected int point;
+	public static final Pattern fidonetAddress = Pattern
+			.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
 
 	public FtnAddress(String addr) throws NumberFormatException {
-		Pattern p = Pattern
-				.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
-		Matcher m = p.matcher(addr);
+
+		Matcher m = fidonetAddress.matcher(addr);
 		if (m.matches()) {
 			if (m.group(1) != null && m.group(1).length() > 0) {
 				zone = new Integer(m.group(1));

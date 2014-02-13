@@ -21,10 +21,12 @@
 package jnode.robot;
 
 import java.text.MessageFormat;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
+import jnode.ftn.types.FtnAddress;
 import jnode.ftn.types.FtnMessage;
 
 /**
@@ -36,6 +38,11 @@ public abstract class AbstractRobot implements IRobot {
 	protected static final String YOU_ARE_NOT_WELCOME = "You are not welcome";
 	protected static final String WRONG_PASSWORD = "Wrong password";
 	protected static final String SORRY_0_IS_OFF_FOR_YOU = "Sorry, {0} is off for you";
+	protected static final String WRONG_ASLINK = "%ASLINK command with wrong arg!";
+	protected static final Pattern aslink = Pattern
+			.compile(
+					"^%ASLINK ((\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?)$",
+					Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
 	protected static final Pattern HELP = Pattern.compile("^%HELP$",
 			Pattern.CASE_INSENSITIVE);
@@ -48,7 +55,20 @@ public abstract class AbstractRobot implements IRobot {
 	protected abstract String getPasswordOption();
 
 	protected Link getAndCheckLink(FtnMessage fmsg) {
-		Link link = FtnTools.getLinkByFtnAddress(fmsg.getFromAddr());
+		FtnAddress linkAddress = fmsg.getFromAddr();
+		// check AS_LINK
+		{
+			Matcher m = aslink.matcher(fmsg.getText());
+			if (m.find()) {
+				try {
+					linkAddress = new FtnAddress(m.group(1));
+				} catch (NumberFormatException e) {
+					FtnTools.writeReply(fmsg, ACCESS_DENIED, WRONG_ASLINK);
+					return null;
+				}
+			}
+		}
+		Link link = FtnTools.getLinkByFtnAddress(linkAddress);
 		{
 			if (link == null) {
 				FtnTools.writeReply(fmsg, ACCESS_DENIED,

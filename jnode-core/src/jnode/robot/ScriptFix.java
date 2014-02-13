@@ -116,6 +116,7 @@ public class ScriptFix extends AbstractRobot {
 
 	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
+				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of all scripts\n"
 				+ "%RUN scriptId - force run script";
 	}
