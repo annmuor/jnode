@@ -1731,4 +1731,15 @@ public final class FtnTools {
 
 	}
 
+	public static void setOption(Link link, String name, String value) {
+		LinkOption option = ORMManager.get(LinkOption.class).getFirstAnd(
+				"link_id", "=", link, "name", "=", name);
+		if (option == null) {
+			option = new LinkOption(link, name, value);
+		} else {
+			option.setValue(value);
+		}
+		ORMManager.get(LinkOption.class).saveOrUpdate(option);
+	}
+
 }

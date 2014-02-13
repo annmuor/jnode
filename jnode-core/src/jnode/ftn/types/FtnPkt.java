@@ -201,6 +201,7 @@ public class FtnPkt {
 		try {
 			FtnMessage mess = new FtnMessage();
 			mess.unpack(is);
+			mess.pkt = this;
 			return mess;
 		} catch (LastMessageException e) {
 			if (close) {

@@ -52,6 +52,13 @@ public class AreaFix extends AbstractRobot {
 	private static final Pattern ADD_RESCAN = Pattern.compile(
 			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
 
+	private static final Pattern AFXPASS = Pattern.compile("^%AFXPASS (\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern PKTPASS = Pattern.compile("^%PKTPASS (\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern IGNOREPKTPWD = Pattern.compile(
+			"^%IGNOREPKTPWD (on|off)$", Pattern.CASE_INSENSITIVE);
+
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
 		Link link = getAndCheckLink(fmsg);
@@ -102,12 +109,61 @@ public class AreaFix extends AbstractRobot {
 					reply.append(rescan(link, area, num));
 					continue;
 				}
+				m = AFXPASS.matcher(line);
+				if (m.matches()) {
+					String newpwd = m.group(1);
+					reply.append(afxpass(link, newpwd));
+					continue;
+				}
+				m = PKTPASS.matcher(line);
+				if (m.matches()) {
+					String newpwd = m.group(1);
+					reply.append(pktpass(link, newpwd));
+					continue;
+				}
+
+				m = IGNOREPKTPWD.matcher(line);
+				if (m.matches()) {
+					String onoff = m.group(1);
+					reply.append(ignorepktpwd(link, onoff));
+					continue;
+				}
+
 			}
 		}
 		if (reply.length() > 0) {
 			FtnTools.writeReply(fmsg,
 					MessageFormat.format("{0} reply", getRobotName()),
 					reply.toString());
+		}
+	}
+
+	private String ignorepktpwd(Link link, String onoff) {
+		if (onoff.equals("on")) {
+			FtnTools.setOption(link, LinkOption.BOOLEAN_IGNORE_PKTPWD, "true");
+			return "We will ignore password in your packets\n";
+		} else {
+			FtnTools.setOption(link, LinkOption.BOOLEAN_IGNORE_PKTPWD, "false");
+			return "We will check password in your packets\n";
+		}
+	}
+
+	private String pktpass(Link link, String newpwd) {
+		if (newpwd.length() > 3 && newpwd.length() < 9) {
+			link.setPaketPassword(newpwd);
+			ORMManager.get(Link.class).update(link);
+			return "Your packet password was changed to " + newpwd + "\n";
+		} else {
+			return "Your packet password must be between 4 and 8 chars length\n";
+		}
+	}
+
+	protected String afxpass(Link link, String newpwd) {
+		if (newpwd.length() > 3 && newpwd.length() < 17) {
+			FtnTools.setOption(link, LinkOption.STRING_AREAFIX_PWD, newpwd);
+			return "Your AreaFix password was changed to " + newpwd + "\n";
+		} else {
+			return "Your AreaFix password must be between 4 and 16 chars length\n";
 		}
 	}
 
@@ -119,9 +175,12 @@ public class AreaFix extends AbstractRobot {
 	protected String help() {
 		return "Available commands:\n"
 				+ "%HELP - this message\n"
-				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
+				+ "%ASLINK ftn address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
+				+ "%AFXPASS password - change areafix password\n"
+				+ "%PKTPASS password - change pkt password\n"
+				+ "%IGNOREPKTPWD on|off - turn on/off checking pkt passwords in pkts from you\n"
 				+ "+echo.area - subscribe echo.area\n"
 				+ "-echo.area - unsibscribe echo.area\n"
 				+ "+echo.area /r=N - subscribe and rescan N messages\n"
@@ -220,12 +279,12 @@ public class AreaFix extends AbstractRobot {
 		if (areas.isEmpty()) {
 			// check-check: let's make an request
 			// TODO: make it :-)
-			Link uplink = ORMManager
-					.get(Link.class)
-					.join(true)
-					.join(LinkOption.class, true, "name", "=",
-							LinkOption.BOOLEAN_FORWARD_AREAFIX, "value", "=",
-							"true").one();
+			// Link uplink = ORMManager
+			// .get(Link.class)
+			// .join(true)
+			// .join(LinkOption.class, true, "name", "=",
+			// LinkOption.BOOLEAN_FORWARD_AREAFIX, "value", "=",
+			// "true").one();
 			sb.append(area + " not found");
 		} else {
 			for (Echoarea earea : areas) {

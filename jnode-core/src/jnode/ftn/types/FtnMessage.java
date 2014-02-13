@@ -75,6 +75,7 @@ public class FtnMessage {
 	private List<Ftn2D> path;
 	private boolean isNetmail;
 	private String msgid;
+	FtnPkt pkt;
 
 	private static final ConcurrentDateFormatAccess FORMAT = new ConcurrentDateFormatAccess(
 			"dd MMM yy  HH:mm:ss", Locale.US);
@@ -401,4 +402,9 @@ public class FtnMessage {
 						(isNetmail) ? "netmail" : "echomail", (isNetmail) ? "-"
 								: area, subject);
 	}
+
+	public FtnPkt getPkt() {
+		return pkt;
+	}
+
 }

@@ -124,7 +124,7 @@ public class ScriptFix extends AbstractRobot {
 	private String list() throws SQLException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("============== List of all jscripts ===============\n");
+		sb.append("==============  List of all jscripts ===============\n");
 		sb.append("| id  |                   content                  |\n");
 		sb.append("|-----|--------------------------------------------|\n");
 		for (Jscript js : ORMManager.get(Jscript.class).getOrderAnd("id", true)) {

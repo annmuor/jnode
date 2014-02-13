@@ -39,6 +39,7 @@ public abstract class AbstractRobot implements IRobot {
 	protected static final String WRONG_PASSWORD = "Wrong password";
 	protected static final String SORRY_0_IS_OFF_FOR_YOU = "Sorry, {0} is off for you";
 	protected static final String WRONG_ASLINK = "%ASLINK command with wrong arg!";
+	protected static final String WRONG_PATH = "This message was sent via {0}. {1} works with direct mail only. Also you have to change password :-)";
 	protected static final Pattern aslink = Pattern
 			.compile(
 					"^%ASLINK ((\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?)$",
@@ -55,38 +56,41 @@ public abstract class AbstractRobot implements IRobot {
 	protected abstract String getPasswordOption();
 
 	protected Link getAndCheckLink(FtnMessage fmsg) {
+		if (fmsg.getPkt() != null) {
+			if (!fmsg.getPkt().getFromAddr().equals(fmsg.getFromAddr())) {
+				FtnTools.writeReply(
+						fmsg,
+						ACCESS_DENIED,
+						MessageFormat.format(WRONG_PATH, fmsg.getPkt()
+								.getFromAddr().toString(), getRobotName()));
+				return null;
+			}
+		}
 		FtnAddress linkAddress = fmsg.getFromAddr();
-		// check AS_LINK
-		{
-			Matcher m = aslink.matcher(fmsg.getText());
-			if (m.find()) {
-				try {
-					linkAddress = new FtnAddress(m.group(1));
-				} catch (NumberFormatException e) {
-					FtnTools.writeReply(fmsg, ACCESS_DENIED, WRONG_ASLINK);
-					return null;
-				}
+		Matcher m = aslink.matcher(fmsg.getText());
+		if (m.find()) {
+			try {
+				linkAddress = new FtnAddress(m.group(1));
+			} catch (NumberFormatException e) {
+				FtnTools.writeReply(fmsg, ACCESS_DENIED, WRONG_ASLINK);
+				return null;
 			}
 		}
 		Link link = FtnTools.getLinkByFtnAddress(linkAddress);
-		{
-			if (link == null) {
-				FtnTools.writeReply(fmsg, ACCESS_DENIED,
-						YOU_ARE_NOT_IN_LINKS_OF_ORIGIN);
-				return null;
-			}
+		if (link == null) {
+			FtnTools.writeReply(fmsg, ACCESS_DENIED,
+					YOU_ARE_NOT_IN_LINKS_OF_ORIGIN);
+			return null;
 		}
 		if (!isEnabled(link)) {
 			FtnTools.writeReply(fmsg, YOU_ARE_NOT_WELCOME, MessageFormat
 					.format(SORRY_0_IS_OFF_FOR_YOU, getRobotName()));
 			return null;
 		}
-		{
-			String password = getPassword(link);
-			if (!password.equals(fmsg.getSubject())) {
-				FtnTools.writeReply(fmsg, ACCESS_DENIED, WRONG_PASSWORD);
-				return null;
-			}
+		String password = getPassword(link);
+		if (!password.equals(fmsg.getSubject())) {
+			FtnTools.writeReply(fmsg, ACCESS_DENIED, WRONG_PASSWORD);
+			return null;
 		}
 		return link;
 	}

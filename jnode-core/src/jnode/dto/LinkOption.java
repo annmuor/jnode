@@ -108,6 +108,16 @@ public class LinkOption {
 	@DatabaseField(columnName = "value", canBeNull = false, dataType = DataType.LONG_STRING)
 	private String value;
 
+	public LinkOption() {
+	}
+
+	public LinkOption(Link link, String option, String value) {
+		super();
+		this.link = link;
+		this.option = option;
+		this.value = value;
+	}
+
 	public Long getId() {
 		return id;
 	}
