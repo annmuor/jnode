@@ -11,6 +11,6 @@ public class ModeReaderProcessor implements Processor {
 
     @Override
     public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId, Auth auth) {
-        return Arrays.asList(NntpResponse.ModeReader.POSTING_PROHIBITED);
+        return Arrays.asList(NntpResponse.ModeReader.POSTING_ALLOWED);
     }
 }

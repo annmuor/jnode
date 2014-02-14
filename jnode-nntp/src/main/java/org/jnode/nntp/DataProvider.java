@@ -25,5 +25,5 @@ public interface DataProvider {
     Link link(Auth auth, String pass);
 
     void post(Netmail netmail);
-    void post(Echomail netmail);
+    void post(Auth auth, Echomail netmail);
 }

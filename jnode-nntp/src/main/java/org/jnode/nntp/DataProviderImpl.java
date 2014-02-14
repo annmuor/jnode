@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import jnode.dao.GenericDAO;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
+import jnode.dto.EchomailAwaiting;
 import jnode.dto.Entity;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
@@ -21,6 +22,7 @@ public class DataProviderImpl implements DataProvider {
 
     private GenericDAO<Echoarea> echoareaDAO = ORMManager.get(Echoarea.class);
     private GenericDAO<Echomail> echomailDao = ORMManager.get(Echomail.class);
+    private GenericDAO<EchomailAwaiting> awaitingEchomailDao = ORMManager.get(EchomailAwaiting.class);
     private GenericDAO<Netmail> netmailDao = ORMManager.get(Netmail.class);
     private GenericDAO<Link> linkDao = ORMManager.get(Link.class);
     private GenericDAO<Subscription> subscriptionDAO = ORMManager.get(Subscription.class);
@@ -214,11 +216,15 @@ public class DataProviderImpl implements DataProvider {
 
     @Override
     public void post(Netmail netmail) {
-         netmailDao.save(netmail);
+        netmailDao.save(netmail);
     }
 
     @Override
-    public void post(Echomail echomail) {
-         echomailDao.save(echomail);
+    public void post(Auth auth, Echomail echomail) {
+        echomailDao.save(echomail);
+        for (Subscription s : ORMManager.get(Subscription.class).getAnd(
+                "echoarea_id", "=", echomail.getArea())) {
+            ORMManager.get(EchomailAwaiting.class).save(new EchomailAwaiting(s.getLink(), echomail));
+        }
     }
 }

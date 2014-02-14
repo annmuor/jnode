@@ -41,6 +41,6 @@ public class ListProcessor extends BaseProcessor implements Processor {
         "n" Posting is not permitted.
         "m" Postings will be forwarded to the newsgroup moderator.
      */
-        response.add(newsGroup.getName() + " " + newsGroup.getReportedHighWatermark() + " " + newsGroup.getReportedLowWatermark() + " " + "n");
+        response.add(newsGroup.getName() + " " + newsGroup.getReportedHighWatermark() + " " + newsGroup.getReportedLowWatermark() + " " + "y");
     }
 }

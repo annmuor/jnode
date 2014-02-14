@@ -97,7 +97,7 @@ public class NntpClient implements Runnable {
 
         try {
             // Send greetings. Posting is not implemented yet.
-            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
+            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_ALLOWED));
 
             while ((line = in.readLine()) != null) {
                 logger.l4("[C] " + line);

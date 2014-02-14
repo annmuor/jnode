@@ -56,7 +56,7 @@ public class PostProcessor implements Processor {
                 try {
                     Echomail echomail = convertToEchomail(params);
                     // todo validate
-                    dataProvider.post(echomail);
+                    dataProvider.post(auth, echomail);
                 } catch (NntpException e) {
                     logger.l1("Can't save echomail.", e);
                 }
