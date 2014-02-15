@@ -1,4 +1,53 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.ftn;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import jnode.core.ConcurrentDateFormatAccess;
 import jnode.core.FileUtils;
@@ -74,6 +123,7 @@ import java.util.zip.ZipOutputStream;
  */
 public final class FtnTools {
 	private static final String BINKP_INBOUND = "binkp.inbound";
+	private static final String NETMAIL_VALID = "netmail.only_valid";
 	private static final String SEEN_BY = "SEEN-BY:";
 	private static final String PATH = "\001PATH:";
 	public static final Charset CP_866 = Charset.forName("CP866");
@@ -182,14 +232,14 @@ public final class FtnTools {
 	 * @param len
 	 * @return
 	 */
-	public static byte[] substr(String s, int len) {
+	public static byte[] substr(String s, int maxlen) {
 		byte[] bytes = s.getBytes(CP_866);
-
-		if (bytes.length > len) {
-			return ByteBuffer.wrap(bytes, 0, len).array();
-		} else {
-			return bytes;
+		int len = (bytes.length > maxlen) ? maxlen : bytes.length;
+		byte[] ret = new byte[len];
+		for (int i = 0; i < len; i++) {
+			ret[i] = bytes[i];
 		}
+		return ret;
 	}
 
 	/**
@@ -665,7 +715,8 @@ public final class FtnTools {
 		boolean underll = false;
 		while ((read) ? !f.exists() : f.exists()) {
 			if ((ninetoa && ztonull) || underll) {
-				logger.l2("All possible files exists. Please delete something before continue");
+				logger.l4(read ? "Files not found"
+						: "Delete something to continue");
 				f = null;
 				break;
 			} else {
@@ -1435,13 +1486,20 @@ public final class FtnTools {
 	 * @param netmail
 	 * @return
 	 */
-	public static boolean validateNetmail(FtnMessage netmail) {
+	public static boolean checkNetmailMustDropped(FtnMessage netmail) {
+		// дополнительная проверка
+		if (!MainHandler.getCurrentInstance().getBooleanProperty(NETMAIL_VALID,
+				true)) {
+			return false;
+		}
 		boolean validFrom = false;
 		boolean validTo = false;
 		// к нам на узел
 		if (isOurPoint(netmail.getToAddr())) {
 			validTo = true;
 		} else if (getLinkByFtnAddress(netmail.getToAddr()) != null) {
+			validTo = true;
+		} else if (getLinkByFtnAddress(netmail.getToAddr().cloneNode()) != null) {
 			validTo = true;
 		} else {
 			FtnNdlAddress to = NodelistScanner.getInstance().isExists(
@@ -1456,23 +1514,25 @@ public final class FtnTools {
 								.getFromAddr().toString(), netmail.getToAddr()
 								.toString()));
 
-			} else if (to.getStatus().equals(Status.DOWN)) {
-				FtnTools.writeReply(netmail, "Destination is DOWN",
-						"Warning! Destination of your netmail is DOWN.\nMessage rejected");
-				logger.l3(String.format(
-						"Netmail %s -> %s reject ( dest is DOWN )", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
-								.toString()));
-			} else if (to.getStatus().equals(Status.HOLD)) {
-				FtnTools.writeReply(netmail, "Destination is HOLD",
-						"Warning! Destination of your netmail is HOLD");
-				logger.l4(String.format(
-						"Netmail %s -> %s warn ( dest is Hold )", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
-								.toString()));
-				validTo = true;
 			} else {
 				validTo = true;
+				if (to.getStatus().equals(Status.DOWN)) {
+					FtnTools.writeReply(netmail, "Destination is DOWN",
+							"Warning! Destination of your netmail is DOWN.");
+					logger.l3(String.format(
+							"Netmail %s -> %s reject ( dest is DOWN )", netmail
+									.getFromAddr().toString(), netmail
+									.getToAddr().toString()));
+					validTo = true;
+				} else if (to.getStatus().equals(Status.HOLD)) {
+					FtnTools.writeReply(netmail, "Destination is HOLD",
+							"Warning! Destination of your netmail is HOLD");
+					logger.l4(String.format(
+							"Netmail %s -> %s warn ( dest is Hold )", netmail
+									.getFromAddr().toString(), netmail
+									.getToAddr().toString()));
+
+				}
 			}
 		}
 
@@ -1480,6 +1540,8 @@ public final class FtnTools {
 			validFrom = true;
 		} else if (getLinkByFtnAddress(netmail.getFromAddr()) != null) {
 			validFrom = true;
+		} else if (getLinkByFtnAddress(netmail.getFromAddr().cloneNode()) != null) {
+			validTo = true;
 		} else {
 			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
 					netmail.getFromAddr());
@@ -1525,7 +1587,6 @@ public final class FtnTools {
 				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
 		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
-				getPrimaryFtnAddress().toString(), FtnTools.generate8d(),
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
 		b.append("\n--- "
@@ -1535,10 +1596,12 @@ public final class FtnTools {
 				+ getPrimaryFtnAddress().toString() + ")\n");
 		mail.setText(b.toString());
 		ORMManager.get(Echomail.class).save(mail);
-		for (Subscription s : ORMManager.get(Subscription.class).getAnd(
-				"echoarea_id", "=", area)) {
-			ORMManager.get(EchomailAwaiting.class).save(
-					new EchomailAwaiting(s.getLink(), mail));
+		if (mail.getId() != null) {
+			for (Subscription s : ORMManager.get(Subscription.class).getAnd(
+					"echoarea_id", "=", area)) {
+				ORMManager.get(EchomailAwaiting.class).save(
+						new EchomailAwaiting(s.getLink(), mail));
+			}
 		}
 	}
 
@@ -1696,6 +1759,17 @@ public final class FtnTools {
 			}
 		}
 
+	}
+
+	public static void setOption(Link link, String name, String value) {
+		LinkOption option = ORMManager.get(LinkOption.class).getFirstAnd(
+				"link_id", "=", link, "name", "=", name);
+		if (option == null) {
+			option = new LinkOption(link, name, value);
+		} else {
+			option.setValue(value);
+		}
+		ORMManager.get(LinkOption.class).saveOrUpdate(option);
 	}
 
 }

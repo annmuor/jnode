@@ -1,3 +1,23 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.robot;
 
 import java.sql.SQLException;
@@ -31,6 +51,13 @@ public class AreaFix extends AbstractRobot {
 			"^%RESCAN (\\S+) (\\d+)$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern ADD_RESCAN = Pattern.compile(
 			"^%?\\+?(\\S+) /r=(\\d+)$", Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern AFXPASS = Pattern.compile("^%AFXPASS (\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern PKTPASS = Pattern.compile("^%PKTPASS (\\S+)$",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern IGNOREPKTPWD = Pattern.compile(
+			"^%IGNOREPKTPWD (on|off)$", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public void execute(FtnMessage fmsg) throws Exception {
@@ -82,6 +109,26 @@ public class AreaFix extends AbstractRobot {
 					reply.append(rescan(link, area, num));
 					continue;
 				}
+				m = AFXPASS.matcher(line);
+				if (m.matches()) {
+					String newpwd = m.group(1);
+					reply.append(afxpass(link, newpwd));
+					continue;
+				}
+				m = PKTPASS.matcher(line);
+				if (m.matches()) {
+					String newpwd = m.group(1);
+					reply.append(pktpass(link, newpwd));
+					continue;
+				}
+
+				m = IGNOREPKTPWD.matcher(line);
+				if (m.matches()) {
+					String onoff = m.group(1);
+					reply.append(ignorepktpwd(link, onoff));
+					continue;
+				}
+
 			}
 		}
 		if (reply.length() > 0) {
@@ -91,15 +138,49 @@ public class AreaFix extends AbstractRobot {
 		}
 	}
 
+	private String ignorepktpwd(Link link, String onoff) {
+		if (onoff.equals("on")) {
+			FtnTools.setOption(link, LinkOption.BOOLEAN_IGNORE_PKTPWD, "true");
+			return "We will ignore password in your packets\n";
+		} else {
+			FtnTools.setOption(link, LinkOption.BOOLEAN_IGNORE_PKTPWD, "false");
+			return "We will check password in your packets\n";
+		}
+	}
+
+	private String pktpass(Link link, String newpwd) {
+		if (newpwd.length() > 3 && newpwd.length() < 9) {
+			link.setPaketPassword(newpwd);
+			ORMManager.get(Link.class).update(link);
+			return "Your packet password was changed to " + newpwd + "\n";
+		} else {
+			return "Your packet password must be between 4 and 8 chars length\n";
+		}
+	}
+
+	protected String afxpass(Link link, String newpwd) {
+		if (newpwd.length() > 3 && newpwd.length() < 17) {
+			FtnTools.setOption(link, LinkOption.STRING_AREAFIX_PWD, newpwd);
+			return "Your AreaFix password was changed to " + newpwd + "\n";
+		} else {
+			return "Your AreaFix password must be between 4 and 16 chars length\n";
+		}
+	}
+
 	/**
 	 * Отправляем %HELP
 	 * 
 	 * @return
 	 */
 	protected String help() {
-		return "Available commands:\n" + "%HELP - this message\n"
+		return "Available commands:\n"
+				+ "%HELP - this message\n"
+				+ "%ASLINK ftn address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
+				+ "%AFXPASS password - change areafix password\n"
+				+ "%PKTPASS password - change pkt password\n"
+				+ "%IGNOREPKTPWD on|off - turn on/off checking pkt passwords in pkts from you\n"
 				+ "+echo.area - subscribe echo.area\n"
 				+ "-echo.area - unsibscribe echo.area\n"
 				+ "+echo.area /r=N - subscribe and rescan N messages\n"
@@ -196,6 +277,14 @@ public class AreaFix extends AbstractRobot {
 		List<Echoarea> areas = ORMManager.get(Echoarea.class).getAnd("name",
 				"~", like);
 		if (areas.isEmpty()) {
+			// check-check: let's make an request
+			// TODO: make it :-)
+			// Link uplink = ORMManager
+			// .get(Link.class)
+			// .join(true)
+			// .join(LinkOption.class, true, "name", "=",
+			// LinkOption.BOOLEAN_FORWARD_AREAFIX, "value", "=",
+			// "true").one();
 			sb.append(area + " not found");
 		} else {
 			for (Echoarea earea : areas) {

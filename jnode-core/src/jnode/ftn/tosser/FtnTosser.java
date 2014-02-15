@@ -1,3 +1,23 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.ftn.tosser;
 
 import jnode.core.FileUtils;
@@ -48,7 +68,7 @@ public class FtnTosser {
 				return;
 			}
 		}
-		boolean drop = validateNetmail(netmail);
+		boolean drop = checkNetmailMustDropped(netmail);
 
 		if (drop) {
 			Integer n = bad.get("netmail");
@@ -152,14 +172,16 @@ public class FtnTosser {
 		mail.setPath(write2D(echomail.getPath(), false));
 		mail.setMsgid(echomail.getMsgid());
 		ORMManager.get(Echomail.class).save(mail);
-		for (Subscription sub : getSubscription(area)) {
-			if (link == null
-					|| !sub.getLink().equals(link)
-					&& !getOptionBooleanDefFalse(sub.getLink(),
-							LinkOption.BOOLEAN_PAUSE)) {
-				ORMManager.get(EchomailAwaiting.class).save(
-						new EchomailAwaiting(sub.getLink(), mail));
-				pollLinks.add(sub.getLink());
+		if (mail.getId() != null) {
+			for (Subscription sub : getSubscription(area)) {
+				if (link == null
+						|| !sub.getLink().equals(link)
+						&& !getOptionBooleanDefFalse(sub.getLink(),
+								LinkOption.BOOLEAN_PAUSE)) {
+					ORMManager.get(EchomailAwaiting.class).save(
+							new EchomailAwaiting(sub.getLink(), mail));
+					pollLinks.add(sub.getLink());
+				}
 			}
 		}
 		Notifier.INSTANSE.notify(new NewEchomailEvent(mail));
@@ -310,28 +332,32 @@ public class FtnTosser {
 							mail.setSeenby(write4D(tic.getSeenby()));
 							mail.setCreated(new Date());
 							ORMManager.get(Filemail.class).save(mail);
-							for (FileSubscription sub : getSubscription(area)) {
-								if (source != null) {
-									if (sub.getLink().getId()
-											.equals(source.getId())) {
-										continue;
+							if (mail.getId() != null) {
+								for (FileSubscription sub : getSubscription(area)) {
+									if (source != null) {
+										if (sub.getLink().getId()
+												.equals(source.getId())) {
+											continue;
+										}
 									}
-								}
-								if (!getOptionBooleanDefFalse(sub.getLink(),
-										LinkOption.BOOLEAN_PAUSE)) {
-									ORMManager.get(FilemailAwaiting.class)
-											.save(new FilemailAwaiting(sub
-													.getLink(), mail));
-									if (getOptionBooleanDefFalse(sub.getLink(),
-											LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
-										poll.add(sub.getLink());
+									if (!getOptionBooleanDefFalse(
+											sub.getLink(),
+											LinkOption.BOOLEAN_PAUSE)) {
+										ORMManager.get(FilemailAwaiting.class)
+												.save(new FilemailAwaiting(sub
+														.getLink(), mail));
+										if (getOptionBooleanDefFalse(
+												sub.getLink(),
+												LinkOption.BOOLEAN_CRASH_FILEMAIL)) {
+											poll.add(sub.getLink());
+										}
 									}
 								}
 							}
 							Notifier.INSTANSE
 									.notify(new NewFilemailEvent(mail));
 						} else {
-							logger.l4("File " + attach.getAbsolutePath()
+							logger.l4("File " + filename
 									+ " not found in inbound, waiting");
 							continue;
 						}
@@ -454,7 +480,9 @@ public class FtnTosser {
 				mail.addAll(ORMManager.get(Netmail.class).getAnd("send", "=",
 						false, "to_address", "=", address.toString(),
 						"route_via", "null"));
-				mail.addAll(getMail(link));
+				if (link != null) {
+					mail.addAll(getMail(link));
+				}
 				if (!mail.isEmpty()) {
 					try {
 
@@ -592,11 +620,15 @@ public class FtnTosser {
 
 	private void deleteEAmail(EchomailAwaiting e) {
 		ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
+				e.getLink(), "echomail_id", "null");
+		ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
 				e.getLink(), "echomail_id", "=", e.getMail());
 
 	}
 
 	private void deleteFAMail(FilemailAwaiting f) {
+		ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
+				f.getLink(), "filemail_id", "null");
 		ORMManager.get(FilemailAwaiting.class).delete("link_id", "=",
 				f.getLink(), "filemail_id", "=", f.getMail());
 
@@ -696,42 +728,48 @@ public class FtnTosser {
 		return msgs;
 	}
 
-	public synchronized List<Message> getMessages2(FtnAddress address) {
+	public List<Message> getMessages2(FtnAddress address) {
 		LinkedList<Message> messages = new LinkedList<>();
-		messages.addAll(packNetmail(address));
-		Link link = getLinkByFtnAddress(address);
-		if (link != null) {
-			messages.addAll(packEchomail(link, address));
-			messages.addAll(packFilemail(link, address));
-			if (messages.isEmpty()) {
-				File inbound = new File(getInbound());
-				final File[] listFiles = inbound.listFiles();
-				if (listFiles != null) {
-					for (File file : listFiles) {
-						String loname = file.getName().toLowerCase();
-						if (loname.matches("^out_" + link.getId() + "\\..*$")) {
-							boolean packed = true;
-							try {
-								new ZipFile(file).close();
-							} catch (Exception e) {
-								packed = false;
-							}
-							try {
-								Message m = new Message(file);
-								if (packed) {
-									m.setMessageName(generateEchoBundle());
-								} else {
-									m.setMessageName(generate8d() + ".pkt");
+		String key = address.toString().intern();
+		synchronized (key) {
+			messages.addAll(packNetmail(address));
+			Link link = getLinkByFtnAddress(address);
+			if (link != null) {
+				messages.addAll(packEchomail(link, address));
+				messages.addAll(packFilemail(link, address));
+				if (messages.isEmpty()) {
+					File inbound = new File(getInbound());
+					final File[] listFiles = inbound.listFiles();
+					if (listFiles != null) {
+						for (File file : listFiles) {
+							String loname = file.getName().toLowerCase();
+							if (loname.matches("^out_" + link.getId()
+									+ "\\..*$")) {
+								boolean packed = true;
+								try {
+									new ZipFile(file).close();
+								} catch (Exception e) {
+									packed = false;
 								}
-								messages.add(m);
-							} catch (Exception e) {
-								// ignore
-							}
+								try {
+									Message m = new Message(file);
+									if (packed) {
+										m.setMessageName(generateEchoBundle());
+									} else {
+										m.setMessageName(generate8d() + ".pkt");
+									}
+									messages.add(m);
+									break;
+								} catch (Exception e) {
+									// ignore
+								}
 
+							}
 						}
 					}
 				}
 			}
+
 		}
 		return messages;
 	}

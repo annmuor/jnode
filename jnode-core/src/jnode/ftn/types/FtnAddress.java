@@ -1,3 +1,23 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.ftn.types;
 
 import java.io.Serializable;
@@ -18,11 +38,12 @@ public class FtnAddress implements Serializable {
 	protected int net;
 	protected int node;
 	protected int point;
+	public static final Pattern fidonetAddress = Pattern
+			.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
 
 	public FtnAddress(String addr) throws NumberFormatException {
-		Pattern p = Pattern
-				.compile("^(\\d)?:?(\\d{1,5})/(\\d{1,5})\\.?(\\d{1,5})?@?(\\S+)?$");
-		Matcher m = p.matcher(addr);
+
+		Matcher m = fidonetAddress.matcher(addr);
 		if (m.matches()) {
 			if (m.group(1) != null && m.group(1).length() > 0) {
 				zone = new Integer(m.group(1));
@@ -41,14 +62,14 @@ public class FtnAddress implements Serializable {
 		}
 	}
 
-    public FtnAddress(int zone, int net, int node, int point) {
-        this.zone = zone;
-        this.point = point;
-        this.node = node;
-        this.net = net;
-    }
+	public FtnAddress(int zone, int net, int node, int point) {
+		this.zone = zone;
+		this.point = point;
+		this.node = node;
+		this.net = net;
+	}
 
-    public FtnAddress() {
+	public FtnAddress() {
 		zone = MainHandler.getCurrentInstance().getInfo().getZone();
 		net = 0;
 		node = 0;
@@ -156,7 +177,11 @@ public class FtnAddress implements Serializable {
 	}
 
 	public FtnAddress clone() {
-		return new FtnAddress(zone,net,node,point);
+		return new FtnAddress(zone, net, node, point);
+	}
+
+	public FtnAddress cloneNode() {
+		return new FtnAddress(zone, net, node, 0);
 	}
 
 }

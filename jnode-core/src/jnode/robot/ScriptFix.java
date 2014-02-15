@@ -1,3 +1,23 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.robot;
 
 import jnode.core.ConcurrentDateFormatAccess;
@@ -96,6 +116,7 @@ public class ScriptFix extends AbstractRobot {
 
 	protected String help() {
 		return "Available commands:\n" + "%HELP - this message\n"
+				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of all scripts\n"
 				+ "%RUN scriptId - force run script";
 	}
@@ -103,7 +124,7 @@ public class ScriptFix extends AbstractRobot {
 	private String list() throws SQLException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("============== List of all jscripts ===============\n");
+		sb.append("==============  List of all jscripts ===============\n");
 		sb.append("| id  |                   content                  |\n");
 		sb.append("|-----|--------------------------------------------|\n");
 		for (Jscript js : ORMManager.get(Jscript.class).getOrderAnd("id", true)) {

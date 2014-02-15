@@ -1,3 +1,23 @@
+/*
+ * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for 
+ * additional information regarding copyright ownership.  
+ * The jNode Team licenses this file to you under the 
+ * Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package jnode.main;
 
 import com.j256.ormlite.logger.LocalLog;
@@ -37,6 +57,8 @@ public class Main {
 	private static final String BINKD_THREADS = "binkp.threads";
 	private static final String LOG_LEVEL = "log.level";
 	private static final String MODULES = "modules";
+	private static final String LOGFILE = "log.file";
+	private static final String LOGZIPPATH = "log.zippath";
 
 	public static void main(String[] args) {
 		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
@@ -44,9 +66,12 @@ public class Main {
 			System.out.println("Usage: $0 <config-file>");
 			System.exit(-1);
 		}
+
 		try {
 			new MainHandler(args[0]);
-		} catch (IOException e) {
+            tryRedirectLog();
+
+        } catch (IOException e) {
 			GUIConfigurator.main(args);
 			logger.l1("Bad configuration", e);
 			return;
@@ -143,7 +168,15 @@ public class Main {
 		});
 	}
 
-	private static final class TosserTask extends TimerTask {
+    private static void tryRedirectLog() {
+        String redirectMask = MainHandler.getCurrentInstance().getProperty(LOGFILE, "");
+        if (redirectMask.length() != 0){
+            String zipMask = MainHandler.getCurrentInstance().getProperty(LOGZIPPATH, "");
+            new Redirector(redirectMask, zipMask).invoke();
+        }
+    }
+
+    private static final class TosserTask extends TimerTask {
 		@Override
 		public void run() {
 			try {
