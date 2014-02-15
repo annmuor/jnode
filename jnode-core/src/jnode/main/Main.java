@@ -28,6 +28,7 @@ import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
+import jnode.logger.Redirector;
 import jnode.main.threads.HealthReporter;
 import jnode.main.threads.NetmailFallback;
 import jnode.main.threads.PollQueue;
