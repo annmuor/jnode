@@ -5,6 +5,7 @@
     <groupId>jnode</groupId>
     <artifactId>jnode</artifactId>
     <version>1.0-SNAPSHOT</version>
+
     <name>jnode</name>
     <packaging>pom</packaging>
     <url>http://fidonode.in/jnode/</url>
@@ -84,7 +85,8 @@
         	<module>jnode-dumb-module</module>
         	<module>jnode-xmpp-module</module>
         	<module>jnode-pointchecker-module</module>
-        	<module>jnode-assembly</module>
+            <module>jnode-nntp</module>
+        	<module>jnode-assembly</module>            
         </modules>
     </profile>
 </profiles>

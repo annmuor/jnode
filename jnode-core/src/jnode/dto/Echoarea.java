@@ -28,7 +28,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  */
 @DatabaseTable(tableName = "echoarea")
-public class Echoarea {
+public class Echoarea implements Entity {
     @DatabaseField(columnName = "id", generatedId = true)
     private Long id;
     @DatabaseField(columnName = "name", canBeNull = false, uniqueIndex = true)

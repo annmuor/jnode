@@ -20,11 +20,11 @@
 
 package jnode.logger;
 
+import jnode.core.ConcurrentDateFormatAccess;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
-import jnode.core.ConcurrentDateFormatAccess;
 
 public final class Logger {
     public static final int LOG_L5 = 5;

@@ -30,7 +30,7 @@ import java.util.Date;
  * @author kreon
  */
 @DatabaseTable(tableName = "echomail")
-public class Echomail {
+public class Echomail implements Entity, Mail {
 	@DatabaseField(generatedId = true, columnName = "id")
 	private Long id;
 	@DatabaseField(columnName = "echoarea_id", foreign = true, foreignAutoRefresh = true)
@@ -66,7 +66,7 @@ public class Echomail {
 		return area;
 	}
 
-	public void setArea(Echoarea area) {
+    public void setArea(Echoarea area) {
 		this.area = area;
 	}
 
@@ -74,7 +74,8 @@ public class Echomail {
 		return fromName;
 	}
 
-	public void setFromName(String fromName) {
+	@Override
+    public void setFromName(String fromName) {
 		this.fromName = fromName;
 	}
 
@@ -82,7 +83,8 @@ public class Echomail {
 		return toName;
 	}
 
-	public void setToName(String toName) {
+	@Override
+    public void setToName(String toName) {
 		this.toName = toName;
 	}
 
@@ -90,7 +92,8 @@ public class Echomail {
 		return fromFTN;
 	}
 
-	public void setFromFTN(String fromFTN) {
+	@Override
+    public void setFromFTN(String fromFTN) {
 		this.fromFTN = fromFTN;
 	}
 
@@ -98,7 +101,8 @@ public class Echomail {
 		return subject;
 	}
 
-	public void setSubject(String subject) {
+	@Override
+    public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
@@ -106,7 +110,8 @@ public class Echomail {
 		return text;
 	}
 
-	public void setText(String text) {
+	@Override
+    public void setText(String text) {
 		this.text = text;
 	}
 
@@ -130,7 +135,8 @@ public class Echomail {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	@Override
+    public void setDate(Date date) {
 		this.date = date;
 	}
 
