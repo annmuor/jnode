@@ -8,10 +8,12 @@ public class NntpTest {
 
     private Logger logger = Logger.getLogger(NntpTest.class);
 
-    @Test
-    public void runServer() throws JnodeModuleException {
-        NntpModule module = new NntpModule("/tmp/bla.properties");
-        module.start();
+    public static void main(String[] args) {
+        try {
+            NntpModule module = new NntpModule("/tmp/bla.properties");
+            module.start();
+        } catch (JnodeModuleException e) {
+            e.printStackTrace();
+        }
     }
-
 }

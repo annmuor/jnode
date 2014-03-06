@@ -5,6 +5,8 @@ import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NewsMessage;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Date;
@@ -16,7 +18,7 @@ public class DataProviderServiceTest {
     NewsGroup ng2;
     NewsGroup ng3;
 
-    @Test
+    @Before
     public void prepare() throws JnodeModuleException {
         NntpModule module = new NntpModule("/tmp/bla.properties");
 
