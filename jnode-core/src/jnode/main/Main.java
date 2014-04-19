@@ -21,6 +21,7 @@
 package jnode.main;
 
 import com.j256.ormlite.logger.LocalLog;
+
 import jnode.event.Notifier;
 import jnode.event.SharedModuleEvent;
 import jnode.ftn.FtnTools;
@@ -70,9 +71,9 @@ public class Main {
 
 		try {
 			new MainHandler(args[0]);
-            tryRedirectLog();
+			tryRedirectLog();
 
-        } catch (IOException e) {
+		} catch (IOException e) {
 			GUIConfigurator.main(args);
 			logger.l1("Bad configuration", e);
 			return;
@@ -118,8 +119,8 @@ public class Main {
 		mainTimer.schedule(new PollQueueTask(), 10000, 10000);
 		logger.l4("Started StatPoster");
 		mainTimer.schedule(new NetmailFallback(), 9000, 3600000);
-        logger.l4("Started HealthReporter");
-        mainTimer.schedule(new HealthReporter(), 60000L, 600000L);
+		logger.l4("Started HealthReporter");
+		mainTimer.schedule(new HealthReporter(), 60000L, 600000L);
 		new StatPoster(mainTimer);
 		new JscriptExecutor();
 		logger.l4("Started JscriptExecutor");
@@ -169,15 +170,17 @@ public class Main {
 		});
 	}
 
-    private static void tryRedirectLog() {
-        String redirectMask = MainHandler.getCurrentInstance().getProperty(LOGFILE, "");
-        if (redirectMask.length() != 0){
-            String zipMask = MainHandler.getCurrentInstance().getProperty(LOGZIPPATH, "");
-            new Redirector(redirectMask, zipMask).invoke();
-        }
-    }
+	private static void tryRedirectLog() {
+		String redirectMask = MainHandler.getCurrentInstance().getProperty(
+				LOGFILE, "");
+		if (redirectMask.length() != 0) {
+			String zipMask = MainHandler.getCurrentInstance().getProperty(
+					LOGZIPPATH, "");
+			new Redirector(redirectMask, zipMask).invoke();
+		}
+	}
 
-    private static final class TosserTask extends TimerTask {
+	private static final class TosserTask extends TimerTask {
 		@Override
 		public void run() {
 			try {
@@ -188,7 +191,7 @@ public class Main {
 		}
 
 	}
-	
+
 	private static final class PollQueueTask extends TimerTask {
 
 		@Override
