@@ -44,7 +44,8 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 	static final Logger logger = Logger.getLogger(BinkpSyncConnector.class);
 	private volatile Socket socket;
 	private volatile boolean closed = false;
-
+	private volatile boolean connected = true;
+	
 	public BinkpSyncConnector(String protocolAddress) throws IOException {
 		super(protocolAddress);
 		try {
@@ -73,7 +74,9 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 			public void run() {
 				logger.l4("processOutputObserver started");
 				boolean last = false;
-				while (isConnected()) {
+				while (connected) {
+					connected = isConnected();
+					
 					if (socket == null || last) {
 						break;
 					}

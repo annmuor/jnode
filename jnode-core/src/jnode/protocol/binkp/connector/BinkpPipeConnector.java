@@ -43,6 +43,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 
 	private volatile Process process;
 	private volatile boolean closed = false;
+	private volatile boolean connected = true;
 
 	public BinkpPipeConnector(String protocolAddress) throws IOException {
 		super(protocolAddress);
@@ -60,7 +61,8 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 			public void run() {
 				logger.l4("processOutputObserver started");
 				boolean last = false;
-				while (isConnected()) {
+				while (connected) {
+					connected = isConnected(); // SHIT VM Optimisation
 					if (process == null || last) {
 						// last iteration & exit
 						break;
