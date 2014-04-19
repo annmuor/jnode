@@ -40,9 +40,9 @@ public class StatPoster extends TimerTask {
 	private static final String STAT_ENABLE = "stat.enable";
 	private static final String STAT_ECHOAREA = "stat.area";
 	private static final String STAT_POSTERS = "stat.posters";
-    private static final long MILLISEC_IN_DAY = 86400000L;
+	private static final long MILLISEC_IN_DAY = 86400000L;
 
-    public StatPoster(Timer timer) {
+	public StatPoster(Timer timer) {
 		if (getStatisticEnabled()) {
 			posters = new ArrayList<>();
 			{
@@ -71,11 +71,11 @@ public class StatPoster extends TimerTask {
 			calendar.set(Calendar.HOUR_OF_DAY, 0);
 			calendar.set(Calendar.MINUTE, 0);
 			calendar.set(Calendar.SECOND, 0);
-            Date date = new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
+			Date date = new Date(calendar.getTime().getTime() + MILLISEC_IN_DAY);
 			long delay = date.getTime() - new Date().getTime();
-            if (delay < 0){
-                delay = 0;
-            }
+			if (delay < 0) {
+				delay = 0;
+			}
 			logger.l3("First stat after " + (delay / 1000)
 					+ " seconds and every 24h after");
 			timer.schedule(this, delay, 24 * 3600 * 1000);
@@ -87,15 +87,15 @@ public class StatPoster extends TimerTask {
 		logger.l1("StatPoster activated");
 		Echoarea area = FtnTools.getAreaByName(getTechEchoarea(), null);
 		for (IStatPoster poster : posters) {
-            String text = poster.getText();
-            if (text != null && text.length() != 0){
-                FtnTools.writeEchomail(area, poster.getSubject(), text);
-                logger.l3("Posted stat from robot "
-                        + poster.getClass().getCanonicalName());
-            } else {
-                logger.l3("Empty stat from robot "
-                        + poster.getClass().getCanonicalName());
-            }
+			String text = poster.getText();
+			if (text != null && text.length() != 0) {
+				FtnTools.writeEchomail(area, poster.getSubject(), text);
+				logger.l3("Posted stat from robot "
+						+ poster.getClass().getCanonicalName());
+			} else {
+				logger.l3("Empty stat from robot "
+						+ poster.getClass().getCanonicalName());
+			}
 		}
 	}
 

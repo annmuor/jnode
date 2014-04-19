@@ -21,15 +21,15 @@
 package jnode.event;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public enum Notifier {
 	INSTANSE;
-	private final Hashtable<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
+	private final ConcurrentHashMap<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
 
 	private Notifier() {
-		notifyMap = new Hashtable<>();
+		notifyMap = new ConcurrentHashMap<>();
 	}
 
 	public void register(Class<? extends IEvent> clazz, IEventHandler handler) {
