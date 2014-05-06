@@ -51,7 +51,7 @@ public class ScriptFix extends AbstractRobot {
 			Pattern.CASE_INSENSITIVE);
 	private static final Pattern RUN = Pattern.compile("^%RUN (\\d+)$",
 			Pattern.CASE_INSENSITIVE);
-    private static final Pattern SCRIPT = Pattern.compile("\\{(.*)?\\}",
+    private static final Pattern SCRIPT = Pattern.compile(".*\\{(.*)?\\}.*",
             Pattern.DOTALL);
 
 	private static final ConcurrentDateFormatAccess format = new ConcurrentDateFormatAccess(
@@ -65,10 +65,13 @@ public class ScriptFix extends AbstractRobot {
 		}
 
         // если скрипт - то фигарим скрипт
+        logger.l5(String.format("process message [%s]", fmsg.getText()));
         String scriptContent = extractScript(fmsg.getText());
         if (scriptContent != null){
+            logger.l5("try process script");
             processScript(fmsg, scriptContent);
         } else{
+            logger.l5("try process commands");
             processCommands(fmsg);
         }
 
@@ -76,6 +79,7 @@ public class ScriptFix extends AbstractRobot {
 
     private void processScript(FtnMessage fmsg, String scriptContent) {
         String output = executeScriptWithConsole(scriptContent, false);
+        logger.l5(String.format("got script output %s", output));
         FtnTools.writeReply(fmsg,
                 MessageFormat.format("{0} exec script", getRobotName()),
                 output != null ? output : "Okay");

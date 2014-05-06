@@ -18,4 +18,5 @@ public class JscriptExecutorTest {
         JscriptExecutor.execScript("var a = 42 + 'ggg'; console.log(a);", bindings);
         Assert.assertEquals("42ggg", jScriptConsole.out());
     }
+
 }
