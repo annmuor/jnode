@@ -33,4 +33,8 @@ public class ScriptFixTest {
         Assert.assertNull(ScriptFix.extractScript("{" + text));
     }
 
+    @Test
+    public void testConsole() throws Exception {
+        Assert.assertEquals("42FIFO", ScriptFix.executeScriptWithConsole("var a = 42 + 'FIFO'; console.log(a);", true));
+    }
 }

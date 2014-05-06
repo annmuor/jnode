@@ -41,7 +41,7 @@ import jnode.orm.ORMManager;
  * 
  */
 public class JscriptExecutor implements Runnable {
-	private static final String JSCRIPT_ENABLE = "jscript.enable";
+    private static final String JSCRIPT_ENABLE = "jscript.enable";
 	private static final long MILLISEC_IN_HOUR = 3600000L;
 	private static final Logger logger = Logger
 			.getLogger(JscriptExecutor.class);
@@ -197,30 +197,27 @@ public class JscriptExecutor implements Runnable {
 		return null;
 	}
 
-    /**
-     * Выполнить скрипт
-     *
-     * @param content
-     *            собстна скрипт
-     * @return отчет об ошибках
-     */
-    public static String executeScript(String content) {
+    public static String executeScript(String content, Bindings appendBindings, boolean force) {
 
-        if (!MainHandler.getCurrentInstance().getBooleanProperty(
+        if (!force && !MainHandler.getCurrentInstance().getBooleanProperty(
                 JSCRIPT_ENABLE, true)) {
             return "Script execution disabled";
         }
 
-        return execScript(content);
+        Bindings bindings = force ? new SimpleBindings() : createBindings();
+        if (appendBindings != null){
+            bindings.putAll(appendBindings);
+        }
+        return execScript(content, bindings);
     }
 
-    static String execScript(String content) {
+    static String execScript(String content, Bindings bindings) {
         try {
             if (content == null) {
                 return "Null content of script";
             }
 
-            internalExecuteScript(content);
+            internalExecuteScript(content, bindings);
 
         } catch (Exception ex) {
             logger.l4(
@@ -233,11 +230,15 @@ public class JscriptExecutor implements Runnable {
     }
 
     private static void internalExecuteScript(String content) throws ScriptException {
+        internalExecuteScript(content, null);
+    }
+
+    private static void internalExecuteScript(String content, Bindings bindings) throws ScriptException {
         final ScriptEngine engine = createScriptEngine();
-        final Bindings bindings = createBindings();
+        final Bindings binds = bindings != null ? bindings : createBindings();
         logger.l5(MessageFormat
                 .format("custom execute script {0}", content));
-        engine.eval(content, bindings);
+        engine.eval(content, binds);
     }
 
     private static ScriptEngine createScriptEngine() {

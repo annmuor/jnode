@@ -27,10 +27,13 @@ import jnode.dto.LinkOption;
 import jnode.dto.Schedule;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnMessage;
+import jnode.jscript.JScriptConsole;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -72,10 +75,21 @@ public class ScriptFix extends AbstractRobot {
 	}
 
     private void processScript(FtnMessage fmsg, String scriptContent) {
-        String output = JscriptExecutor.executeScript(scriptContent);
+        String output = executeScriptWithConsole(scriptContent, false);
         FtnTools.writeReply(fmsg,
                 MessageFormat.format("{0} exec script", getRobotName()),
                 output != null ? output : "Okay");
+    }
+
+    static String executeScriptWithConsole(String scriptContent, boolean force) {
+        Bindings bindings = new SimpleBindings();
+        final JScriptConsole jScriptConsole = new JScriptConsole();
+        bindings.put("console", jScriptConsole);
+        String result = JscriptExecutor.executeScript(scriptContent, bindings, force);
+        if (result != null){
+            jScriptConsole.log(String.format("\n%s", result));
+        }
+        return jScriptConsole.out();
     }
 
     private void processCommands(FtnMessage fmsg) throws SQLException {
@@ -153,7 +167,8 @@ public class ScriptFix extends AbstractRobot {
 		return "Available commands:\n" + "%HELP - this message\n"
 				+ "%ASLINK ftn_address - proccess command as other link ( not the origin )\n"
 				+ "%LIST - list of all scripts\n"
-				+ "%RUN scriptId - force run script";
+				+ "%RUN scriptId - force run script\n"
+                + "{multiline script} - execute multiline script";
 	}
 
 	private String list() throws SQLException {
