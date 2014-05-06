@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.Random;
 
-public class DataProviderServiceTest {
+public class DataProviderService {
 
     NewsGroup ng1;
     NewsGroup ng2;

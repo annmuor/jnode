@@ -185,11 +185,7 @@ public class JscriptExecutor implements Runnable {
 						"Null content of script with id {0}", id);
 			}
 
-			final ScriptEngine engine = createScriptEngine();
-			final Bindings bindings = createBindings();
-			logger.l5(MessageFormat
-					.format("custom execute script {0}", content));
-			engine.eval(content, bindings);
+            internalExecuteScript(content);
 
 		} catch (Exception ex) {
 			logger.l4(
@@ -201,7 +197,50 @@ public class JscriptExecutor implements Runnable {
 		return null;
 	}
 
-	private static ScriptEngine createScriptEngine() {
+    /**
+     * Выполнить скрипт
+     *
+     * @param content
+     *            собстна скрипт
+     * @return отчет об ошибках
+     */
+    public static String executeScript(String content) {
+
+        if (!MainHandler.getCurrentInstance().getBooleanProperty(
+                JSCRIPT_ENABLE, true)) {
+            return "Script execution disabled";
+        }
+
+        return execScript(content);
+    }
+
+    static String execScript(String content) {
+        try {
+            if (content == null) {
+                return "Null content of script";
+            }
+
+            internalExecuteScript(content);
+
+        } catch (Exception ex) {
+            logger.l4(
+                    "fail execute script",
+                    ex);
+            return "fail execute script: " + ex.getMessage();
+        }
+
+        return null;
+    }
+
+    private static void internalExecuteScript(String content) throws ScriptException {
+        final ScriptEngine engine = createScriptEngine();
+        final Bindings bindings = createBindings();
+        logger.l5(MessageFormat
+                .format("custom execute script {0}", content));
+        engine.eval(content, bindings);
+    }
+
+    private static ScriptEngine createScriptEngine() {
 		return new ScriptEngineManager().getEngineByName("javascript");
 	}
 }

@@ -48,6 +48,8 @@ public class ScriptFix extends AbstractRobot {
 			Pattern.CASE_INSENSITIVE);
 	private static final Pattern RUN = Pattern.compile("^%RUN (\\d+)$",
 			Pattern.CASE_INSENSITIVE);
+    private static final Pattern SCRIPT = Pattern.compile("\\{(.*)?\\}",
+            Pattern.DOTALL);
 
 	private static final ConcurrentDateFormatAccess format = new ConcurrentDateFormatAccess(
 			"dd.MM.yyyy HH:mm");
@@ -59,29 +61,62 @@ public class ScriptFix extends AbstractRobot {
 			return;
 		}
 
-		for (String line : fmsg.getText().split("\n")) {
-			line = line.toLowerCase();
+        // если скрипт - то фигарим скрипт
+        String scriptContent = extractScript(fmsg.getText());
+        if (scriptContent != null){
+            processScript(fmsg, scriptContent);
+        } else{
+            processCommands(fmsg);
+        }
 
-			if (HELP.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg,
-						MessageFormat.format("{0} help", getRobotName()),
-						help());
-			} else if (LIST.matcher(line).matches()) {
-				FtnTools.writeReply(fmsg,
-						MessageFormat.format("{0} list", getRobotName()),
-						list());
-			} else {
-				Matcher m = RUN.matcher(line);
-				if (m.matches()) {
-					long id = Long.valueOf(m.group(1));
-					FtnTools.writeReply(fmsg, MessageFormat.format(
-							"{0} run script {1}", getRobotName(), id),
-							runScript(id));
-				}
-			}
-
-		}
 	}
+
+    private void processScript(FtnMessage fmsg, String scriptContent) {
+        String output = JscriptExecutor.executeScript(scriptContent);
+        FtnTools.writeReply(fmsg,
+                MessageFormat.format("{0} exec script", getRobotName()),
+                output != null ? output : "Okay");
+    }
+
+    private void processCommands(FtnMessage fmsg) throws SQLException {
+        for (String line : fmsg.getText().split("\n")) {
+            line = line.toLowerCase();
+
+            if (HELP.matcher(line).matches()) {
+                FtnTools.writeReply(fmsg,
+                        MessageFormat.format("{0} help", getRobotName()),
+                        help());
+            } else if (LIST.matcher(line).matches()) {
+                FtnTools.writeReply(fmsg,
+                        MessageFormat.format("{0} list", getRobotName()),
+                        list());
+            } else {
+                Long id = extractScriptId(line);
+                if (id != null) {
+                    FtnTools.writeReply(fmsg, MessageFormat.format(
+                                    "{0} run script {1}", getRobotName(), id),
+                            runScript(id));
+                }
+            }
+
+        }
+    }
+
+    static Long extractScriptId(String line){
+        Matcher m = RUN.matcher(line);
+        if (m.matches()) {
+            return Long.valueOf(m.group(1));
+        }
+        return null;
+    }
+
+    static String extractScript(String text){
+        Matcher m = SCRIPT.matcher(text);
+        if (m.matches()) {
+            return m.group(1);
+        }
+        return null;
+    }
 
 	private String runScript(long id) {
 		String errMessage = JscriptExecutor.executeScript(id);

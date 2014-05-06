@@ -47,7 +47,6 @@ public abstract class AbstractRobot implements IRobot {
 
 	protected static final Pattern HELP = Pattern.compile("^%HELP$",
 			Pattern.CASE_INSENSITIVE);
-	protected static final String UNKNOWN_COMMAND_0 = "Unknown command {0}\n";
 
 	protected abstract String getRobotName();
 
