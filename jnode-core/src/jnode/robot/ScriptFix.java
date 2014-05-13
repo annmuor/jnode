@@ -85,7 +85,7 @@ public class ScriptFix extends AbstractRobot {
                 output != null ? output : "Okay");
     }
 
-    static String executeScriptWithConsole(String scriptContent, boolean force) {
+    public static String executeScriptWithConsole(String scriptContent, boolean force) {
         Bindings bindings = new SimpleBindings();
         final JScriptConsole jScriptConsole = new JScriptConsole();
         bindings.put("console", jScriptConsole);
