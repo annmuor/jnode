@@ -40,7 +40,7 @@
                         <id>release</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>assembly</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
@@ -55,7 +55,7 @@
                         <id>core</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>assembly</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
@@ -70,7 +70,7 @@
                         <id>rss</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>assembly</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
