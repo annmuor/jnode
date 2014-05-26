@@ -35,7 +35,6 @@ public class WriteFileToEchoareaHelper extends IJscriptHelper {
 
 	public void writeFileToEchoarea(String echoArea, String subject,
 			String filename) {
-		Echoarea area = FtnTools.getAreaByName(echoArea, null);
 		String content;
 		try {
 			content = FileUtils.readFile(filename);
@@ -43,10 +42,14 @@ public class WriteFileToEchoareaHelper extends IJscriptHelper {
 			logger.l2(MessageFormat.format("fail read file {0}", filename), e);
 			return;
 		}
-
-		FtnTools.writeEchomail(area, subject, content);
-
+        writeStringToEchoarea(echoArea, subject, content);
 	}
+
+    public void writeStringToEchoarea(String echoArea, String subject,
+                                      String content){
+        Echoarea area = FtnTools.getAreaByName(echoArea, null);
+        FtnTools.writeEchomail(area, subject, content);
+    }
 
 	@Override
 	public Version getVersion() {
@@ -54,7 +57,7 @@ public class WriteFileToEchoareaHelper extends IJscriptHelper {
 
 			@Override 
 			public int getMinor() {
-				return 1;
+				return 2;
 			}
 
 			@Override
