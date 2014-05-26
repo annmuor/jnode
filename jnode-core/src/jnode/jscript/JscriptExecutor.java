@@ -42,6 +42,7 @@ import jnode.orm.ORMManager;
  */
 public class JscriptExecutor implements Runnable {
     private static final String JSCRIPT_ENABLE = "jscript.enable";
+    private static final String JSCRIPT_ENGINE = "jscript.engine";
 	private static final long MILLISEC_IN_HOUR = 3600000L;
 	private static final Logger logger = Logger
 			.getLogger(JscriptExecutor.class);
@@ -242,6 +243,10 @@ public class JscriptExecutor implements Runnable {
     }
 
     private static ScriptEngine createScriptEngine() {
-		return new ScriptEngineManager().getEngineByName("javascript");
-	}
+        return new ScriptEngineManager().getEngineByName(
+                MainHandler.getCurrentInstance() != null ?
+                        MainHandler.getCurrentInstance().getProperty(JSCRIPT_ENGINE, "javascript")
+                        : "javascript"
+        );
+    }
 }
