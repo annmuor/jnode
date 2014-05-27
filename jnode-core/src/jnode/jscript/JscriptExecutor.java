@@ -70,7 +70,7 @@ public class JscriptExecutor implements Runnable {
 		return new Date(calendar.getTime().getTime() + MILLISEC_IN_HOUR);
 	}
 
-	private static Bindings createBindings() {
+	public static Bindings createBindings() {
 		Bindings bindings = new SimpleBindings();
 		for (ScriptHelper scriptHelper : ORMManager.get(ScriptHelper.class)
 				.getAll()) {
