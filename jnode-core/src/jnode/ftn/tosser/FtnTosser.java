@@ -56,6 +56,8 @@ public class FtnTosser {
 	private final Map<String, Integer> bad = new HashMap<>();
 	private final Set<Link> pollLinks = new HashSet<>();
 
+	private boolean running;
+
 	/**
 	 * Разбор нетмейла
 	 * 
@@ -221,7 +223,8 @@ public class FtnTosser {
 	/**
 	 * Разбор файлов в папке inbound
 	 */
-	public synchronized void tossInboundDirectory() {
+	public void tossInboundDirectory() {
+		running = true;
 		logger.l5("Start tossInboundDirectory()");
 		Set<Link> poll = new HashSet<>();
 		File inbound = new File(getInbound());
@@ -427,7 +430,6 @@ public class FtnTosser {
 	}
 
 	public void end() {
-
 		if (!tossed.isEmpty()) {
 			logger.l3("Messages wrote:");
 			for (String area : tossed.keySet()) {
@@ -450,6 +452,7 @@ public class FtnTosser {
 		tossed.clear();
 		bad.clear();
 		pollLinks.clear();
+		running = false;
 	}
 
 	private List<Message> packNetmail(FtnAddress address) {
@@ -891,4 +894,9 @@ public class FtnTosser {
 		return ORMManager.get(FileSubscription.class).getAnd("filearea_id",
 				"=", area);
 	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
 }

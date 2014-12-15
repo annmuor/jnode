@@ -926,7 +926,11 @@ public final class FtnTools {
 		if (routeVia == null) {
 			routeVia = previousRouteVia;
 		}
-		return routeVia;
+		return getLinkById(routeVia.getId());
+	}
+
+	private static Link getLinkById(Long id) {
+		return ORMManager.get(Link.class).getFirstAnd("id", "=", id);
 	}
 
 	public static Link getLinkByFtnAddress(FtnAddress addr) {

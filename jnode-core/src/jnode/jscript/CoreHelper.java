@@ -6,7 +6,7 @@ public class CoreHelper extends IJscriptHelper{
 
     private final Logger logger = Logger.getLogger(getClass());
 
-    public Class getClassByName(String name) {
+    public Class<?> getClassByName(String name) {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {

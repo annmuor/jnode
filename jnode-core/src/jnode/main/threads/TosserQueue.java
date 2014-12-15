@@ -43,15 +43,19 @@ public class TosserQueue {
 		return self;
 	}
 
-	public synchronized void toss() {
-		tosser.tossInboundDirectory();
-		tosser.end();
+	public void toss() {
+		if (!tosser.isRunning()) {
+			synchronized (tosser) {
+				tosser.tossInboundDirectory();
+				tosser.end();
+			}
+		}
 	}
 
 	public List<Message> getMessages(Link link) {
 		return tosser.getMessages2(new FtnAddress(link.getLinkAddress()));
 	}
-	
+
 	public List<Message> getMessages(FtnAddress address) {
 		return tosser.getMessages2(address);
 	}

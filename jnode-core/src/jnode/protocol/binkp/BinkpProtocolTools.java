@@ -155,7 +155,6 @@ public class BinkpProtocolTools {
 				message.getMessageLength(), message.getUnixtime());
 	}
 
-	@SuppressWarnings("resource")
 	public static int forwardToTossing(Message message, File file,
 			OutputStream os) {
 		InputStream is = null;
