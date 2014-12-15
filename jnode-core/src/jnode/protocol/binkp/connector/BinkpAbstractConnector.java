@@ -128,6 +128,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	private String cramAlgo = null;
 	private String cramText = null;
 	protected boolean binkp1_0 = true;
+	// current messages 'to send' before EOF
 	protected ArrayList<Message> messages = new ArrayList<>();
 	protected InputStream currentInputStream;
 	protected int messages_index = 0;
@@ -170,6 +171,14 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
 		logger.l2("Local error: " + text);
 		connectionState = STATE_ERROR;
+	}
+
+	protected void error(String text, Exception e) {
+		frames.clear();
+		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
+		logger.l2("Local error: " + text);
+		connectionState = STATE_ERROR;
+		e.printStackTrace(System.out);
 	}
 
 	protected void proccessFrame(BinkpFrame frame) {
@@ -572,8 +581,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			BinkpFrame frame = readFrame();
 			if (frame != null) {
 				frames.addLast(frame);
+			} else { // error, null
 			}
 			return;
+
 		}
 		for (FtnAddress a : foreignAddress) {
 			messages.addAll(TosserQueue.getInstanse().getMessages(a));
@@ -672,7 +683,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 					}
 				}
 			} catch (IOException e) {
-				error("Error reading file");
+				error("Error reading file", e);
 			}
 		}
 		return null;
@@ -690,6 +701,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected void sendMessage(Message message, int skip) {
+		logger.l5("sendMessage(" + message.getMessageName() + ")");
 		frames.addLast(new BinkpFrame(BinkpCommand.M_FILE, getString(message,
 				skip)));
 		logger.l3(String.format("Sending file: %s (%d)",
@@ -702,7 +714,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			}
 			currentInputStream = message.getInputStream();
 		} catch (IOException e) {
-			error("IOException");
+			error("IOException", e);
 		}
 
 	}
