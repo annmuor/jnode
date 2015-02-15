@@ -21,7 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ormlite.version>4.48</ormlite.version>
-        <java.compiler.version>1.7</java.compiler.version>
+        <java.compiler.version>1.8</java.compiler.version>
     </properties>
 
     <developers>

@@ -52,6 +52,7 @@ public class FtnTosser {
 	private static final String FILEECHO_ENABLE = "fileecho.enable";
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
+	private static final String MAIL_LIMIT = "tosser.mail_limit";
 	private final Map<String, Integer> tossed = new HashMap<>();
 	private final Map<String, Integer> bad = new HashMap<>();
 	private final Set<Link> pollLinks = new HashSet<>();
@@ -484,7 +485,7 @@ public class FtnTosser {
 						false, "to_address", "=", address.toString(),
 						"route_via", "null"));
 				if (link != null) {
-					mail.addAll(getMail(link));
+					mail.addAll(getNetmail(link));
 				}
 				if (!mail.isEmpty()) {
 					try {
@@ -858,10 +859,12 @@ public class FtnTosser {
 		return message;
 	}
 
-	private List<Netmail> getMail(Link link) {
+	private List<Netmail> getNetmail(Link link) {
 		if (link.getId() != null) {
-			return ORMManager.get(Netmail.class).getAnd("send", "=", false,
-					"route_via", "=", link);
+			return ORMManager.get(Netmail.class).getLimitAnd(
+					MainHandler.getCurrentInstance().getIntegerProperty(
+							MAIL_LIMIT, 100), "send", "=", false, "route_via",
+					"=", link);
 		} else {
 			return new ArrayList<>();
 		}
@@ -869,8 +872,9 @@ public class FtnTosser {
 
 	private List<EchomailAwaiting> getEchoMail(Link link) {
 		if (link.getId() != null) {
-			return ORMManager.get(EchomailAwaiting.class).getAnd("link_id",
-					"=", link);
+			return ORMManager.get(EchomailAwaiting.class).getLimitAnd(
+					MainHandler.getCurrentInstance().getIntegerProperty(
+							MAIL_LIMIT, 100), "link_id", "=", link);
 		} else {
 			return new ArrayList<>();
 		}
@@ -883,8 +887,9 @@ public class FtnTosser {
 
 	private List<FilemailAwaiting> getFileMail(Link link) {
 		if (link.getId() != null) {
-			return ORMManager.get(FilemailAwaiting.class).getAnd("link_id",
-					"=", link);
+			return ORMManager.get(FilemailAwaiting.class).getLimitAnd(
+					MainHandler.getCurrentInstance().getIntegerProperty(
+							MAIL_LIMIT, 100), "link_id", "=", link);
 		} else {
 			return new ArrayList<>();
 		}

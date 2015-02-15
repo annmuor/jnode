@@ -6,9 +6,6 @@ import jnode.orm.ORMManager;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NewsMessage;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.Date;
 import java.util.Random;
 
@@ -20,7 +17,7 @@ public class DataProviderService {
 
     @Before
     public void prepare() throws JnodeModuleException {
-        NntpModule module = new NntpModule("/tmp/bla.properties");
+        new NntpModule("/tmp/bla.properties");
 
         prepareNewsGroups();
         prepareNewsMessages();

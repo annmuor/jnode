@@ -199,6 +199,27 @@ public abstract class GenericDAO<T> {
 		}
 		return new ArrayList<>();
 	}
+	
+	/**
+	 * Аргументы: limit, a == b, c == d
+	 * 
+	 * @param args
+	 * @return
+	 */
+	public List<T> getLimitAnd(long limit, Object... args) {
+		try {
+			QueryBuilder<T, ?> qb = getDao().queryBuilder();
+			qb.limit(limit);
+			buildWhere(qb, true, args);
+			return qb.query();
+		} catch (SQLException e) {
+			logger.l1("SQL Exception in getAnd", e);
+			logger.l1(MessageFormat.format("we worked with {0}",
+					Arrays.toString(args)));
+
+		}
+		return new ArrayList<>();
+	}
 
 	public List<T> getOrderAnd(String order, boolean asc, Object... args) {
 		try {
