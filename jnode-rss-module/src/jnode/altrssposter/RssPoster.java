@@ -51,7 +51,7 @@ public final class RssPoster {
     private static String fill(StringBuilder sb, String url, String watermark, int limit) {
         String lastWatermark = null;
         try {
-            List<SyndEntry> entries = new ArrayList<>();
+            List<SyndEntry> entries = new ArrayList<SyndEntry>();
             lastWatermark = load(entries, url, watermark, limit);
             print(sb, entries);
         } catch (Exception e) {

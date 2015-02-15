@@ -108,7 +108,7 @@ public class Redirector implements Runnable {
             System.setErr(out);
             logger.l5("log redirected to " + logpath);
 
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             logger.l1(MessageFormat.format("fail redirect log to {0}", logpath), e);
         }
 

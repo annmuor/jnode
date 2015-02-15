@@ -45,7 +45,7 @@ public class BinkpConnectorRegistry {
 	private HashMap<String, Class<? extends BinkpAbstractConnector>> connectorMap;
 
 	private BinkpConnectorRegistry() {
-		connectorMap = new HashMap<>();
+		connectorMap = new HashMap<String, Class<? extends BinkpAbstractConnector>>();
 		connectorMap.put("async:", BinkpAsyncConnector.class);
 		connectorMap.put("sync:", BinkpSyncConnector.class);
 		connectorMap.put("pipe:", BinkpPipeConnector.class);

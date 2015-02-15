@@ -58,7 +58,7 @@ public class NodelistScanner {
 
 	public NodelistIndex createIndex(InputStream stream, long lastModified) {
 		NodelistIndex index = null;
-		List<FtnNdlAddress> address = new ArrayList<>();
+		List<FtnNdlAddress> address = new ArrayList<FtnNdlAddress>();
 		try {
 			BufferedReader br = new BufferedReader(
 					new InputStreamReader(stream));

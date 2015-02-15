@@ -60,10 +60,10 @@ import jnode.robot.ScriptFix;
 
 public class InstallUtil {
 	private static final Logger logger = Logger.getLogger(InstallUtil.class);
-    private static final String MIGRATION_CUSTOMINITSCRIPT = "migration.custominitscript";
+	private static final String MIGRATION_CUSTOMINITSCRIPT = "migration.custominitscript";
 
 	public InstallUtil() {
-        GenericDAO<Version> versionDao = ORMManager.get(Version.class);
+		GenericDAO<Version> versionDao = ORMManager.get(Version.class);
 		List<Version> versions = versionDao
 				.getOrderLimitAnd(1, "int_at", false);
 		if (versions.size() == 0) {
@@ -206,7 +206,7 @@ public class InstallUtil {
 				List<LinkOption_1_1> options2 = ORMManager.get(
 						LinkOption_1_1.class).getAll();
 
-				ArrayList<LinkOption> options = new ArrayList<>();
+				ArrayList<LinkOption> options = new ArrayList<LinkOption>();
 				for (LinkOption_1_1 l2 : options2) {
 					LinkOption l = new LinkOption();
 					l.setLink(l2.getLink());
@@ -233,7 +233,7 @@ public class InstallUtil {
 			try {
 				List<Route_1_2> routes = ORMManager.get(Route_1_2.class)
 						.getAll();
-				LinkedList<Route> newroute = new LinkedList<>();
+				LinkedList<Route> newroute = new LinkedList<Route>();
 				for (Route_1_2 r2 : routes) {
 					Route r = new Route();
 					r.setNice(r2.getNice());
@@ -271,26 +271,28 @@ public class InstallUtil {
 		}
 		if (ver.equals("1.4")) {
 			try {
-                logger.l5("starting migration");
+				logger.l5("starting migration");
 
-                runCustomScript();
+				runCustomScript();
 				execQuery("ALTER TABLE echomail ADD COLUMN msgid VARCHAR(255);");
-                logger.l5("ALTER TABLE echomail ADD COLUMN msgid VARCHAR(255); -- ok");
+				logger.l5("ALTER TABLE echomail ADD COLUMN msgid VARCHAR(255); -- ok");
 				execQuery("CREATE INDEX echomail_msgid ON echomail ( msgid );");
-                logger.l5("CREATE INDEX echomail_msgid ON echomail ( msgid ); -- ok");
+				logger.l5("CREATE INDEX echomail_msgid ON echomail ( msgid ); -- ok");
 				long lastid = 0;
 				List<Echomail> mail;
 				Pattern pattern = Pattern.compile(".*^\001MSGID: (.*)$.*",
 						Pattern.MULTILINE);
-                logger.l5("starting big time-expensive loop");
+				logger.l5("starting big time-expensive loop");
 				do {
 					int cnt = 0;
 					mail = ORMManager.get(Echomail.class).getOrderLimitAnd(
 							1000, "id", true, "id", ">", lastid);
 
-                    if (logger.isNeedLog5()){
-                        logger.l5(MessageFormat.format("fetch {0} records, lastid={1}", mail.size(), lastid));
-                    }
+					if (logger.isNeedLog5()) {
+						logger.l5(MessageFormat.format(
+								"fetch {0} records, lastid={1}", mail.size(),
+								lastid));
+					}
 
 					for (Echomail m : mail) {
 						lastid = m.getId();
@@ -305,20 +307,22 @@ public class InstallUtil {
 							cnt++;
 						}
 
-                        if (logger.isNeedLog5() && ((cnt % 50) == 0)){
-                            logger.l5(MessageFormat.format("processed {0}/{1} records, lastid = {2}", cnt, mail.size(), lastid));
-                        }
+						if (logger.isNeedLog5() && ((cnt % 50) == 0)) {
+							logger.l5(MessageFormat.format(
+									"processed {0}/{1} records, lastid = {2}",
+									cnt, mail.size(), lastid));
+						}
 
 					}
 					logger.l2("Found " + cnt + " msgids");
 				} while (!mail.isEmpty());
-                logger.l5("finished big time-expensive loop");
+				logger.l5("finished big time-expensive loop");
 				TableUtils.dropTable(ORMManager.getSource(), Dupe_1_4.class,
 						true);
-                logger.l5("dupe table dropped");
+				logger.l5("dupe table dropped");
 				List<Rewrite_1_4> rewrites = ORMManager.get(Rewrite_1_4.class)
 						.getAll();
-				LinkedList<Rewrite> newRewrites = new LinkedList<>();
+				LinkedList<Rewrite> newRewrites = new LinkedList<Rewrite>();
 				for (Rewrite_1_4 o : rewrites) {
 					Rewrite n = new Rewrite();
 					n.setNice(o.getNice());
@@ -339,12 +343,12 @@ public class InstallUtil {
 				}
 				TableUtils.dropTable(ORMManager.getSource(), Rewrite_1_4.class,
 						true);
-                logger.l5("rewrite table dropped");
+				logger.l5("rewrite table dropped");
 				TableUtils.createTable(ORMManager.getSource(), Rewrite.class);
 				for (Rewrite r : newRewrites) {
 					ORMManager.get(Rewrite.class).save(r);
 				}
-                logger.l5("rewrite table recreated");
+				logger.l5("rewrite table recreated");
 				ver.setMinorVersion(5L);
 				ver.setInstalledAt(new Date());
 				ORMManager.get(Version.class).save(ver);
@@ -355,18 +359,19 @@ public class InstallUtil {
 		}
 	}
 
-    private void runCustomScript() throws IOException {
-        String customScriptFileName = MainHandler.getCurrentInstance().getProperty(MIGRATION_CUSTOMINITSCRIPT,
-                "");
-        if (customScriptFileName.length() > 0){
-            File f = new File(customScriptFileName);
-            if (f.exists()){
-                String scriptContent = FileUtils.readFile(customScriptFileName);
-                execQuery(scriptContent);
-                logger.l5(scriptContent + " = ok");
-            } else {
-                logger.l5(MessageFormat.format("custom script {0} not found", customScriptFileName));
-            }
-        }
-    }
+	private void runCustomScript() throws IOException {
+		String customScriptFileName = MainHandler.getCurrentInstance()
+				.getProperty(MIGRATION_CUSTOMINITSCRIPT, "");
+		if (customScriptFileName.length() > 0) {
+			File f = new File(customScriptFileName);
+			if (f.exists()) {
+				String scriptContent = FileUtils.readFile(customScriptFileName);
+				execQuery(scriptContent);
+				logger.l5(scriptContent + " = ok");
+			} else {
+				logger.l5(MessageFormat.format("custom script {0} not found",
+						customScriptFileName));
+			}
+		}
+	}
 }

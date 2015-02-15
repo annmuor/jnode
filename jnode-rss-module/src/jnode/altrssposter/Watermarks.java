@@ -90,7 +90,7 @@ public class Watermarks {
                         sleep(1000);
                     }
 
-                } catch (FileNotFoundException | InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

@@ -57,7 +57,7 @@ public abstract class GenericDAO<T> {
 
 	protected GenericDAO() throws Exception {
 		if (daoMap == null) {
-			daoMap = new HashMap<>();
+			daoMap = new HashMap<Class<?>, Dao<?, ?>>();
 		}
 		if (!daoMap.containsKey(getType())) {
 			Dao<?, ?> dao = DaoManager.createDao(ORMManager.getSource(),
@@ -98,52 +98,36 @@ public abstract class GenericDAO<T> {
 				first = false;
 			}
 			String w = args[i + 1].toString();
-			switch (w) {
-			case "eq":
-			case "=":
-			case "==":
+
+			if (w.equalsIgnoreCase("eq") || w.equals("=") || w.equals("==")) {
 				wh.eq(args[i].toString(), new SelectArg(args[i + 2]));
-				break;
-			case "null":
+			} else if (w.equalsIgnoreCase("null")) {
 				wh.isNull(args[i].toString());
 				i -= 1;
-				break;
-			case "notnull":
+			} else if (w.equalsIgnoreCase("notnull")) {
 				wh.isNotNull(args[i].toString());
 				i -= 1;
-				break;
-			case "ne":
-			case "!=":
-			case "<>":
-				wh.ne(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "gt":
-			case ">":
-				wh.gt(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "ge":
-			case ">=":
-				wh.ge(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "lt":
-			case "<":
-				wh.lt(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "le":
-			case "<=":
-				wh.le(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "like":
-			case "~":
-				wh.like(args[i].toString(),  new SelectArg(args[i + 2]));
-				break;
-			case "in":
-				wh.in(args[i].toString(),  (Iterable<?>) args[i + 2]);
-				break;
-			case "between":
-				wh.between(args[i].toString(),  new SelectArg(args[i + 2]),  new SelectArg(args[i + 3]));
+			} else if (w.equalsIgnoreCase("ne") || w.equalsIgnoreCase("!=")
+					|| w.equalsIgnoreCase("<>")) {
+				wh.ne(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("gt") || w.equalsIgnoreCase(">")) {
+				wh.gt(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("ge") || w.equalsIgnoreCase(">=")) {
+
+				wh.ge(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("lt") || w.equalsIgnoreCase("<")) {
+
+				wh.lt(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("le") || w.equalsIgnoreCase("<=")) {
+				wh.le(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("like") || w.equalsIgnoreCase("~")) {
+				wh.like(args[i].toString(), new SelectArg(args[i + 2]));
+			} else if (w.equalsIgnoreCase("in")) {
+				wh.in(args[i].toString(), (Iterable<?>) args[i + 2]);
+			} else if (w.equalsIgnoreCase("between")) {
+				wh.between(args[i].toString(), new SelectArg(args[i + 2]),
+						new SelectArg(args[i + 3]));
 				i += 1;
-				break;
 			}
 		}
 		return wh;
@@ -177,7 +161,7 @@ public abstract class GenericDAO<T> {
 			logger.l1("SQL Exception in getAll", e);
 			logger.l1(MessageFormat.format("we worked with {0}", e));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	/**
@@ -197,9 +181,9 @@ public abstract class GenericDAO<T> {
 					Arrays.toString(args)));
 
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
-	
+
 	/**
 	 * Аргументы: limit, a == b, c == d
 	 * 
@@ -218,7 +202,7 @@ public abstract class GenericDAO<T> {
 					Arrays.toString(args)));
 
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderAnd(String order, boolean asc, Object... args) {
@@ -232,7 +216,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderLimitAnd(long limit, String order, boolean asc,
@@ -248,7 +232,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2} {3}",
 					limit, order, asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	/**
@@ -267,7 +251,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0}",
 					Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public List<T> getOrderOr(String order, boolean asc, Object... args) {
@@ -281,7 +265,7 @@ public abstract class GenericDAO<T> {
 			logger.l1(MessageFormat.format("we worked with {0} {1} {2}", order,
 					asc, Arrays.toString(args)));
 		}
-		return new ArrayList<>();
+		return new ArrayList<T>();
 	}
 
 	public T getFirstAnd(Object... args) {
@@ -426,7 +410,7 @@ public abstract class GenericDAO<T> {
 			} catch (SQLException e) {
 				logger.l2("SQL error while query", e);
 			}
-			return new ArrayList<>();
+			return new ArrayList<T>();
 		}
 
 		public T one() {

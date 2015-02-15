@@ -39,7 +39,7 @@ import jnode.ndl.NodelistScanner;
 public enum Checker {
 	INSTANCE;
 	private StringBuffer errors = new StringBuffer();
-	private List<FtnNdlAddress> bosses = new ArrayList<>();
+	private List<FtnNdlAddress> bosses = new ArrayList<FtnNdlAddress>();
 	private String currentFileName = "";
 
 	public String getCurrentFileName() {
@@ -65,7 +65,7 @@ public enum Checker {
 
 	public boolean check(byte[] data, boolean multi, String name) {
 		bosses.clear();
-		List<Long> points = new ArrayList<>();
+		List<Long> points = new ArrayList<Long>();
 		Pattern pBoss = Pattern.compile("^Boss,([0-9]:\\d{1,5}/\\d{1,5})$");
 		Pattern pPoint = Pattern
 				.compile("^Point,(\\d+),(\\S+),(\\S+),(\\S+),(\\S+),(\\d+),(\\S*)$");

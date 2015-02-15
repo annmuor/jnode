@@ -96,7 +96,7 @@ public class GUIConfigurator {
 	}
 
 	private ArrayList<String> fillConfigList() {
-		ArrayList<String> ret = new ArrayList<>();
+		ArrayList<String> ret = new ArrayList<String>();
 		ret.add("info.stationname");
 		ret.add("info.location");
 		ret.add("info.sysop");
@@ -122,7 +122,7 @@ public class GUIConfigurator {
 	}
 
 	private HashMap<String, String> fillConfigNames() {
-		HashMap<String, String> props = new HashMap<>();
+		HashMap<String, String> props = new HashMap<String, String>();
 		props.put("info.stationname", "Имя узла");
 		props.put("info.location", "Расположение узла");
 		props.put("info.sysop", "Имя сисопа");
@@ -226,22 +226,21 @@ public class GUIConfigurator {
 
 		JPanel configPanel = new JPanel();
 		configPanel.setLayout(new GridLayout(30, 3, 10, 2));
-		configMap = new HashMap<>();
+		configMap = new HashMap<String, Component>();
 		for (String key : config) {
 			configPanel.add(new JLabel(configNames.get(key)));
 			Component comp;
 			Component comment;
-			switch (key) {
-			case "binkp.server":
-			case "binkp.client":
-			case "fileecho.enable":
-			case "stat.enable":
-			case "jscript.enable":
+			if (key.equals("binkp.server") || key.equals("binkp.client")
+					|| key.equals("fileecho.enable")
+					|| key.equals("stat.enable")
+					|| key.equals("jscript.enable")) {
+
 				comp = new Checkbox();
-				break;
-			default:
+			} else {
+
 				comp = new TextField();
-				break;
+
 			}
 			if (key.equals("fileecho.path") || key.equals("binkp.inbound")) {
 				comment = new FileChooserButton((TextField) comp);
@@ -346,11 +345,11 @@ public class GUIConfigurator {
 			}
 			Button button = new Button("Новый линк");
 			button.addActionListener(new ActionListener() {
-				
+
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					new LinkDialog(frmJnodeConfigurator, new Link());
-					
+
 				}
 			});
 			linksPanel.add(button);
@@ -457,16 +456,16 @@ public class GUIConfigurator {
 			setLayout(null);
 			Insets insets = getInsets();
 			JLabel l = new JLabel("Название линка");
-			l.setBounds(insets.left+10, insets.top+10, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 10, 180, 20);
 			add(l);
 			linkName = new TextField(10);
-			linkName.setBounds(insets.left+190, insets.top+10, 190, 20);
+			linkName.setBounds(insets.left + 190, insets.top + 10, 190, 20);
 			add(linkName);
 			l = new JLabel("Адрес линка");
-			l.setBounds(insets.left+10, insets.top+40, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 40, 180, 20);
 			add(l);
 			linkAddress = new JTextField(10);
-			linkAddress.setBounds(insets.left+190, insets.top+40, 190, 20);
+			linkAddress.setBounds(insets.left + 190, insets.top + 40, 190, 20);
 			linkAddress.setInputVerifier(new InputVerifier() {
 
 				@Override
@@ -484,32 +483,34 @@ public class GUIConfigurator {
 			});
 			add(linkAddress);
 			l = new JLabel("Хост линка");
-			l.setBounds(insets.left+10, insets.top+80, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 80, 180, 20);
 			add(l);
 			linkHost = new TextField(10);
-			linkHost.setBounds(insets.left+190, insets.top+80, 190, 20);
+			linkHost.setBounds(insets.left + 190, insets.top + 80, 190, 20);
 			add(linkHost);
-			
+
 			l = new JLabel("Порт линка");
-			l.setBounds(insets.left+10, insets.top+120, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 120, 180, 20);
 			add(l);
 			linkPort = new TextField(10);
-			linkPort.setBounds(insets.left+190, insets.top+120, 190, 20);
+			linkPort.setBounds(insets.left + 190, insets.top + 120, 190, 20);
 			add(linkPort);
-			
+
 			l = new JLabel("Пароль на соединение");
-			l.setBounds(insets.left+10, insets.top+160, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 160, 180, 20);
 			add(l);
 			linkPassword = new TextField(10);
-			linkPassword.setBounds(insets.left+190, insets.top+160, 190, 20);
+			linkPassword
+					.setBounds(insets.left + 190, insets.top + 160, 190, 20);
 			add(linkPassword);
-			
+
 			l = new JLabel("Пароль на пакеты");
-			l.setBounds(insets.left+10, insets.top+200, 180, 20);
+			l.setBounds(insets.left + 10, insets.top + 200, 180, 20);
 			add(l);
-			
+
 			linkPktPassword = new TextField(10);
-			linkPktPassword.setBounds(insets.left+190, insets.top+200, 190, 20);
+			linkPktPassword.setBounds(insets.left + 190, insets.top + 200, 190,
+					20);
 			add(linkPktPassword);
 
 			Button save = new Button("Сохранить");
@@ -528,7 +529,7 @@ public class GUIConfigurator {
 					LinkDialog.this.dispose();
 				}
 			});
-			
+
 			Button close = new Button("Отмена");
 			close.addActionListener(new ActionListener() {
 
@@ -538,8 +539,8 @@ public class GUIConfigurator {
 
 				}
 			});
-			save.setBounds(insets.left+100, insets.top+240, 90, 30);
-			close.setBounds(insets.left+300, insets.top+240, 90, 30);
+			save.setBounds(insets.left + 100, insets.top + 240, 90, 30);
+			close.setBounds(insets.left + 300, insets.top + 240, 90, 30);
 			add(save);
 			add(close);
 		}

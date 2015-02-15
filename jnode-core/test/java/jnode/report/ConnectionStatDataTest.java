@@ -20,168 +20,191 @@
 
 package jnode.report;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
+
 import jnode.ftn.types.FtnAddress;
+import jnode.report.ConnectionStatData.ConnectionStatDataElement;
 import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Manjago (kirill@temnenkov.com)
  */
 public class ConnectionStatDataTest {
 
-    private String path;
-    private ConnectionStatData.ConnectionStatDataElement e1;
-    private ConnectionStatData.ConnectionStatDataElement e2;
+	private String path;
+	private ConnectionStatData.ConnectionStatDataElement e1;
+	private ConnectionStatData.ConnectionStatDataElement e2;
 
-    @Before
-    public void setUp() throws Exception {
-        File file = File.createTempFile("test", ".xml");
-        path = file.getAbsolutePath();
-        file.delete();
+	@Before
+	public void setUp() throws Exception {
+		File file = File.createTempFile("test", ".xml");
+		path = file.getAbsolutePath();
+		file.delete();
 
-        e1 = new ConnectionStatData.ConnectionStatDataElement();
-        e1.bytesReceived = 1;
-        e1.bytesSended = 2;
-        e1.incomingFailed = 3;
-        e1.incomingOk = 4;
-        e1.linkStr = "2:5020/828.17";
-        e1.outgoingFailed = 5;
-        e1.outgoingOk = 6;
+		e1 = new ConnectionStatData.ConnectionStatDataElement();
+		e1.bytesReceived = 1;
+		e1.bytesSended = 2;
+		e1.incomingFailed = 3;
+		e1.incomingOk = 4;
+		e1.linkStr = "2:5020/828.17";
+		e1.outgoingFailed = 5;
+		e1.outgoingOk = 6;
 
-        e2 = new ConnectionStatData.ConnectionStatDataElement();
-        e2.bytesReceived = 11;
-        e2.bytesSended = 21;
-        e2.incomingFailed = 31;
-        e2.incomingOk = 41;
-        e2.linkStr = "2:5020/828.18";
-        e2.outgoingFailed = 51;
-        e2.outgoingOk = 61;
-    }
+		e2 = new ConnectionStatData.ConnectionStatDataElement();
+		e2.bytesReceived = 11;
+		e2.bytesSended = 21;
+		e2.incomingFailed = 31;
+		e2.incomingOk = 41;
+		e2.linkStr = "2:5020/828.18";
+		e2.outgoingFailed = 51;
+		e2.outgoingOk = 61;
+	}
 
-    @After
-    public void tearDown() throws Exception {
-        new File(path).delete();
-    }
+	public static void copyFile(File sourceFile, File destFile)
+			throws IOException {
+		if (!destFile.exists()) {
+			destFile.createNewFile();
+		}
 
-    @Test
-    public void testLoad() throws Exception {
-        URL url = ConnectionStatDataTest.class.getResource("testload.xml");
-        Path src = new File(url.getPath()).toPath();
-        Path dest = new File(path).toPath();
-        Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+		FileChannel source = null;
+		FileChannel destination = null;
 
-        ConnectionStatData data = new ConnectionStatData(path);
-        List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
+		try {
+			source = new FileInputStream(sourceFile).getChannel();
+			destination = new FileOutputStream(destFile).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		} finally {
+			if (source != null) {
+				source.close();
+			}
+			if (destination != null) {
+				destination.close();
+			}
+		}
+	}
 
-        check(loaded);
-    }
+	@After
+	public void tearDown() throws Exception {
+		new File(path).delete();
+	}
 
-    @Test
-    public void testLoadAndDrop() throws Exception {
-        URL url = ConnectionStatDataTest.class.getResource("testload.xml");
-        Path src = new File(url.getPath()).toPath();
-        Path dest = new File(path).toPath();
-        Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+	@Test
+	public void testLoad() throws Exception {
+		URL url = ConnectionStatDataTest.class.getResource("testload.xml");
+		copyFile(new File(url.getPath()), new File(path));
 
-        ConnectionStatData data = new ConnectionStatData(path);
-        List<ConnectionStatData.ConnectionStatDataElement> loaded = data.loadAndDrop();
+		ConnectionStatData data = new ConnectionStatData(path);
+		List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
 
-        check(loaded);
+		check(loaded);
+	}
 
-        loaded = data.load();
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(0, loaded.size());
+	@Test
+	public void testLoadAndDrop() throws Exception {
+		URL url = ConnectionStatDataTest.class.getResource("testload.xml");
+		copyFile(new File(url.getPath()), new File(path));
 
-    }
+		ConnectionStatData data = new ConnectionStatData(path);
+		List<ConnectionStatData.ConnectionStatDataElement> loaded = data
+				.loadAndDrop();
 
-    @Test
-    public void testStore() throws Exception {
-        ConnectionStatData data = new ConnectionStatData(path);
+		check(loaded);
 
-        data.store(new FtnAddress("2:5020/828.17"), e1);
-        data.store(new FtnAddress("2:5020/828.18"), e2);
+		loaded = data.load();
+		TestCase.assertNotNull(loaded);
+		TestCase.assertEquals(0, loaded.size());
 
-        List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
+	}
 
-        check(loaded);
+	@Test
+	public void testStore() throws Exception {
+		ConnectionStatData data = new ConnectionStatData(path);
 
-    }
+		data.store(new FtnAddress("2:5020/828.17"), e1);
+		data.store(new FtnAddress("2:5020/828.18"), e2);
 
-    @Test
-    public void testStore2() throws Exception {
-        ConnectionStatData data = new ConnectionStatData(path);
+		List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
 
-        data.store(new FtnAddress("2:5020/828.17"), e1);
-        e2.linkStr = null;
-        data.store(null, e2);
+		check(loaded);
 
-        List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
+	}
 
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(2, loaded.size());
+	@Test
+	public void testStore2() throws Exception {
+		ConnectionStatData data = new ConnectionStatData(path);
 
-        TestCase.assertEquals(1, loaded.get(0).bytesReceived);
-        TestCase.assertEquals(2, loaded.get(0).bytesSended);
-        TestCase.assertEquals(3, loaded.get(0).incomingFailed);
-        TestCase.assertEquals(4, loaded.get(0).incomingOk);
-        TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
-        TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
-        TestCase.assertEquals(6, loaded.get(0).outgoingOk);
+		data.store(new FtnAddress("2:5020/828.17"), e1);
+		e2.linkStr = null;
+		data.store(null, e2);
 
-        TestCase.assertEquals(11, loaded.get(1).bytesReceived);
-        TestCase.assertEquals(21, loaded.get(1).bytesSended);
-        TestCase.assertEquals(31, loaded.get(1).incomingFailed);
-        TestCase.assertEquals(41, loaded.get(1).incomingOk);
-        TestCase.assertNull(loaded.get(1).linkStr);
-        TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
-        TestCase.assertEquals(61, loaded.get(1).outgoingOk);
-    }
+		List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
 
-    private void check(List<ConnectionStatData.ConnectionStatDataElement> loaded) {
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(2, loaded.size());
+		TestCase.assertNotNull(loaded);
+		TestCase.assertEquals(2, loaded.size());
 
-        TestCase.assertEquals(1, loaded.get(0).bytesReceived);
-        TestCase.assertEquals(2, loaded.get(0).bytesSended);
-        TestCase.assertEquals(3, loaded.get(0).incomingFailed);
-        TestCase.assertEquals(4, loaded.get(0).incomingOk);
-        TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
-        TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
-        TestCase.assertEquals(6, loaded.get(0).outgoingOk);
+		TestCase.assertEquals(1, loaded.get(0).bytesReceived);
+		TestCase.assertEquals(2, loaded.get(0).bytesSended);
+		TestCase.assertEquals(3, loaded.get(0).incomingFailed);
+		TestCase.assertEquals(4, loaded.get(0).incomingOk);
+		TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
+		TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
+		TestCase.assertEquals(6, loaded.get(0).outgoingOk);
 
-        TestCase.assertEquals(11, loaded.get(1).bytesReceived);
-        TestCase.assertEquals(21, loaded.get(1).bytesSended);
-        TestCase.assertEquals(31, loaded.get(1).incomingFailed);
-        TestCase.assertEquals(41, loaded.get(1).incomingOk);
-        TestCase.assertEquals("2:5020/828.18", loaded.get(1).linkStr);
-        TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
-        TestCase.assertEquals(61, loaded.get(1).outgoingOk);
-    }
+		TestCase.assertEquals(11, loaded.get(1).bytesReceived);
+		TestCase.assertEquals(21, loaded.get(1).bytesSended);
+		TestCase.assertEquals(31, loaded.get(1).incomingFailed);
+		TestCase.assertEquals(41, loaded.get(1).incomingOk);
+		TestCase.assertNull(loaded.get(1).linkStr);
+		TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
+		TestCase.assertEquals(61, loaded.get(1).outgoingOk);
+	}
 
-    @Test
-    public void testFindPos() throws Exception {
-        ConnectionStatData data = new ConnectionStatData(path);
+	private void check(List<ConnectionStatData.ConnectionStatDataElement> loaded) {
+		TestCase.assertNotNull(loaded);
+		TestCase.assertEquals(2, loaded.size());
 
-        List<ConnectionStatData.ConnectionStatDataElement> d = new ArrayList<>();
-        d.add(e1);
-        d.add(e2);
+		TestCase.assertEquals(1, loaded.get(0).bytesReceived);
+		TestCase.assertEquals(2, loaded.get(0).bytesSended);
+		TestCase.assertEquals(3, loaded.get(0).incomingFailed);
+		TestCase.assertEquals(4, loaded.get(0).incomingOk);
+		TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
+		TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
+		TestCase.assertEquals(6, loaded.get(0).outgoingOk);
 
-        int pos = data.findPos(new FtnAddress("2:5020/828.17"), d);
-        TestCase.assertEquals(0, pos);
-        pos = data.findPos(new FtnAddress("2:5020/828.18"), d);
-        TestCase.assertEquals(1, pos);
-        pos = data.findPos(new FtnAddress("2:5020/828.19"), d);
-        TestCase.assertEquals(-1, pos);
+		TestCase.assertEquals(11, loaded.get(1).bytesReceived);
+		TestCase.assertEquals(21, loaded.get(1).bytesSended);
+		TestCase.assertEquals(31, loaded.get(1).incomingFailed);
+		TestCase.assertEquals(41, loaded.get(1).incomingOk);
+		TestCase.assertEquals("2:5020/828.18", loaded.get(1).linkStr);
+		TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
+		TestCase.assertEquals(61, loaded.get(1).outgoingOk);
+	}
 
-    }
+	@Test
+	public void testFindPos() throws Exception {
+		ConnectionStatData data = new ConnectionStatData(path);
+
+		List<ConnectionStatData.ConnectionStatDataElement> d = new ArrayList<ConnectionStatDataElement>();
+		d.add(e1);
+		d.add(e2);
+
+		int pos = data.findPos(new FtnAddress("2:5020/828.17"), d);
+		TestCase.assertEquals(0, pos);
+		pos = data.findPos(new FtnAddress("2:5020/828.18"), d);
+		TestCase.assertEquals(1, pos);
+		pos = data.findPos(new FtnAddress("2:5020/828.19"), d);
+		TestCase.assertEquals(-1, pos);
+
+	}
 }

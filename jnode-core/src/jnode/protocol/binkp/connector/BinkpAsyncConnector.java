@@ -100,10 +100,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									finish("Connect failed");
 								} else {
 									InetSocketAddress addr = (InetSocketAddress) channel
-											.getRemoteAddress();
+											.socket().getRemoteSocketAddress();
 									logger.l2(String.format(
 											"Connected with %s:%d",
-											addr.getHostString(),
+											addr.getHostName(),
 											addr.getPort()));
 								}
 							}

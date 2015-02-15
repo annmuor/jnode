@@ -29,14 +29,14 @@ public enum Notifier {
 	private final ConcurrentHashMap<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
 
 	private Notifier() {
-		notifyMap = new ConcurrentHashMap<>();
+		notifyMap = new ConcurrentHashMap<Class<? extends IEvent>, List<IEventHandler>>();
 	}
 
 	public void register(Class<? extends IEvent> clazz, IEventHandler handler) {
 		if (clazz != null && handler != null) {
 			List<IEventHandler> list = notifyMap.get(clazz);
 			if (list == null) {
-				list = new ArrayList<>();
+				list = new ArrayList<IEventHandler>();
 			}
 			list.add(handler);
 			notifyMap.put(clazz, list);

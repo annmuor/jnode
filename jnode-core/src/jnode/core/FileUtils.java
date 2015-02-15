@@ -33,18 +33,25 @@ import java.util.zip.ZipOutputStream;
 public final class FileUtils {
 	private static final int BLOCK_SIZE = 4096;
 
-    /**
-     * Читает весь файл в строку
-     * @param path путь к файлу
-     * @return строка с содержимым файла
-     * @throws IOException
-     */
+	/**
+	 * Читает весь файл в строку
+	 * 
+	 * @param path
+	 *            путь к файлу
+	 * @return строка с содержимым файла
+	 * @throws IOException
+	 */
 	public static String readFile(String path) throws IOException {
-		try (FileInputStream stream = new FileInputStream(new File(path))) {
+		try {
+			FileInputStream stream = new FileInputStream(new File(path));
 			FileChannel fc = stream.getChannel();
 			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0,
 					fc.size());
-			return Charset.forName("UTF8").decode(bb).toString();
+			String s = Charset.forName("UTF8").decode(bb).toString();
+			stream.close();
+			return s;
+		} catch (IOException e) {
+			throw e;
 		}
 	}
 
@@ -87,39 +94,56 @@ public final class FileUtils {
 		return false;
 	}
 
-    /**
-     * zip file
-     * @param inPath source
-     * @param outPath destination
-     * @param nameInsideZip zip entry name
-     * @throws IOException
-     */
-    public static void zipFile(String inPath, String outPath, String nameInsideZip) throws IOException {
-        try(FileInputStream in = new FileInputStream(inPath)){
-            try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outPath))){
-                out.putNextEntry(new ZipEntry(nameInsideZip));
+	/**
+	 * zip file
+	 * 
+	 * @param inPath
+	 *            source
+	 * @param outPath
+	 *            destination
+	 * @param nameInsideZip
+	 *            zip entry name
+	 * @throws IOException
+	 */
+	public static void zipFile(String inPath, String outPath,
+			String nameInsideZip) throws IOException {
+		try {
+			FileInputStream in = new FileInputStream(inPath);
+			try {
+				ZipOutputStream out = new ZipOutputStream(new FileOutputStream(
+						outPath));
 
-                byte[] buffer = new byte[BLOCK_SIZE];
-                int len;
+				out.putNextEntry(new ZipEntry(nameInsideZip));
 
-                while ((len = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, len);
-                }
+				byte[] buffer = new byte[BLOCK_SIZE];
+				int len;
 
-                out.closeEntry();
-            }
-        }
-    }
+				while ((len = in.read(buffer)) > 0) {
+					out.write(buffer, 0, len);
+				}
 
-    /**
-     * Get path part form full path
-     * @param fullPath full path
-     * @return path part
-     */
-    public static String getPathPart(String fullPath){
-        File temp = new File(fullPath);
-        String absolutePath = temp.getAbsolutePath();
-        return absolutePath.
-                substring(0,absolutePath.lastIndexOf(File.separator));
-    }
+				out.closeEntry();
+				out.close();
+			} catch (IOException e) {
+				throw e;
+			}
+			in.close();
+		} catch (IOException e) {
+			throw e;
+		}
+	}
+
+	/**
+	 * Get path part form full path
+	 * 
+	 * @param fullPath
+	 *            full path
+	 * @return path part
+	 */
+	public static String getPathPart(String fullPath) {
+		File temp = new File(fullPath);
+		String absolutePath = temp.getAbsolutePath();
+		return absolutePath.substring(0,
+				absolutePath.lastIndexOf(File.separator));
+	}
 }

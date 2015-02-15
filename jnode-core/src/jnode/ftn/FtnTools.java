@@ -103,7 +103,7 @@ public final class FtnTools {
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private static final Logger logger = Logger.getLogger(FtnTools.class);
 
-	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<>();
+	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<String, IRobot>();
 
 	/**
 	 * Сортировщик 2D-адресов
@@ -238,7 +238,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static List<Ftn2D> readSeenBy(String seenByLines) {
-		List<Ftn2D> seen = new ArrayList<>();
+		List<Ftn2D> seen = new ArrayList<Ftn2D>();
 		String[] seenBy = seenByLines.split("[ \n]");
 		int net = 0;
 		for (String parts : seenBy) {
@@ -317,7 +317,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static List<Ftn2D> readPath(String seenByLines) {
-		List<Ftn2D> seen = new ArrayList<>();
+		List<Ftn2D> seen = new ArrayList<Ftn2D>();
 		String[] seenBy = seenByLines.split("[ \n]");
 		int net = 0;
 		for (String parts : seenBy) {
@@ -387,7 +387,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static List<Ftn2D> read2D(String list2d) {
-		List<Ftn2D> ret = new ArrayList<>();
+		List<Ftn2D> ret = new ArrayList<Ftn2D>();
 
 		if (list2d == null || list2d.length() == 0
 				|| list2d.trim().length() == 0) {
@@ -446,7 +446,7 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static List<FtnAddress> read4D(String list2d) {
-		List<FtnAddress> ret = new ArrayList<>();
+		List<FtnAddress> ret = new ArrayList<FtnAddress>();
 		for (String l2d : list2d.split(" ")) {
 			try {
 				ret.add(new FtnAddress(l2d));
@@ -939,7 +939,7 @@ public final class FtnTools {
 	}
 
 	public static Link getLinkByFtnAddress(List<FtnAddress> addrs) {
-		List<String> saddrs = new ArrayList<>();
+		List<String> saddrs = new ArrayList<String>();
 		for (FtnAddress a : addrs) {
 			saddrs.add(a.toString());
 		}
@@ -1173,11 +1173,11 @@ public final class FtnTools {
 		boolean packEchomail = getOptionBooleanDefTrue(link,
 				LinkOption.BOOLEAN_PACK_ECHOMAIL);
 
-		List<Message> ret = new ArrayList<>();
-		List<FtnMessage> packedEchomail = new ArrayList<>();
-		List<FtnMessage> unpackedEchomail = new ArrayList<>();
-		List<FtnMessage> packedNetmail = new ArrayList<>();
-		List<FtnMessage> unpackedNetmail = new ArrayList<>();
+		List<Message> ret = new ArrayList<Message>();
+		List<FtnMessage> packedEchomail = new ArrayList<FtnMessage>();
+		List<FtnMessage> unpackedEchomail = new ArrayList<FtnMessage>();
+		List<FtnMessage> packedNetmail = new ArrayList<FtnMessage>();
+		List<FtnMessage> unpackedNetmail = new ArrayList<FtnMessage>();
 		FtnAddress to = new FtnAddress(link.getLinkAddress());
 		String password = link.getPaketPassword();
 		FtnPkt header = new FtnPkt(selectOurAka(link), to, password, new Date());

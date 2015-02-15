@@ -27,7 +27,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -81,8 +80,8 @@ public class FtnMessage {
 			"dd MMM yy  HH:mm:ss", Locale.US);
 
 	public FtnMessage() {
-		seenby = new ArrayList<>();
-		path = new ArrayList<>();
+		seenby = new ArrayList<Ftn2D>();
+		path = new ArrayList<Ftn2D>();
 	}
 
 	public String getFromName() {
@@ -326,18 +325,14 @@ public class FtnMessage {
 							if (m.matches()) {
 								String kluge = m.group(1);
 								String arg = m.group(2);
-								switch (kluge) {
-								case "INTL":
+								if (kluge.equals("INTL")) {
 									String tmp[] = arg.split(" ");
 									toAddr = new FtnAddress(tmp[0]);
 									fromAddr = new FtnAddress(tmp[1]);
-									break;
-								case "TOPT":
+								} else if (kluge.equals("TOPT")) {
 									toAddr.setPoint(new Integer(arg));
-									break;
-								case "FMPT":
+								} else if (kluge.equals("FMPT")) {
 									fromAddr.setPoint(new Integer(arg));
-									break;
 								}
 								continue;
 							}
@@ -388,7 +383,7 @@ public class FtnMessage {
 			} else {
 				throw new LastMessageException("2.0 is not out version");
 			}
-		} catch (IOException | LastMessageException | ParseException e) {
+		} catch (Exception e) {
 			throw new LastMessageException(e);
 		}
 	}

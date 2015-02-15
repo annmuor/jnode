@@ -39,7 +39,7 @@ public class JSONUtil {
 	}
 
 	private static Map<Class<?>, JSONConverter<?>> createConverterMap() {
-		Map<Class<?>, JSONConverter<?>> map = new HashMap<>();
+		Map<Class<?>, JSONConverter<?>> map = new HashMap<Class<?>, JSONConverter<?>>();
 		map.put(Link.class, new JSONConverter<Link>() {
 
 			@Override

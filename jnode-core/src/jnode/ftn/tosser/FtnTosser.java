@@ -53,9 +53,9 @@ public class FtnTosser {
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
 	private static final String MAIL_LIMIT = "tosser.mail_limit";
-	private final Map<String, Integer> tossed = new HashMap<>();
-	private final Map<String, Integer> bad = new HashMap<>();
-	private final Set<Link> pollLinks = new HashSet<>();
+	private final Map<String, Integer> tossed = new HashMap<String, Integer>();
+	private final Map<String, Integer> bad = new HashMap<String, Integer>();
+	private final Set<Link> pollLinks = new HashSet<Link>();
 
 	private boolean running;
 
@@ -227,7 +227,7 @@ public class FtnTosser {
 	public void tossInboundDirectory() {
 		running = true;
 		logger.l5("Start tossInboundDirectory()");
-		Set<Link> poll = new HashSet<>();
+		Set<Link> poll = new HashSet<Link>();
 		File inbound = new File(getInbound());
 		final File[] listFiles = inbound.listFiles();
 		if (listFiles != null) {
@@ -458,7 +458,7 @@ public class FtnTosser {
 
 	private List<Message> packNetmail(FtnAddress address) {
 		Link link = getLinkByFtnAddress(address);
-		LinkedList<Message> messages = new LinkedList<>();
+		LinkedList<Message> messages = new LinkedList<Message>();
 		if (link == null) {
 			link = new Link();
 			link.setLinkAddress(address.toString());
@@ -480,7 +480,7 @@ public class FtnTosser {
 			}
 			header.write(os);
 			do {
-				mail = new ArrayList<>();
+				mail = new ArrayList<Netmail>();
 				mail.addAll(ORMManager.get(Netmail.class).getAnd("send", "=",
 						false, "to_address", "=", address.toString(),
 						"route_via", "null"));
@@ -539,7 +539,7 @@ public class FtnTosser {
 	}
 
 	private List<Message> packEchomail(Link link, FtnAddress address) {
-		LinkedList<Message> messages = new LinkedList<>();
+		LinkedList<Message> messages = new LinkedList<Message>();
 		boolean pack = getOptionBooleanDefTrue(link,
 				LinkOption.BOOLEAN_PACK_ECHOMAIL);
 		Ftn2D link2d = new Ftn2D(address.getNet(), address.getNode());
@@ -571,7 +571,7 @@ public class FtnTosser {
 							continue;
 						}
 						List<Ftn2D> path = read2D(mail.getPath());
-						Set<Ftn2D> seenby = new HashSet<>(
+						Set<Ftn2D> seenby = new HashSet<Ftn2D>(
 								read2D(mail.getSeenBy()));
 						if (seenby.contains(link2d) && address.getPoint() == 0) {
 							logger.l5(link2d + " is in seenby for " + address);
@@ -639,7 +639,7 @@ public class FtnTosser {
 	}
 
 	private List<Message> packFilemail(Link link, FtnAddress address) {
-		List<Message> msgs = new LinkedList<>();
+		List<Message> msgs = new LinkedList<Message>();
 		List<FilemailAwaiting> filemail = null;
 		do {
 			filemail = getFileMail(link);
@@ -663,7 +663,7 @@ public class FtnTosser {
 						continue;
 					}
 
-					Set<FtnAddress> seenby = new HashSet<>(
+					Set<FtnAddress> seenby = new HashSet<FtnAddress>(
 							read4D(mail.getSeenby()));
 					if (seenby.contains(address)) {
 						deleteFAMail(f);
@@ -684,7 +684,7 @@ public class FtnTosser {
 									+ " - ignored", e);
 						}
 					}
-					List<FtnAddress> sb = new ArrayList<>(seenby);
+					List<FtnAddress> sb = new ArrayList<FtnAddress>(seenby);
 					Collections.sort(sb, new Ftn4DComparator());
 					FtnTIC tic = createTic(link, mail, attach);
 					tic.setTo(address);
@@ -733,7 +733,7 @@ public class FtnTosser {
 	}
 
 	public List<Message> getMessages2(FtnAddress address) {
-		LinkedList<Message> messages = new LinkedList<>();
+		LinkedList<Message> messages = new LinkedList<Message>();
 		String key = address.toString().intern();
 		synchronized (key) {
 			messages.addAll(packNetmail(address));
@@ -825,7 +825,7 @@ public class FtnTosser {
 
 	protected Set<Ftn2D> createSeenBy(Echoarea area) {
 		List<Subscription> ssubs = getSubscription(area);
-		Set<Ftn2D> seenby = new HashSet<>();
+		Set<Ftn2D> seenby = new HashSet<Ftn2D>();
 		for (Subscription ssub : ssubs) {
 			try {
 				Link _sslink = ORMManager.get(Link.class).getById(
@@ -853,7 +853,7 @@ public class FtnTosser {
 		message.setDate(mail.getDate());
 		message.setSubject(mail.getSubject());
 		message.setText(mail.getText());
-		message.setSeenby(new ArrayList<>(seenby));
+		message.setSeenby(new ArrayList<Ftn2D>(seenby));
 		message.setPath(path);
 		message.setMsgid(mail.getMsgid());
 		return message;
@@ -866,7 +866,7 @@ public class FtnTosser {
 							MAIL_LIMIT, 100), "send", "=", false, "route_via",
 					"=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<Netmail>();
 		}
 	}
 
@@ -876,7 +876,7 @@ public class FtnTosser {
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							MAIL_LIMIT, 100), "link_id", "=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<EchomailAwaiting>();
 		}
 	}
 
@@ -891,7 +891,7 @@ public class FtnTosser {
 					MainHandler.getCurrentInstance().getIntegerProperty(
 							MAIL_LIMIT, 100), "link_id", "=", link);
 		} else {
-			return new ArrayList<>();
+			return new ArrayList<FilemailAwaiting>();
 		}
 	}
 

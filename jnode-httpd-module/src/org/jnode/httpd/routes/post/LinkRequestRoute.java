@@ -20,7 +20,6 @@
 
 package org.jnode.httpd.routes.post;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -89,7 +88,7 @@ public class LinkRequestRoute extends Route {
 						}
 						lr.setHost(host);
 						lr.setPort(iport);
-					} catch (IOException | NumberFormatException e) {
+					} catch (Exception e) {
 						code = "INET";
 					}
 				}

@@ -44,7 +44,7 @@ public class StatPoster extends TimerTask {
 
 	public StatPoster(Timer timer) {
 		if (getStatisticEnabled()) {
-			posters = new ArrayList<>();
+			posters = new ArrayList<IStatPoster>();
 			{
 				String[] posters = MainHandler
 						.getCurrentInstance()
