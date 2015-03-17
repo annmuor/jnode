@@ -132,7 +132,7 @@ public class FtnTosser {
 		}
 
 		Long rl = getOptionLong(link, LinkOption.LONG_LINK_LEVEL);
-		if (rl.longValue() < area.getWritelevel()) {
+		if (rl < area.getWritelevel()) {
 			writeNetmail(
 					getPrimaryFtnAddress(),
 					new FtnAddress(link.getLinkAddress()),
@@ -140,7 +140,7 @@ public class FtnTosser {
 					link.getLinkName(),
 					"[" + area.getName() + "]: post rejected",
 					String.format(
-							"Sorry, you have no enough level to post to this area\n%s",
+							"Sorry, you have no enough level to post %s to this area\n%s",
 							quote(echomail), MainHandler.getVersion()));
 			logger.l3("Echoarea " + echomail.getArea()
 					+ " is not availible for " + link.getLinkAddress()
