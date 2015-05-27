@@ -20,28 +20,6 @@
 
 package jnode.protocol.binkp.connector;
 
-import static jnode.protocol.binkp.BinkpProtocolTools.createMessage;
-import static jnode.protocol.binkp.BinkpProtocolTools.forwardToTossing;
-import static jnode.protocol.binkp.BinkpProtocolTools.getAuthPassword;
-import static jnode.protocol.binkp.BinkpProtocolTools.getString;
-import static jnode.protocol.binkp.BinkpProtocolTools.messageEquals;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import jnode.core.ConcurrentDateFormatAccess;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
@@ -60,6 +38,16 @@ import jnode.protocol.binkp.exceprion.ConnectionEndException;
 import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
+
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static jnode.protocol.binkp.BinkpProtocolTools.*;
 
 /**
  * Абстрактный binkp через любой протокол
@@ -246,6 +234,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 						recv_bytes += len;
 						total_recv_bytes += len;
 					} catch (IOException e) {
+						logger.l5(MessageFormat.format(
+								"fail receive message {2}, recv_bytes={0}, " +
+										"total_recv_bytes={1}, skip",
+								recv_bytes, total_recv_bytes, receivingMessage), e);
 						frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 								getString(receivingMessage)));
 						receivingMessage = null;
@@ -353,7 +345,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 					getString(receivingMessage)));
 			receivingMessage = null;
-			logger.l1("No enogth free space in inbound for receiving file");
+			logger.l1("No enough free space in inbound for receiving file");
 		}
 		if (!arg.split(" ")[3].equals("0")) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_GET, getString(
@@ -365,17 +357,21 @@ public abstract class BinkpAbstractConnector implements Runnable {
 						staticTempDirectory);
 				free_space = currentFile.getFreeSpace();
 				if (receivingMessage.getMessageLength() > free_space) {
-					logger.l1("No enogth free space in tmp for receiving file");
+					logger.l1("No enough free space in tmp for receiving file");
 					currentFile.delete();
 					throw new IOException();
 				}
 				currentOS = new FileOutputStream(currentFile);
 			} catch (IOException e) {
+				logger.l5(MessageFormat.format("fail process m_file message {0}," +
+						" len {1}, memMaxSize {2}",
+						receivingMessage, receivingMessage.getMessageLength(), staticMemMaxSize), e);
 				currentFile = null;
 				if (receivingMessage.getMessageLength() < staticMemMaxSize) {
 					currentOS = new ByteArrayOutputStream(
 							(int) receivingMessage.getMessageLength());
 				} else {
+					logger.l5("skip m_file due exception");
 					frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 							getString(receivingMessage)));
 					receivingMessage = null;
