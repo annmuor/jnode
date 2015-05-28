@@ -353,8 +353,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		} else {
 			receivingBytesLeft = receivingMessage.getMessageLength();
 			try {
-				currentFile = File.createTempFile("temp", "jnode",
+				final String prefix = "temp";
+				final String suffix = "jnode";
+				logger.l5(MessageFormat.format("try create temp file with prefix {0}, suffix {1} in directory {2}",
+						prefix, suffix, staticTempDirectory));
+				currentFile = File.createTempFile(prefix, suffix,
 						staticTempDirectory);
+				logger.l5(MessageFormat.format("temp file {0} created", currentFile));
 				free_space = currentFile.getFreeSpace();
 				if (receivingMessage.getMessageLength() > free_space) {
 					logger.l1("No enough free space in tmp for receiving file");
@@ -368,10 +373,11 @@ public abstract class BinkpAbstractConnector implements Runnable {
 						receivingMessage, receivingMessage.getMessageLength(), staticMemMaxSize), e);
 				currentFile = null;
 				if (receivingMessage.getMessageLength() < staticMemMaxSize) {
+                    logger.l5(MessageFormat.format("load {0} in memory", receivingMessage));
 					currentOS = new ByteArrayOutputStream(
 							(int) receivingMessage.getMessageLength());
 				} else {
-					logger.l5("skip m_file due exception");
+					logger.l5("skip m_file due exception - too big for load in memory");
 					frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 							getString(receivingMessage)));
 					receivingMessage = null;
