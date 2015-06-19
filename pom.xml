@@ -73,5 +73,17 @@
 				<module>jnode-pointchecker-module</module>
 			</modules>
 		</profile>
+		<profile>
+			<id>release</id>
+			<modules>
+				<module>jnode-core</module>
+				<module>jnode-httpd-module</module>
+				<module>jnode-mail-module</module>
+				<module>jnode-rss-module</module>
+				<module>jnode-pointchecker-module</module>
+				<module>jnode-assembly</module>
+			</modules>
+		</profile>
+
 	</profiles>
 </project>

@@ -87,6 +87,8 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new SelfRoute());
 		Spark.get(new SelfRoute("/"));
 		Spark.get(new SelfRoute(""));
+		Spark.get(new EchoareaCSVRoute());
+		
 		if (pointreg) {
 			Spark.get(new BecomePointRoute(true));
 			Spark.get(new PointRequestConfirmRoute());
