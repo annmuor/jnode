@@ -6,4 +6,4 @@ for /R ../lib %%a in (*.jar) do (
 )
 set CLASSPATH=!CLASSPATH!
 echo !CLASSPATH!
-java -Xmx100m -server -cp !CLASSPATH! jnode.main.Main ..\\etc\\jnode.win.conf
+java -Xmx300m -server -cp !CLASSPATH! jnode.main.Main ..\\etc\\jnode.win.conf
