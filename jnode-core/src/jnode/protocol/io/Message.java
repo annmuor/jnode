@@ -104,4 +104,15 @@ public class Message {
 	public void setUnixtime(Long unixtime) {
 		this.unixtime = unixtime;
 	}
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Message{");
+        sb.append("messageLength=").append(messageLength);
+        sb.append(", messageName='").append(messageName).append('\'');
+        sb.append(", secure=").append(secure);
+        sb.append(", unixtime=").append(unixtime);
+        sb.append('}');
+        return sb.toString();
+    }
 }
