@@ -43,9 +43,9 @@ public class EchoareaCSVRoute extends Route {
 					csv.setName(row[0]);
 					csv.setDescription(row[1]);
 					csv.setNum(new Long(row[2]));
-					csv.setLatest(new Long(row[3]));
+					csv.setLatest(new Long(row[3])/1000L);
 					ORMManager.get(EchoareaCSV.class).save(csv);
-					sb.append(csv.getName() + "," + csv.getLatest()/1000L + ","
+					sb.append(csv.getName() + "," + csv.getLatest() + ","
 							+ csv.getNum() + "," + csv.getDescription()
 							+ "\r\n");
 				}

@@ -6,10 +6,10 @@
 	<parent>
 		<groupId>jnode</groupId>
 		<artifactId>jnode</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0</version>
 	</parent>
 	<artifactId>jnode-xmpp</artifactId>
-	<version>1.0</version>
+	<version>0.1</version>
 	<name>jnode-xmpp</name>
 	<dependencies>
 		<dependency>
@@ -21,7 +21,7 @@
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
 			<scope>provided</scope>
-			<version>1.0</version>
+			<version>1.5</version>
 		</dependency>
 	</dependencies>
 	<build>
