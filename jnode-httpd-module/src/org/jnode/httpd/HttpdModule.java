@@ -50,12 +50,14 @@ public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_PORT = "port";
 	private static final String CONFIG_LINK_REG = "linkreg";
 	private static final String CONFIG_POINT_REG = "pointreg";
+	private static final String CONFIG_HDG_REG = "hdgpointreg";
 	private static final String CONFIG_EXTERNAL = "external";
 
-	private static final Logger logger = Logger.getLogger(HttpdModule.class);
+	public static final Logger logger = Logger.getLogger(HttpdModule.class);
 	private short port;
 	private boolean linkreg;
 	private boolean pointreg;
+	private boolean hdgpointreg;
 	private String external;
 
 	public HttpdModule(String configFile) throws JnodeModuleException {
@@ -66,6 +68,8 @@ public class HttpdModule extends JnodeModule {
 		pointreg = Boolean.valueOf(properties.getProperty(CONFIG_POINT_REG,
 				"false"));
 		external = properties.getProperty(CONFIG_EXTERNAL);
+		hdgpointreg = Boolean.valueOf(properties.getProperty(CONFIG_HDG_REG,
+				"false"));
 		HTML.setExternalPath(external);
 	}
 
@@ -87,6 +91,10 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new SelfRoute());
 		Spark.get(new SelfRoute("/"));
 		Spark.get(new SelfRoute(""));
+		Spark.get(new EchoareaCSVRoute());
+
+		Spark.post(new HDGPointRequestRoute(hdgpointreg));
+
 		if (pointreg) {
 			Spark.get(new BecomePointRoute(true));
 			Spark.get(new PointRequestConfirmRoute());
