@@ -29,8 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import static java.util.Collections.EMPTY_LIST;
-
 public class NntpClient implements Runnable {
 
     private static final Logger logger = Logger.getLogger(NntpClient.class);
@@ -195,7 +193,7 @@ public class NntpClient implements Runnable {
             if (foundedCommand == null) {
                 throw new UnknownCommandException();
             }
-            foundedCommand.setParams(EMPTY_LIST);
+            foundedCommand.setParams(Collections.emptyList());
             return foundedCommand;
         }
 

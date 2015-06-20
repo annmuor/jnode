@@ -5,7 +5,7 @@
     <parent>
         <groupId>jnode</groupId>
         <artifactId>jnode</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <name>jnode-assembly</name>
     <description>jnode assembly module</description>
+    <version>1.5</version>
 
     <build>
         <plugins>
