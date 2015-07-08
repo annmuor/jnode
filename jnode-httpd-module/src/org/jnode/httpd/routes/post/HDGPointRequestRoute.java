@@ -55,14 +55,14 @@ public class HDGPointRequestRoute extends Route {
 			}
 		}
 		// seems ok
-		String guessedAddress = guessNewPointAddress();
+		FtnAddress guessedAddress = guessNewPointAddress();
 		if (guessedAddress == null) {
 			error("NO_PNT_ADDRESS_SPACE");
 			return "ERROR\r\nNO_PNT_ADDRESS_SPACE";
 		}
 		// do point request
 		PointRequest pReq = new PointRequest();
-		pReq.setAddr(guessedAddress);
+		pReq.setAddr(guessedAddress.toString());
 		pReq.setEmail(email);
 		pReq.setName(name);
 		pReq.setPassword(password);
@@ -70,7 +70,7 @@ public class HDGPointRequestRoute extends Route {
 		ORMManager.get(PointRequest.class).save(pReq);
 		// create link
 		Link link = new Link();
-		link.setLinkAddress(guessedAddress);
+		link.setLinkAddress(guessedAddress.toString());
 		link.setLinkName(name);
 		link.setProtocolAddress("-");
 		link.setProtocolPassword(password);
@@ -85,7 +85,7 @@ public class HDGPointRequestRoute extends Route {
 				Echoarea area = FtnTools.getAreaByName(techArea, null);
 				FtnTools.writeEchomail(area, "New HTDGPoint", text);
 			}
-			FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
+			FtnTools.writeNetmail(guessedAddress,
 					FtnTools.getPrimaryFtnAddress(), MainHandler
 							.getCurrentInstance().getInfo().getStationName(),
 					MainHandler.getCurrentInstance().getInfo().getSysop(),
@@ -103,7 +103,7 @@ public class HDGPointRequestRoute extends Route {
 		HttpdModule.logger.l3("HDGPR: " + ok);
 	}
 
-	private String guessNewPointAddress() {
+	private FtnAddress guessNewPointAddress() {
 		FtnAddress baseNodeAddr = FtnTools.getPrimaryFtnAddress().clone();
 		if (baseNodeAddr.getPoint() != 0) {
 			return null;
@@ -113,7 +113,7 @@ public class HDGPointRequestRoute extends Route {
 			baseNodeAddr.setPoint(i);
 			Link l = FtnTools.getLinkByFtnAddress(baseNodeAddr);
 			if (l == null) {
-				return baseNodeAddr.toString();
+				return baseNodeAddr;
 			}
 		}
 		return null;
