@@ -111,7 +111,7 @@ public final class RssPoster {
             sb.append("*");
             sb.append("\n\n");
             sb.append(Cleaner.clean(entry.getDescription().getValue(), false));
-            sb.append("\nRead more: ");
+            sb.append("\nЧитать далее: ");
             sb.append(entry.getLink());
             sb.append("\n----------------------------------------------------------------------\n\n");
         }
