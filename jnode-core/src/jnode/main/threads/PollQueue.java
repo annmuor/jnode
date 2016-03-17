@@ -20,12 +20,12 @@
 
 package jnode.main.threads;
 
+import jnode.dto.Link;
+import jnode.ftn.types.FtnAddress;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
-
-import jnode.dto.Link;
-import jnode.ftn.types.FtnAddress;
 
 /**
  * 
@@ -139,5 +139,13 @@ public class PollQueue {
 		synchronized (queue) {
 			return queue.isEmpty();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "PollQueue{" +
+				"pollMap=" + pollMap +
+				", queue=" + queue +
+				'}';
 	}
 }
