@@ -19,6 +19,7 @@
 				<include>jnode:jnode-pointchecker-module</include>
 				<include>jnode:jnode-rss</include>
 				<include>jnode:jnode-xmpp</include>
+				<include>jnode:jnode-rest-api-module</include>
 			</includes>
 			<binaries>
 				<outputDirectory>jnode/lib</outputDirectory>

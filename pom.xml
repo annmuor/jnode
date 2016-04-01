@@ -86,8 +86,8 @@
         	<module>jnode-xmpp-module</module>
         	<module>jnode-pointchecker-module</module>
             <module>jnode-nntp</module>
-        	<module>jnode-assembly</module>
             <module>jnode-rest-api-module</module>
+        	<module>jnode-assembly</module>
         </modules>
     </profile>
 </profiles>
