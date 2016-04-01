@@ -24,6 +24,8 @@ import jnode.event.IEvent;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
+import org.jnode.rest.auth.AuthenticationDetails;
+import org.jnode.rest.auth.BasicAuthenticationFilter;
 import org.jnode.rest.route.PostEchoareaRoute;
 import spark.Spark;
 
@@ -60,6 +62,7 @@ public class Main extends JnodeModule {
 
     private void startInternal() throws JnodeModuleException {
         Spark.setPort(getPort());
+        Spark.before(new BasicAuthenticationFilter(new AuthenticationDetails("tester", "111111")));
         Spark.post(new PostEchoareaRoute());
     }
 

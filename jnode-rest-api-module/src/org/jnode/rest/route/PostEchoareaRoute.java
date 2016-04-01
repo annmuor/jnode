@@ -50,6 +50,7 @@ public class PostEchoareaRoute extends Route {
         Long id = FtnTools.writeEchomail(area, message.getSubject(), message.getBody());
 
         try {
+            response.status(Http.CREATED);
             return PostMessageResultMapper.toJson(PostMessageResult.good(id));
         } catch (JsonProcessingException e) {
             response.status(Http.INTERNAL_SERVER_ERROR);
