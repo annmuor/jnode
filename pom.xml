@@ -21,6 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ormlite.version>4.48</ormlite.version>
+        <spark.version>2.3</spark.version>
         <java.compiler.version>1.8</java.compiler.version>
     </properties>
 
@@ -88,6 +89,15 @@
             <module>jnode-nntp</module>
             <module>jnode-rest-api-module</module>
         	<module>jnode-assembly</module>
+        </modules>
+    </profile>
+    <profile>
+        <id>api</id>
+        <modules>
+            <module>jnode-core</module>
+            <module>jnode-rss-module</module>
+            <module>jnode-rest-api-module</module>
+            <module>jnode-assembly</module>
         </modules>
     </profile>
 </profiles>

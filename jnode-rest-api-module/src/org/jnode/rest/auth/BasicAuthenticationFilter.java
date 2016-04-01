@@ -1,14 +1,15 @@
 package org.jnode.rest.auth;
 
 import org.jnode.rest.core.StringUtils;
-import spark.Filter;
+import spark.FilterImpl;
 import spark.Request;
 import spark.Response;
+import spark.Spark;
 import spark.utils.SparkUtils;
 
 import java.util.Base64;
 
-public class BasicAuthenticationFilter extends Filter {
+public class BasicAuthenticationFilter extends FilterImpl {
 
     private static final String BASIC_AUTHENTICATION_TYPE = "Basic";
 
@@ -41,7 +42,7 @@ public class BasicAuthenticationFilter extends Filter {
         if (notAuthenticatedWith(credentialsFrom(decodedHeader)))
         {
             response.header("WWW-Authenticate", BASIC_AUTHENTICATION_TYPE);
-            halt(401);
+            Spark.halt(401);
         }
     }
 

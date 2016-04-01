@@ -26,20 +26,19 @@ import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
-
 import org.jnode.httpd.dto.WebAdmin;
-import org.jnode.httpd.filters.*;
+import org.jnode.httpd.filters.CharsetFilter;
+import org.jnode.httpd.filters.SecureFilter;
 import org.jnode.httpd.routes.get.*;
 import org.jnode.httpd.routes.post.*;
 import org.jnode.httpd.util.HTML;
+import spark.Spark;
 
 /**
  * HttpdModule - модуль, слушающий порт и отдающий странички
- * 
+ *
  * @author kreon
- * 
  */
-import spark.Spark;
 
 /**
  * 

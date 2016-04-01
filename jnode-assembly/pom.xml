@@ -66,6 +66,21 @@
 							</descriptors>
 						</configuration>
 					</execution>
+					<execution>
+						<id>api</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+							<ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+							<finalName>jnode-${project.version}</finalName>
+							<descriptors>
+								<descriptor>distribution-api.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>

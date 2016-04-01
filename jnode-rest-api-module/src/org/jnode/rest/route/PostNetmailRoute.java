@@ -14,10 +14,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class PostNetmailRoute extends Route {
-    public PostNetmailRoute(String route) {
-        super(route);
-    }
+public class PostNetmailRoute implements Route {
 
     @Override
     public Object handle(Request request, Response response) {

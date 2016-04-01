@@ -35,17 +35,15 @@ import spark.Spark;
 public class Main extends JnodeModule {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class);
+    private final int port;
 
     public Main(String configFile) throws JnodeModuleException {
         super(configFile);
+        port = getPort();
+        ORMManager.get(RestUser.class);
     }
 
-    public static void main(String[] args) throws JnodeModuleException {
-        Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
-        mainModule.start();
-    }
-
-    public int getPort() throws JnodeModuleException {
+    private int getPort() throws JnodeModuleException {
         try {
             return Integer.parseInt(properties.getProperty("rest-api-port", "4567"));
         } catch (NumberFormatException e) {
@@ -63,11 +61,10 @@ public class Main extends JnodeModule {
     }
 
     private void startInternal() throws JnodeModuleException {
-        ORMManager.get(RestUser.class);
-        Spark.setPort(getPort());
+        Spark.setPort(port);
         Spark.before(new BasicAuthenticationFilter(new PwdProvider()));
-        Spark.post(new PostEchoareaRoute("/echoarea"));
-        Spark.post(new PostNetmailRoute("/netmail"));
+        Spark.post("/echoarea", new PostEchoareaRoute());
+        Spark.post("/netmail", new PostNetmailRoute());
     }
 
     @Override
