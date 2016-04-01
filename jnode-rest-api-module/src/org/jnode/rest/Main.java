@@ -21,6 +21,7 @@
 package org.jnode.rest;
 
 import jnode.event.IEvent;
+import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
@@ -62,7 +63,7 @@ public class Main extends JnodeModule {
 
     private void startInternal() throws JnodeModuleException {
         Spark.setPort(getPort());
-        Spark.before(new BasicAuthenticationFilter(new AuthenticationDetails("tester", "111111")));
+        Spark.before(new BasicAuthenticationFilter(new AuthenticationDetails("tester", FtnTools.md5("111111"))));
         Spark.post(new PostEchoareaRoute());
     }
 

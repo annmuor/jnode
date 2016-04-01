@@ -73,7 +73,7 @@ public class BasicAuthenticationFilter extends Filter {
             final String submittedUsername = credentials[0];
             final String submittedPassword = credentials[1];
 
-            return StringUtils.equals(submittedUsername, authenticationDetails.username) && StringUtils.equals(submittedPassword, new String(authenticationDetails.password));
+            return StringUtils.equals(submittedUsername, authenticationDetails.username) && StringUtils.equals("MD5-" + submittedPassword, new String(authenticationDetails.password));
         }
         else
         {
