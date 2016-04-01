@@ -22,26 +22,26 @@ package org.jnode.rest.mapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jnode.rest.core.BadJsonException;
 import org.jnode.rest.core.StringUtils;
-import org.jnode.rest.dto.Message;
+import org.jnode.rest.dto.NetmailMessage;
 
 import java.io.IOException;
 
-public final class MessageMapper {
-    private MessageMapper() {
+public final class NetmailMessageMapper {
+    private NetmailMessageMapper() {
     }
 
-    public static Message fromJson(String payload) throws BadJsonException {
+    public static NetmailMessage fromJson(String payload) throws BadJsonException {
         if (StringUtils.isEmpty(payload)) {
             throw new BadJsonException("empty body");
         }
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Message message = mapper.readValue(payload, Message.class);
-            if (!message.isValid()) {
-                throw new BadJsonException("invalid message");
+            NetmailMessage echoMessage = mapper.readValue(payload, NetmailMessage.class);
+            if (!echoMessage.isValid()) {
+                throw new BadJsonException("invalid netmailMessage");
             }
-            return message;
+            return echoMessage;
         } catch (IOException e) {
             throw new BadJsonException("json process exception", e);
         }

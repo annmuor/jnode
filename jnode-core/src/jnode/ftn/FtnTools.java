@@ -974,9 +974,9 @@ public final class FtnTools {
 		return sb.toString();
 	}
 
-	public static void writeNetmail(FtnAddress from, FtnAddress to,
+	public static Long writeNetmail(FtnAddress from, FtnAddress to,
 			String fromName, String toName, String subject, String text) {
-		writeNetmail(from, to, fromName, toName, subject, text, 0, true);
+		return writeNetmail(from, to, fromName, toName, subject, text, 0, true);
 	}
 
 	/**
@@ -989,7 +989,7 @@ public final class FtnTools {
 	 * @param subject
 	 * @param text
 	 */
-	public static void writeNetmail(FtnAddress from, FtnAddress to,
+	public static Long writeNetmail(FtnAddress from, FtnAddress to,
 			String fromName, String toName, String subject, String text,
 			int attr, boolean route) {
 		FtnMessage message = new FtnMessage();
@@ -1027,6 +1027,7 @@ public final class FtnTools {
 				PollQueue.getSelf().add(routeVia);
 			}
 		}
+        return net.getId();
 	}
 
 	public static File createOutboundFile(Link link) {

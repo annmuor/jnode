@@ -16,17 +16,17 @@ public class BasicAuthenticationFilter extends Filter {
 
     private static final String ACCEPT_ALL_TYPES = "*";
 
-    private final AuthenticationDetails authenticationDetails;
+    private final PwdProvider pwdProvider;
 
-    public BasicAuthenticationFilter(final AuthenticationDetails authenticationDetails)
+    public BasicAuthenticationFilter(final PwdProvider pwdProvider)
     {
-        this(SparkUtils.ALL_PATHS, authenticationDetails);
+        this(SparkUtils.ALL_PATHS, pwdProvider);
     }
 
-    public BasicAuthenticationFilter(final String path, final AuthenticationDetails authenticationDetails)
+    public BasicAuthenticationFilter(final String path, final PwdProvider pwdProvider)
     {
         super(path, ACCEPT_ALL_TYPES);
-        this.authenticationDetails = authenticationDetails;
+        this.pwdProvider = pwdProvider;
     }
 
     @Override
@@ -68,12 +68,14 @@ public class BasicAuthenticationFilter extends Filter {
 
     private boolean authenticatedWith(final String[] credentials)
     {
-        if (credentials != null && credentials.length == NUMBER_OF_AUTHENTICATION_FIELDS)
-        {
+        if (credentials != null && credentials.length == NUMBER_OF_AUTHENTICATION_FIELDS) {
             final String submittedUsername = credentials[0];
             final String submittedPassword = credentials[1];
 
-            return StringUtils.equals(submittedUsername, authenticationDetails.username) && StringUtils.equals("MD5-" + submittedPassword, new String(authenticationDetails.password));
+            char[] pwd = pwdProvider.getPwd(submittedUsername);
+
+            return pwd != null && StringUtils.equals("MD5-" + submittedPassword, new String(pwd));
+
         }
         else
         {

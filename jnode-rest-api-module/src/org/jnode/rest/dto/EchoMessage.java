@@ -23,7 +23,7 @@ import lombok.Data;
 import org.jnode.rest.core.StringUtils;
 
 @Data
-public class Message implements Validable{
+public class EchoMessage implements Validable{
     private String echoArea;
     private String subject;
     private String body;
@@ -33,6 +33,7 @@ public class Message implements Validable{
     @Override
     public boolean isValid() {
         return !StringUtils.isEmpty(echoArea) && !StringUtils.isEmpty(subject)
-                && !StringUtils.isEmpty(body);
+                && !StringUtils.isEmpty(body) && !StringUtils.isEmpty(fromName)
+                && !StringUtils.isEmpty(toName);
     }
 }

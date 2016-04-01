@@ -21,13 +21,15 @@
 package org.jnode.rest;
 
 import jnode.event.IEvent;
-import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
-import org.jnode.rest.auth.AuthenticationDetails;
+import jnode.orm.ORMManager;
 import org.jnode.rest.auth.BasicAuthenticationFilter;
+import org.jnode.rest.auth.PwdProvider;
+import org.jnode.rest.db.RestUser;
 import org.jnode.rest.route.PostEchoareaRoute;
+import org.jnode.rest.route.PostNetmailRoute;
 import spark.Spark;
 
 public class Main extends JnodeModule {
@@ -45,11 +47,10 @@ public class Main extends JnodeModule {
 
     public int getPort() throws JnodeModuleException {
         try {
-            return Integer.parseInt(properties.getProperty("port", "4567"));
+            return Integer.parseInt(properties.getProperty("rest-api-port", "4567"));
         } catch (NumberFormatException e) {
             throw new JnodeModuleException("bad port value", e);
         }
-
     }
 
     @Override
@@ -62,9 +63,11 @@ public class Main extends JnodeModule {
     }
 
     private void startInternal() throws JnodeModuleException {
+        ORMManager.get(RestUser.class);
         Spark.setPort(getPort());
-        Spark.before(new BasicAuthenticationFilter(new AuthenticationDetails("tester", FtnTools.md5("111111"))));
-        Spark.post(new PostEchoareaRoute());
+        Spark.before(new BasicAuthenticationFilter(new PwdProvider()));
+        Spark.post(new PostEchoareaRoute("/echoarea"));
+        Spark.post(new PostNetmailRoute("/netmail"));
     }
 
     @Override

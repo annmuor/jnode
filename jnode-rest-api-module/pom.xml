@@ -16,6 +16,7 @@
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
 			<version>1.5</version>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sparkjava</groupId>
@@ -46,6 +47,27 @@
                 <directory>resources</directory>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/lib
+                            </outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
