@@ -1,5 +1,6 @@
 package org.jnode.rest.auth;
 
+import jnode.logger.Logger;
 import org.jnode.rest.core.StringUtils;
 import spark.FilterImpl;
 import spark.Request;
@@ -10,6 +11,8 @@ import spark.utils.SparkUtils;
 import java.util.Base64;
 
 public class BasicAuthenticationFilter extends FilterImpl {
+
+    private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class);
 
     private static final String BASIC_AUTHENTICATION_TYPE = "Basic";
 
@@ -74,6 +77,8 @@ public class BasicAuthenticationFilter extends FilterImpl {
             final String submittedPassword = credentials[1];
 
             char[] pwd = pwdProvider.getPwd(submittedUsername);
+
+            LOGGER.l5("submittedUsername = " + submittedUsername);
 
             return pwd != null && StringUtils.equals("MD5-" + submittedPassword, new String(pwd));
 

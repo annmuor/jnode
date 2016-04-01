@@ -1,9 +1,13 @@
 package org.jnode.rest.auth;
 
+import jnode.ftn.FtnTools;
+import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import org.jnode.rest.db.RestUser;
 
 public class PwdProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(PwdProvider.class);
 
     char[] getPwd(String submittedUsername) {
 
@@ -11,10 +15,12 @@ public class PwdProvider {
         RestUser user = ORMManager.get(RestUser.class)
                 .getFirstAnd("username", "=", submittedUsername);
 
+        LOGGER.l5(String.format("for username %s get %s", submittedUsername, user));
+
         if (user == null) {
             return null;
         }
 
-        return user.getPassword().toCharArray();
+        return FtnTools.md5(user.getPassword()).toCharArray();
     }
 }
