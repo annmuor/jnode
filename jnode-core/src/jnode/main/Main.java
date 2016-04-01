@@ -21,7 +21,7 @@
 package jnode.main;
 
 import com.j256.ormlite.logger.LocalLog;
-
+import jnode.dto.*;
 import jnode.event.Notifier;
 import jnode.event.SharedModuleEvent;
 import jnode.ftn.FtnTools;
@@ -30,12 +30,7 @@ import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
 import jnode.logger.Redirector;
-import jnode.main.threads.HealthReporter;
-import jnode.main.threads.NetmailFallback;
-import jnode.main.threads.PollQueue;
-import jnode.main.threads.ThreadPool;
-import jnode.main.threads.TimerPoll;
-import jnode.main.threads.TosserQueue;
+import jnode.main.threads.*;
 import jnode.module.JnodeModule;
 import jnode.orm.ORMManager;
 import jnode.protocol.binkp.BinkpAsyncClientPool;
@@ -48,9 +43,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * 
+ *
  * @author kreon
- * 
+ *
  */
 public class Main {
 	private static final Logger logger = Logger.getLogger(Main.class);
@@ -102,7 +97,28 @@ public class Main {
 				BINKD_THREADS, 10);
 		new ThreadPool(nThreads);
 
-		// eof
+		// the  existence check
+        ORMManager.get(Echoarea.class);
+        ORMManager.get(Echomail.class);
+        ORMManager.get(EchomailAwaiting.class);
+        ORMManager.get(Filearea.class);
+        ORMManager.get(FileForLink.class);
+        ORMManager.get(Filemail.class);
+        ORMManager.get(FilemailAwaiting.class);
+        ORMManager.get(FileSubscription.class);
+        ORMManager.get(Jscript.class);
+        ORMManager.get(Link.class);
+        ORMManager.get(LinkOption.class);
+        ORMManager.get(Netmail.class);
+        ORMManager.get(Rewrite.class);
+        ORMManager.get(Robot.class);
+        ORMManager.get(Route.class);
+        ORMManager.get(Schedule.class);
+        ORMManager.get(ScriptHelper.class);
+        ORMManager.get(Subscription.class);
+        ORMManager.get(Version.class);
+
+        // eof
 		ThreadPool.execute(new BinkpAsyncServer());
 
 		ThreadPool.execute(new BinkpAsyncClientPool());
