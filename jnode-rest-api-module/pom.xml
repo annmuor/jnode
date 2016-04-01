@@ -10,11 +10,11 @@
 	<version>0.1-SNAPSHOT</version>
     <name>jnode-rest-api-module</name>
 	<description>rest api</description>
+
 	<dependencies>
 		<dependency>
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
-			<scope>provided</scope>
 			<version>1.5</version>
 		</dependency>
 		<dependency>
@@ -27,9 +27,30 @@
             <artifactId>gson</artifactId>
             <version>2.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-	</build>
+        <resources>
+            <resource>
+                <directory>resources</directory>
+            </resource>
+        </resources>
+    </build>
 
 </project>

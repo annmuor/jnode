@@ -16,21 +16,17 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */
-package org.jnode.rest.dto;
+ */package org.jnode.rest.core;
 
-import lombok.Data;
-import org.jnode.rest.core.StringUtils;
+public final class StringUtils {
 
-@Data
-public class Message implements Validable{
-    private String echoArea;
-    private String subject;
-    private String body;
+    public static final String EMPTY = "";
 
-    @Override
-    public boolean isValid() {
-        return !StringUtils.isEmpty(echoArea) && !StringUtils.isEmpty(subject)
-                && !StringUtils.isEmpty(body);
+    private StringUtils() {
+
+    }
+
+    public static boolean isEmpty(String s){
+        return s == null || s.isEmpty();
     }
 }

@@ -20,12 +20,18 @@
 
 package org.jnode.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import jnode.event.IEvent;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
+import org.jnode.rest.core.BadJsonException;
+import org.jnode.rest.core.StringUtils;
 import org.jnode.rest.dto.Message;
+import org.jnode.rest.dto.MessageId;
+import org.jnode.rest.mapper.MessageIdMapper;
+import org.jnode.rest.mapper.MessageMapper;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -34,10 +40,11 @@ import spark.Spark;
 public class Main extends JnodeModule {
 
 	private static final Logger LOGGER = Logger.getLogger(Main.class);
-
+	private static final int HTTP_BAD_REQUEST = 400;
+	private static final int HTTP_INTERNAL_SERVER_ERROR = 500;
 
 	public static void main(String[] args) throws JnodeModuleException {
-		Main mainModule = new Main(Main.class.getResource("config2.properties").getPath());
+		Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
 		mainModule.start();
 	}
 
@@ -76,6 +83,27 @@ public class Main extends JnodeModule {
                 Message m = new Message();
                 m.setSubject(id);
                 return new Gson().toJson(m);
+            }
+        });
+		Spark.post(new Route("/echoarea") {
+            @Override
+            public Object handle(Request request, Response response) {
+                response.type("text/plain");
+                Message message;
+				try {
+					message = MessageMapper.fromJson(request.body());
+				} catch (BadJsonException e) {
+					response.status(HTTP_BAD_REQUEST);
+                    return StringUtils.EMPTY;
+                }
+                final MessageId value = new MessageId();
+                value.setValue(message.getSubject() + "1");
+                try {
+                    return MessageIdMapper.toJson(value);
+                } catch (JsonProcessingException e) {
+                    response.status(HTTP_INTERNAL_SERVER_ERROR);
+                    return StringUtils.EMPTY;
+                }
             }
         });
 

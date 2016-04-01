@@ -20,17 +20,8 @@
 package org.jnode.rest.dto;
 
 import lombok.Data;
-import org.jnode.rest.core.StringUtils;
 
 @Data
-public class Message implements Validable{
-    private String echoArea;
-    private String subject;
-    private String body;
-
-    @Override
-    public boolean isValid() {
-        return !StringUtils.isEmpty(echoArea) && !StringUtils.isEmpty(subject)
-                && !StringUtils.isEmpty(body);
-    }
+public class MessageId {
+    private String value;
 }

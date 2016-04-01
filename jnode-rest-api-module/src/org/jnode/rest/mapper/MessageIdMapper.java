@@ -17,20 +17,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jnode.rest.dto;
+package org.jnode.rest.mapper;
 
-import lombok.Data;
-import org.jnode.rest.core.StringUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jnode.rest.dto.MessageId;
 
-@Data
-public class Message implements Validable{
-    private String echoArea;
-    private String subject;
-    private String body;
+public final class MessageIdMapper {
+    private MessageIdMapper() {
+    }
 
-    @Override
-    public boolean isValid() {
-        return !StringUtils.isEmpty(echoArea) && !StringUtils.isEmpty(subject)
-                && !StringUtils.isEmpty(body);
+    public static String toJson(MessageId value) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(value);
     }
 }
