@@ -17,18 +17,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jnode.rest.mapper;
+package org.jnode.rest.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jnode.rest.dto.MessageId;
+import lombok.Data;
 
-public final class MessageIdMapper {
-    private MessageIdMapper() {
+@Data
+public class PostMessageResult {
+    private boolean success;
+    private String errorDescription;
+    private Long value;
+
+    public static PostMessageResult bad(String errorDesc){
+        final PostMessageResult result = new PostMessageResult();
+        result.setErrorDescription(errorDesc);
+        result.setSuccess(false);
+        return result;
     }
 
-    public static String toJson(MessageId value) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(value);
+    public static PostMessageResult good(Long id){
+        final PostMessageResult result = new PostMessageResult();
+        result.setSuccess(true);
+        result.setValue(id);
+        return result;
     }
 }

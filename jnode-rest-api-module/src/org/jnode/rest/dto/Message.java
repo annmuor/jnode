@@ -27,6 +27,8 @@ public class Message implements Validable{
     private String echoArea;
     private String subject;
     private String body;
+    private String fromName;
+    private String toName;
 
     @Override
     public boolean isValid() {

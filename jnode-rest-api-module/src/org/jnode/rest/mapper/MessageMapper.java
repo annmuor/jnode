@@ -43,7 +43,7 @@ public final class MessageMapper {
             }
             return message;
         } catch (IOException e) {
-            throw new BadJsonException(e);
+            throw new BadJsonException("json process exception", e);
         }
     }
 }

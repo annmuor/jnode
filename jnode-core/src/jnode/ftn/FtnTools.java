@@ -20,52 +20,9 @@
 
 package jnode.ftn;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
 import jnode.core.ConcurrentDateFormatAccess;
 import jnode.core.FileUtils;
-import jnode.dto.Echoarea;
-import jnode.dto.Echomail;
-import jnode.dto.EchomailAwaiting;
-import jnode.dto.FileForLink;
-import jnode.dto.FileSubscription;
-import jnode.dto.Filearea;
-import jnode.dto.Filemail;
-import jnode.dto.FilemailAwaiting;
-import jnode.dto.Link;
-import jnode.dto.LinkOption;
-import jnode.dto.Netmail;
-import jnode.dto.Rewrite;
-import jnode.dto.Robot;
-import jnode.dto.Route;
-import jnode.dto.Subscription;
+import jnode.dto.*;
 import jnode.event.NewEchoareaEvent;
 import jnode.event.NewFileareaEvent;
 import jnode.event.Notifier;
@@ -84,6 +41,21 @@ import jnode.ndl.NodelistScanner;
 import jnode.orm.ORMManager;
 import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Сборник всякой хрени
@@ -199,7 +171,7 @@ public final class FtnTools {
 	 * Подстрока в виде байтов и в cp866
 	 * 
 	 * @param s
-	 * @param len
+	 * @param maxlen
 	 * @return
 	 */
 	public static byte[] substr(String s, int maxlen) {
@@ -1532,8 +1504,8 @@ public final class FtnTools {
 		return !(validFrom && validTo);
 	}
 
-	public static void writeEchomail(Echoarea area, String subject, String text) {
-		writeEchomail(area, subject, text, MainHandler.getCurrentInstance()
+	public static Long writeEchomail(Echoarea area, String subject, String text) {
+		return writeEchomail(area, subject, text, MainHandler.getCurrentInstance()
 				.getInfo().getStationName(), "All");
 	}
 
@@ -1546,7 +1518,7 @@ public final class FtnTools {
 	 * @param fromName
 	 * @param toName
 	 */
-	public static void writeEchomail(Echoarea area, String subject,
+	public static Long writeEchomail(Echoarea area, String subject,
 			String text, String fromName, String toName) {
 		Echomail mail = new Echomail();
 		mail.setFromFTN(getPrimaryFtnAddress().toString());
@@ -1577,6 +1549,7 @@ public final class FtnTools {
 						new EchomailAwaiting(s.getLink(), mail));
 			}
 		}
+		return mail.getId();
 	}
 
 	public static FtnAddress getPrimaryFtnAddress() {
