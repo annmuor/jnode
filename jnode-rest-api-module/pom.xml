@@ -39,6 +39,11 @@
             <version>1.16.2</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.thetransactioncompany</groupId>
+            <artifactId>jsonrpc2-base</artifactId>
+            <version>1.38</version>
+        </dependency>
     </dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>

@@ -11,8 +11,6 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>jnode:jnode-core</include>
-				<include>jnode:jnode-rss</include>
 				<include>jnode:jnode-rest-api-module</include>
 			</includes>
 			<binaries>
@@ -29,77 +27,4 @@
 		</moduleSet>
 	</moduleSets>
 
-	<fileSets>
-		<fileSet>
-			<directory>${basedir}/../jdbc-drivers</directory>
-			<outputDirectory>jnode/lib</outputDirectory>
-			<includes>
-				<include>*.jar</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/../docs/nodelist</directory>
-			<outputDirectory>jnode/nodelist</outputDirectory>
-			<includes>
-				<include>NODELIST</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/../docs/bin</directory>
-			<outputDirectory>jnode/bin</outputDirectory>
-			<includes>
-				<include>*.*</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/../docs/docs</directory>
-			<outputDirectory>jnode/docs</outputDirectory>
-			<includes>
-				<include>*.*</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/../docs/configs</directory>
-			<outputDirectory>jnode/etc</outputDirectory>
-			<includes>
-				<include>*.*</include>
-			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>./</directory>
-			<outputDirectory>jnode/files</outputDirectory>
-			<excludes>
-				<exclude>*/**</exclude>
-			</excludes>
-		</fileSet>
-		<fileSet>
-			<directory>./</directory>
-			<outputDirectory>jnode/inbound</outputDirectory>
-			<excludes>
-				<exclude>*/**</exclude>
-			</excludes>
-		</fileSet>
-		<fileSet>
-			<directory>./</directory>
-			<outputDirectory>jnode/log</outputDirectory>
-			<excludes>
-				<exclude>*/**</exclude>
-			</excludes>
-		</fileSet>
-		<fileSet>
-			<directory>./</directory>
-			<outputDirectory>jnode/tmp</outputDirectory>
-			<excludes>
-				<exclude>*/**</exclude>
-			</excludes>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/..</directory>
-			<outputDirectory>jnode/</outputDirectory>
-			<includes>
-				<include>LICENSE</include>
-				<include>NOTICE</include>
-			</includes>
-		</fileSet>
-	</fileSets>
 </assembly>
