@@ -21,7 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ormlite.version>4.48</ormlite.version>
-        <spark.version>2.3</spark.version>
+        <spark.version>1.1.1</spark.version>
         <java.compiler.version>1.8</java.compiler.version>
     </properties>
 

@@ -14,7 +14,11 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class PostEchoareaRoute implements Route {
+public class PostEchoareaRoute extends Route {
+
+    public PostEchoareaRoute(String path) {
+        super(path);
+    }
 
     @Override
     public Object handle(Request request, Response response) {

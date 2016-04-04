@@ -39,6 +39,7 @@ import jnode.stat.threads.StatPoster;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -146,8 +147,10 @@ public class Main {
 				String[] modules = MainHandler.getCurrentInstance()
 						.getProperty(MODULES, "")
 						.replaceAll("[^A-Za-z0-9,\\._:\\\\\\/]", "").split(",");
+				logger.l5("modules: " + Arrays.toString(modules));
 				for (String module : modules) {
 					{
+                        logger.l5("process module " + module);
 						int idx = module.indexOf(':');
 						if (idx < 0) {
 							logger.l2("Skipping config string " + module);
@@ -155,11 +158,15 @@ public class Main {
 						}
 						String className = module.substring(0, idx);
 						String config = module.substring(idx + 1);
+                        logger.l5("for module " + module + " get class " + className);
+                        logger.l5("for module " + module + " get config " + config);
 						try {
 							Class<?> clazz = Class.forName(className);
+                            logger.l5("for module " + module + " get clazz " + clazz);
 							final JnodeModule jnodeModule = (JnodeModule) clazz
 									.getConstructor(String.class).newInstance(
 											config);
+                            logger.l5("for module " + module + " created " + jnodeModule);
 							Notifier.INSTANSE.register(SharedModuleEvent.class,
 									jnodeModule);
 							// module in new thread

@@ -63,8 +63,8 @@ public class Main extends JnodeModule {
     private void startInternal() throws JnodeModuleException {
         Spark.setPort(port);
         Spark.before(new BasicAuthenticationFilter(new PwdProvider()));
-        Spark.post("/echoarea", new PostEchoareaRoute());
-        Spark.post("/netmail", new PostNetmailRoute());
+        Spark.post(new PostEchoareaRoute("/echoarea"));
+        Spark.post(new PostNetmailRoute("/netmail"));
     }
 
     @Override
@@ -72,4 +72,10 @@ public class Main extends JnodeModule {
 
     }
 
+    @Override
+    public String toString() {
+        return "Main{" +
+                "port=" + port +
+                "} " + super.toString();
+    }
 }
