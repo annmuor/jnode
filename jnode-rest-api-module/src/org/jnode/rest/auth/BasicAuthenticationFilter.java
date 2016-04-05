@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Base64;
 
+@Named("basicAuthenticationFilter")
 public class BasicAuthenticationFilter extends Filter {
 
     private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class);
@@ -94,5 +95,10 @@ public class BasicAuthenticationFilter extends Filter {
         this.pwdProvider = pwdProvider;
     }
 
-
+    @Override
+    public String toString() {
+        return "BasicAuthenticationFilter{" +
+                "pwdProvider=" + pwdProvider +
+                "} " + super.toString();
+    }
 }

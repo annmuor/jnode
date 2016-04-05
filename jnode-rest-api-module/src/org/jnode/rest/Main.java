@@ -20,27 +20,32 @@
 
 package org.jnode.rest;
 
-import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import jnode.event.IEvent;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
+import jnode.orm.ORMManager;
 import org.jnode.rest.auth.BasicAuthenticationFilter;
+import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.EchoareaPostHandler;
 import org.jnode.rest.route.MainApiRoute;
 import org.jnode.rest.route.PostEchoareaRoute;
 import org.jnode.rest.route.PostNetmailRoute;
 import spark.Spark;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.reflect.InvocationTargetException;
 
 public class Main extends JnodeModule {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class);
     private final int port;
-    private final BasicAuthenticationFilter filter = new BasicAuthenticationFilter();
+
+    @Inject
+    @Named("basicAuthenticationFilter")
+    private BasicAuthenticationFilter filter;
 
     public static void main(String[] args) throws JnodeModuleException {
         Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
@@ -50,7 +55,6 @@ public class Main extends JnodeModule {
     public Main(String configFile) throws JnodeModuleException {
         super(configFile);
         port = getPort();
-        //ORMManager.get(RestUser.class);
     }
 
     private int getPort() throws JnodeModuleException {
@@ -79,10 +83,11 @@ public class Main extends JnodeModule {
     }
 
     private void startProd() throws JnodeModuleException {
+        ORMManager.get(RestUser.class);
         ClassfileDependencyScanner scanner = new ClassfileDependencyScanner();
         scanner.scan("org.jnode.rest", "prod-");
         try {
-            Injector.inject(filter);
+            Injector.inject(this);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new JnodeModuleException(e);
         }
@@ -94,7 +99,7 @@ public class Main extends JnodeModule {
         ClassfileDependencyScanner scanner = new ClassfileDependencyScanner();
         scanner.scan("org.jnode.rest", "mock-");
         try {
-            Injector.inject(filter);
+            Injector.inject(this);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new JnodeModuleException(e);
         }
@@ -102,25 +107,21 @@ public class Main extends JnodeModule {
         initSpark();
     }
 
-    private void initSpark() {
+    private void initSpark() throws JnodeModuleException {
         Spark.setPort(port);
         Spark.before(filter);
         Spark.post(new PostEchoareaRoute("/echoarea"));
         Spark.post(new PostNetmailRoute("/netmail"));
-        Spark.post(new MainApiRoute("/api", initDispatcher()));
-    }
-
-    private Dispatcher initDispatcher(){
-        Dispatcher dispatcher =  new Dispatcher();
-
-        dispatcher.register(new EchoareaPostHandler());
-
-        return dispatcher;
+        Spark.post(new MainApiRoute("/api", new DispatcherFactory().create()));
     }
 
     @Override
     public void handle(IEvent iEvent) {
 
+    }
+
+    public void setFilter(BasicAuthenticationFilter filter) {
+        this.filter = filter;
     }
 
     @Override

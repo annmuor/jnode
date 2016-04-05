@@ -47,7 +47,7 @@ public class Injector {
    * @throws IllegalAccessException
    * @throws IllegalArgumentException
    * @throws InstantiationException */
-  public static <T> void inject(T object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
+  public static <T> T inject(T object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
     long time = System.nanoTime();
     Class<? extends Object> clazz = object.getClass();
     logger.debug(MessageFormat.format("starting dependency injection of class {0}", clazz.getCanonicalName()));
@@ -88,6 +88,7 @@ public class Injector {
     time = System.nanoTime() - time;
     logger.debug(MessageFormat.format("finished dependency injection of class {0}. Took {1} nanosec",
         clazz.getCanonicalName(), time));
+    return object;
   }
   
   @SuppressWarnings("unchecked")
