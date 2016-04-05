@@ -16,7 +16,6 @@
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
 			<version>1.5</version>
-            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sparkjava</groupId>
@@ -41,8 +40,13 @@
         </dependency>
         <dependency>
             <groupId>com.thetransactioncompany</groupId>
-            <artifactId>jsonrpc2-base</artifactId>
-            <version>1.38</version>
+            <artifactId>jsonrpc2-server</artifactId>
+            <version>1.11</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
         </dependency>
     </dependencies>
 	<build>

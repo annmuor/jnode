@@ -1,26 +1,5 @@
 package org.jnode.rest.auth;
 
-import jnode.ftn.FtnTools;
-import jnode.logger.Logger;
-import jnode.orm.ORMManager;
-import org.jnode.rest.db.RestUser;
-
-public class PwdProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(PwdProvider.class);
-
-    char[] getPwd(String submittedUsername) {
-
-
-        RestUser user = ORMManager.get(RestUser.class)
-                .getFirstAnd("username", "=", submittedUsername);
-
-        LOGGER.l5(String.format("for username %s get %s", submittedUsername, user));
-
-        if (user == null) {
-            return null;
-        }
-
-        return FtnTools.md5(user.getPassword()).toCharArray();
-    }
+public interface PwdProvider {
+    char[] getPwd(String submittedUsername);
 }

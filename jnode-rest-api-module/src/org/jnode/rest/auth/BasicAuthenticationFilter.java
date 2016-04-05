@@ -7,6 +7,8 @@ import spark.Request;
 import spark.Response;
 import spark.utils.SparkUtils;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Base64;
 
 public class BasicAuthenticationFilter extends Filter {
@@ -19,17 +21,17 @@ public class BasicAuthenticationFilter extends Filter {
 
     private static final String ACCEPT_ALL_TYPES = "*";
 
-    private final PwdProvider pwdProvider;
+    @Inject @Named("pwdProvider")
+    private PwdProvider pwdProvider;
 
-    public BasicAuthenticationFilter(final PwdProvider pwdProvider)
+    public BasicAuthenticationFilter()
     {
-        this(SparkUtils.ALL_PATHS, pwdProvider);
+        this(SparkUtils.ALL_PATHS);
     }
 
-    public BasicAuthenticationFilter(final String path, final PwdProvider pwdProvider)
+    private BasicAuthenticationFilter(final String path)
     {
         super(path, ACCEPT_ALL_TYPES);
-        this.pwdProvider = pwdProvider;
     }
 
     @Override
@@ -87,4 +89,10 @@ public class BasicAuthenticationFilter extends Filter {
             return false;
         }
     }
+
+    public void setPwdProvider(PwdProvider pwdProvider) {
+        this.pwdProvider = pwdProvider;
+    }
+
+
 }
