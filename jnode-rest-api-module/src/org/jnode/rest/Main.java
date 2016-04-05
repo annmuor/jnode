@@ -30,8 +30,6 @@ import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
 import org.jnode.rest.di.Injector;
 import org.jnode.rest.route.MainApiRoute;
-import org.jnode.rest.route.PostEchoareaRoute;
-import org.jnode.rest.route.PostNetmailRoute;
 import spark.Spark;
 
 import javax.inject.Inject;
@@ -110,8 +108,6 @@ public class Main extends JnodeModule {
     private void initSpark() throws JnodeModuleException {
         Spark.setPort(port);
         Spark.before(filter);
-        Spark.post(new PostEchoareaRoute("/echoarea"));
-        Spark.post(new PostNetmailRoute("/netmail"));
         Spark.post(new MainApiRoute("/api", new DispatcherFactory().create()));
     }
 
