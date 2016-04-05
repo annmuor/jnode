@@ -22,7 +22,7 @@ public class MainApiRoute extends Route {
     @Override
     public Object handle(Request request, Response response) {
         response.type("application/json");
-        JSONRPC2Request reqIn = null;
+        JSONRPC2Request reqIn;
 
         try {
             reqIn = JSONRPC2Request.parse(request.body());
