@@ -4,8 +4,8 @@ import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.main.MainHandler;
+import org.jnode.rest.di.Named;
 
-import javax.inject.Named;
 
 @Named("prod-ftnToolsProxy")
 public class FtnToolsProxyImpl implements FtnToolsProxy{

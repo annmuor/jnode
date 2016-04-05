@@ -8,10 +8,10 @@ import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Echoarea;
 import org.jnode.rest.core.RPCError;
+import org.jnode.rest.di.Inject;
+import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.FtnToolsProxy;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Map;
 
 public class EchoareaPostHandler implements RequestHandler{

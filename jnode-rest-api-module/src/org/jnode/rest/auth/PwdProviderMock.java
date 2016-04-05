@@ -1,8 +1,8 @@
 package org.jnode.rest.auth;
 
 import jnode.ftn.FtnTools;
+import org.jnode.rest.di.Named;
 
-import javax.inject.Named;
 
 @Named("mock-pwdProvider")
 public class PwdProviderMock implements PwdProvider{

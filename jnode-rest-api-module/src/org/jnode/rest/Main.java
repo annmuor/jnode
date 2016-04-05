@@ -28,12 +28,12 @@ import jnode.orm.ORMManager;
 import org.jnode.rest.auth.BasicAuthenticationFilter;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
+import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Injector;
+import org.jnode.rest.di.Named;
 import org.jnode.rest.route.MainApiRoute;
 import spark.Spark;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.lang.reflect.InvocationTargetException;
 
 public class Main extends JnodeModule {

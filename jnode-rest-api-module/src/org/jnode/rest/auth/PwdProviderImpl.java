@@ -4,8 +4,8 @@ import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import org.jnode.rest.db.RestUser;
+import org.jnode.rest.di.Named;
 
-import javax.inject.Named;
 
 @Named("prod-pwdProvider")
 public class PwdProviderImpl implements PwdProvider{

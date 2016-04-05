@@ -2,8 +2,7 @@ package org.jnode.rest.fido;
 
 import jnode.dto.Echoarea;
 import jnode.dto.Link;
-
-import javax.inject.Named;
+import org.jnode.rest.di.Named;
 
 @Named("mock-ftnToolsProxy")
 public class FtnToolsProxyMock implements FtnToolsProxy{

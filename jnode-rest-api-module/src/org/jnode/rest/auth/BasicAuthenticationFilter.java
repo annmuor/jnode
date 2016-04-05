@@ -2,13 +2,13 @@ package org.jnode.rest.auth;
 
 import jnode.logger.Logger;
 import org.jnode.rest.core.StringUtils;
+import org.jnode.rest.di.Inject;
+import org.jnode.rest.di.Named;
 import spark.Filter;
 import spark.Request;
 import spark.Response;
 import spark.utils.SparkUtils;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Base64;
 
 @Named("basicAuthenticationFilter")
@@ -22,7 +22,8 @@ public class BasicAuthenticationFilter extends Filter {
 
     private static final String ACCEPT_ALL_TYPES = "*";
 
-    @Inject @Named("pwdProvider")
+    @Inject
+    @Named("pwdProvider")
     private PwdProvider pwdProvider;
 
     public BasicAuthenticationFilter()
