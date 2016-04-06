@@ -2,10 +2,14 @@ package org.jnode.rest.fido;
 
 import jnode.dto.Echoarea;
 import jnode.dto.Link;
+import jnode.logger.Logger;
 import org.jnode.rest.di.Named;
 
 @Named("mock-ftnToolsProxy")
 public class FtnToolsProxyMock implements FtnToolsProxy{
+
+    private static final Logger LOGGER = Logger.getLogger(FtnToolsProxyMock.class);
+
     @Override
     public Echoarea getAreaByName(String name, Link link) {
         return new Echoarea();
@@ -13,6 +17,7 @@ public class FtnToolsProxyMock implements FtnToolsProxy{
 
     @Override
     public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName, String fromFTN, String tearline, String origin) {
+        LOGGER.l5("area = [" + area + "], subject = [" + subject + "], text = [" + text + "], fromName = [" + fromName + "], toName = [" + toName + "], fromFTN = [" + fromFTN + "], tearline = [" + tearline + "], origin = [" + origin + "]");
         return 1L;
     }
 

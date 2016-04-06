@@ -5,6 +5,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
+import jnode.logger.Logger;
 import org.jnode.rest.core.Http;
 import spark.Request;
 import spark.Response;
@@ -12,6 +13,7 @@ import spark.Route;
 
 public class MainApiRoute extends Route {
 
+    private static final Logger LOGGER = Logger.getLogger(MainApiRoute.class);
     private final Dispatcher dispatcher;
 
     public MainApiRoute(String path, Dispatcher dispatcher) {
@@ -25,17 +27,24 @@ public class MainApiRoute extends Route {
         JSONRPC2Request reqIn;
 
         try {
-            reqIn = JSONRPC2Request.parse(request.body());
+
+            final String body = request.body();
+            LOGGER.l5("request body: " + body);
+            reqIn = JSONRPC2Request.parse(body);
 
         } catch (JSONRPC2ParseException e) {
             response.status(Http.BAD_REQUEST);
             JSONRPC2Response respOut = new JSONRPC2Response(JSONRPC2Error.INVALID_REQUEST, null);
-            return respOut.toString();
+            final String result = respOut.toString();
+            LOGGER.l5("error response: " + result, e);
+            return result;
         }
 
         JSONRPC2Response resp = dispatcher.process(reqIn, null);
         response.status(Http.OK);
-        return resp.toString();
+        final String result = resp.toString();
+        LOGGER.l5("response: " + result);
+        return result;
 
 
     }
