@@ -14,7 +14,7 @@ import org.jnode.rest.fido.FtnToolsProxy;
 
 import java.util.Map;
 
-public class EchoareaPostHandler implements RequestHandler {
+public class EchomailPostHandler implements RequestHandler {
 
     @Inject
     @Named("ftnToolsProxy")
@@ -22,7 +22,7 @@ public class EchoareaPostHandler implements RequestHandler {
 
     @Override
     public String[] handledRequests() {
-        return new String[]{"echoarea.post"};
+        return new String[]{"echomail.post"};
     }
 
     @Override
@@ -30,15 +30,14 @@ public class EchoareaPostHandler implements RequestHandler {
 
         Map<String, Object> params = req.getNamedParams();
         NamedParamsRetriever np = new NamedParamsRetriever(params);
-        Long id;
         try {
 
             Echoarea echoarea = ftnToolsProxy.getAreaByName(np.getString("echoarea"), null);
             if (echoarea == null) {
-                return new JSONRPC2Response(RPCError.ECHOARE_NOT_FOUND, req.getID());
+                return new JSONRPC2Response(RPCError.ECHOAREA_NOT_FOUND, req.getID());
             }
 
-            id = ftnToolsProxy.writeEchomail(echoarea, np.getString("subject"),
+            Long id = ftnToolsProxy.writeEchomail(echoarea, np.getString("subject"),
                     np.getString("body"),
                     np.getOptString("fromName", ftnToolsProxy.defaultEchoFromName()),
                     np.getOptString("toName", ftnToolsProxy.defaultEchoToName()),
@@ -47,13 +46,13 @@ public class EchoareaPostHandler implements RequestHandler {
                     np.getOptString("origin", ftnToolsProxy.defaultOrigin())
             );
 
+            return new JSONRPC2Response(id, req.getID());
 
         } catch (JSONRPC2Error jsonrpc2Error) {
-            return new JSONRPC2Response(JSONRPC2Error.INVALID_PARAMS, req.getID());
+            return new JSONRPC2Response(jsonrpc2Error, req.getID());
         }
 
 
-        return new JSONRPC2Response(id, req.getID());
     }
 
     public void setFtnToolsProxy(FtnToolsProxy ftnToolsProxy) {
