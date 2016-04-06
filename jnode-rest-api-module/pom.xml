@@ -16,6 +16,7 @@
 			<groupId>jnode</groupId>
 			<artifactId>jnode-core</artifactId>
 			<version>1.5</version>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sparkjava</groupId>

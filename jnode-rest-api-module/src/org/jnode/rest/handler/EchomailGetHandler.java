@@ -1,10 +1,7 @@
 package org.jnode.rest.handler;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
-import com.thetransactioncompany.jsonrpc2.server.MessageContext;
-import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Echomail;
 import org.jnode.rest.di.Inject;
@@ -12,9 +9,7 @@ import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.EchomailProxy;
 import org.jnode.rest.mapper.EchomailMapper;
 
-import java.util.Map;
-
-public class EchomailGetHandler implements RequestHandler {
+public class EchomailGetHandler extends AbstractHandler {
 
     @Inject
     @Named("echomailProxy")
@@ -30,17 +25,9 @@ public class EchomailGetHandler implements RequestHandler {
     }
 
     @Override
-    public JSONRPC2Response process(JSONRPC2Request req, MessageContext ctx) {
-
-        Map<String, Object> params = req.getNamedParams();
-        NamedParamsRetriever np = new NamedParamsRetriever(params);
-
-        try {
-            Echomail echomail = echomailProxy.get(np.getLong("id"));
-            return new JSONRPC2Response(echomailMapper.toJsonType(echomail), req.getID());
-        } catch (JSONRPC2Error jsonrpc2Error) {
-            return new JSONRPC2Response(jsonrpc2Error, req.getID());
-        }
+    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
+        Echomail echomail = echomailProxy.get(np.getLong("id"));
+        return new JSONRPC2Response(echomailMapper.toJsonType(echomail), reqID);
     }
 
     public void setEchomailProxy(EchomailProxy echomailProxy) {
