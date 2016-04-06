@@ -1551,7 +1551,7 @@ public final class FtnTools {
 		mail.setSeenBy("");
 		mail.setToName(toName);
 		mail.setSubject(subject);
-		mail.setMsgid(getPrimaryFtnAddress().toString() + " "
+		mail.setMsgid(fromFTN + " "
 				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
 		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
