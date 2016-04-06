@@ -12,7 +12,7 @@ public class FtnToolsProxyMock implements FtnToolsProxy{
     }
 
     @Override
-    public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName) {
+    public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName, String fromFTN, String tearline, String origin) {
         return 1L;
     }
 
@@ -24,5 +24,20 @@ public class FtnToolsProxyMock implements FtnToolsProxy{
     @Override
     public String defaultEchoToName() {
         return "All";
+    }
+
+    @Override
+    public String defaultFromFtn() {
+        return "2:5020/828";
+    }
+
+    @Override
+    public String defaultTearline() {
+        return "blabla";
+    }
+
+    @Override
+    public String defaultOrigin() {
+        return "no origin";
     }
 }

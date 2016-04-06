@@ -1521,8 +1521,29 @@ public final class FtnTools {
 	 */
 	public static Long writeEchomail(Echoarea area, String subject,
 			String text, String fromName, String toName) {
+		return writeEchomail(area, subject, text, fromName, toName,
+                getPrimaryFtnAddress().toString(),
+                MainHandler.getCurrentInstance().getInfo().getStationName(),
+                MainHandler.getVersion() + " ("+ getPrimaryFtnAddress().toString() + ")");
+	}
+
+	/**
+	 * Эхомейл
+	 *
+	 * @param area
+	 * @param subject
+	 * @param text
+	 * @param fromName
+	 * @param toName
+	 * @param fromFTN
+	 * @param tearline
+	 * @param origin
+	 */
+	public static Long writeEchomail(Echoarea area, String subject,
+									 String text, String fromName, String toName,
+                                     String fromFTN, String tearline, String origin) {
 		Echomail mail = new Echomail();
-		mail.setFromFTN(getPrimaryFtnAddress().toString());
+		mail.setFromFTN(fromFTN);
 		mail.setFromName(fromName);
 		mail.setArea(area);
 		mail.setDate(new Date());
@@ -1537,10 +1558,9 @@ public final class FtnTools {
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
 		b.append("\n--- "
-				+ MainHandler.getCurrentInstance().getInfo().getStationName()
+				+ tearline
 				+ "\n");
-		b.append(" * Origin: " + MainHandler.getVersion() + " ("
-				+ getPrimaryFtnAddress().toString() + ")\n");
+		b.append(" * Origin: " + origin +"\n");
 		mail.setText(b.toString());
 		ORMManager.get(Echomail.class).save(mail);
 		if (mail.getId() != null) {

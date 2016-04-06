@@ -15,8 +15,9 @@ public class FtnToolsProxyImpl implements FtnToolsProxy{
     }
 
     @Override
-    public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName) {
-        return FtnTools.writeEchomail(area, subject, text, fromName, toName);
+    public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName,
+                              String fromFTN, String tearline, String origin) {
+        return FtnTools.writeEchomail(area, subject, text, fromName, toName, fromFTN, tearline, origin);
     }
 
     @Override
@@ -28,5 +29,20 @@ public class FtnToolsProxyImpl implements FtnToolsProxy{
     @Override
     public String defaultEchoToName() {
         return "All";
+    }
+
+    @Override
+    public String defaultFromFtn() {
+        return FtnTools.getPrimaryFtnAddress().toString();
+    }
+
+    @Override
+    public String defaultTearline() {
+        return MainHandler.getCurrentInstance().getInfo().getStationName();
+    }
+
+    @Override
+    public String defaultOrigin() {
+        return MainHandler.getVersion() + " ("+ FtnTools.getPrimaryFtnAddress().toString() + ")";
     }
 }

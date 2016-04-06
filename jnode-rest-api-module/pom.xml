@@ -7,7 +7,7 @@
 		<version>1.0</version>
 	</parent>
 	<artifactId>jnode-rest-api-module</artifactId>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
     <name>jnode-rest-api-module</name>
 	<description>rest api</description>
 

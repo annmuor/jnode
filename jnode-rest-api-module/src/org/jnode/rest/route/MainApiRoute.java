@@ -29,7 +29,7 @@ public class MainApiRoute extends Route {
 
         } catch (JSONRPC2ParseException e) {
             response.status(Http.BAD_REQUEST);
-            JSONRPC2Response respOut = new JSONRPC2Response(JSONRPC2Error.INVALID_REQUEST, 0);
+            JSONRPC2Response respOut = new JSONRPC2Response(JSONRPC2Error.INVALID_REQUEST, null);
             return respOut.toString();
         }
 
