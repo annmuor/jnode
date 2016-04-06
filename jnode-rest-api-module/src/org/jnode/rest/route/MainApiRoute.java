@@ -41,7 +41,11 @@ public class MainApiRoute extends Route {
         }
 
         JSONRPC2Response resp = dispatcher.process(reqIn, null);
-        response.status(Http.OK);
+        if (resp.getError() != null && resp.getError().getCode() == -32601){
+            response.status(Http.NOT_FOUND);
+        } else {
+            response.status(Http.OK);
+        }
         final String result = resp.toString();
         LOGGER.l5("response: " + result);
         return result;
