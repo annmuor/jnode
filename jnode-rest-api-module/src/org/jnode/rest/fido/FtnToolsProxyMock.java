@@ -4,8 +4,10 @@ import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.logger.Logger;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.di.Singleton;
 
 @Named("mock-ftnToolsProxy")
+@Singleton
 public class FtnToolsProxyMock implements FtnToolsProxy{
 
     private static final Logger LOGGER = Logger.getLogger(FtnToolsProxyMock.class);

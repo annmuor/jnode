@@ -5,9 +5,11 @@ import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.di.Singleton;
 
 
 @Named("prod-pwdProvider")
+@Singleton
 public class PwdProviderImpl implements PwdProvider{
 
     private static final Logger LOGGER = Logger.getLogger(PwdProviderImpl.class);

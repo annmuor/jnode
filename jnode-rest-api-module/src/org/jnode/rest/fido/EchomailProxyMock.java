@@ -3,8 +3,10 @@ package org.jnode.rest.fido;
 import jnode.dto.Echoarea;
 import jnode.dto.Echomail;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.di.Singleton;
 
 @Named("mock-echomailProxy")
+@Singleton
 public class EchomailProxyMock implements EchomailProxy {
     @Override
     public Echomail get(Long id) {

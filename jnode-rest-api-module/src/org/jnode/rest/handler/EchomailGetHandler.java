@@ -10,6 +10,7 @@ import jnode.dto.Echomail;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.EchomailProxy;
+import org.jnode.rest.mapper.EchomailMapper;
 
 import java.util.Map;
 
@@ -18,6 +19,10 @@ public class EchomailGetHandler implements RequestHandler {
     @Inject
     @Named("echomailProxy")
     private EchomailProxy echomailProxy;
+
+    @Inject
+    @Named("echomailMapper")
+    private EchomailMapper echomailMapper;
 
     @Override
     public String[] handledRequests() {
@@ -32,7 +37,7 @@ public class EchomailGetHandler implements RequestHandler {
 
         try {
             Echomail echomail = echomailProxy.get(np.getLong("id"));
-            return new JSONRPC2Response(echomail, req.getID());
+            return new JSONRPC2Response(echomailMapper.toJsonType(echomail), req.getID());
         } catch (JSONRPC2Error jsonrpc2Error) {
             return new JSONRPC2Response(jsonrpc2Error, req.getID());
         }
@@ -42,4 +47,8 @@ public class EchomailGetHandler implements RequestHandler {
         this.echomailProxy = echomailProxy;
     }
 
+
+    public void setEchomailMapper(EchomailMapper echomailMapper) {
+        this.echomailMapper = echomailMapper;
+    }
 }

@@ -5,9 +5,11 @@ import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.main.MainHandler;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.di.Singleton;
 
 
 @Named("prod-ftnToolsProxy")
+@Singleton
 public class FtnToolsProxyImpl implements FtnToolsProxy{
     @Override
     public Echoarea getAreaByName(String name, Link link) {

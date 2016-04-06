@@ -4,6 +4,7 @@ import jnode.logger.Logger;
 import org.jnode.rest.core.StringUtils;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.di.Singleton;
 import spark.Filter;
 import spark.Request;
 import spark.Response;
@@ -12,6 +13,7 @@ import spark.utils.SparkUtils;
 import java.util.Base64;
 
 @Named("basicAuthenticationFilter")
+@Singleton
 public class BasicAuthenticationFilter extends Filter {
 
     private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class);
