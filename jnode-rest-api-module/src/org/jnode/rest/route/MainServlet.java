@@ -6,10 +6,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import jnode.logger.Logger;
-import org.jnode.rest.core.Http;
-import org.jnode.rest.core.IOUtils;
-import org.jnode.rest.core.RPCError;
-import org.jnode.rest.core.StringUtils;
+import org.jnode.rest.core.*;
 import org.jnode.rest.di.Injector;
 import org.jnode.rest.handler.EchomailGetHandler;
 import org.jnode.rest.handler.EchomailPostHandler;
@@ -50,14 +47,14 @@ public class MainServlet extends HttpServlet {
 
 
         String encodedHeader = StringUtils.substringAfter(request.getHeader("Authorization"), "Basic");
-        if(encodedHeader != null){
+        if (encodedHeader != null) {
             encodedHeader = encodedHeader.trim();
         }
 
         final String decodedHeader;
-        try{
+        try {
             decodedHeader = decodeHeader(encodedHeader);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             response.setStatus(Http.BAD_REQUEST);
             JSONRPC2Response respOut = new JSONRPC2Response(RPCError.BAD_AUTH_HEADER, null);
             final String result = respOut.toString();
@@ -66,8 +63,7 @@ public class MainServlet extends HttpServlet {
             return;
         }
 
-        if (notAuthenticatedWith(credentialsFrom(decodedHeader)))
-        {
+        if (notAuthenticatedWith(credentialsFrom(decodedHeader))) {
             response.setHeader("WWW-Authenticate", BASIC_AUTHENTICATION_TYPE);
             response.setStatus(Http.NOT_AUTH);
             return;
@@ -93,7 +89,7 @@ public class MainServlet extends HttpServlet {
         }
 
         JSONRPC2Response resp = dispatcher.process(reqIn, null);
-        if (resp.getError() != null && resp.getError().getCode() == -32601){
+        if (resp.getError() != null && resp.getError().getCode() == -32601) {
             response.setStatus(Http.NOT_FOUND);
         } else {
             response.setStatus(Http.OK);
@@ -103,44 +99,26 @@ public class MainServlet extends HttpServlet {
         response.getWriter().print(result);
     }
 
-    private String decodeHeader(final String encodedHeader)
-    {
-        if (StringUtils.isEmpty(encodedHeader)){
+    private String decodeHeader(final String encodedHeader) {
+        if (StringUtils.isEmpty(encodedHeader)) {
             return null;
         }
         return new String(Base64.getDecoder().decode(encodedHeader));
     }
 
-    private boolean notAuthenticatedWith(final String[] credentials)
-    {
+    private boolean notAuthenticatedWith(final String credentials) {
         return !authenticatedWith(credentials);
     }
 
-    private boolean authenticatedWith(final String[] credentials)
-    {
-        if (credentials != null && credentials.length == NUMBER_OF_AUTHENTICATION_FIELDS) {
-            final String submittedUsername = credentials[0];
-            final String submittedPassword = credentials[1];
-
-            char[] pwd = beanHolder.getPwdProvider().getPwd(submittedUsername);
-
-            LOGGER.l5("submittedUsername = " + submittedUsername);
-
-            return pwd != null && StringUtils.equals("MD5-" + submittedPassword, new String(pwd));
-
+    private boolean authenticatedWith(final String token) {
+        if (token != null) {
+            return beanHolder.getPwdProvider().isAuth(CryptoUtils.sha256(token));
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
-    private String[] credentialsFrom(final String decoderHeader)
-    {
-        if (decoderHeader != null){
-            return decoderHeader.split(":");
-        }
-        return null;
+    private String credentialsFrom(final String decoderHeader) {
+        return decoderHeader;
     }
 
 }

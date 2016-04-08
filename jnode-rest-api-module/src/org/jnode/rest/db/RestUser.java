@@ -59,8 +59,9 @@ public class RestUser {
 	@Override
 	public String toString() {
 		return "RestUser{" +
-				"username='" + username + '\'' +
-				", id=" + id +
+				"id=" + id +
+				", username='" + username + '\'' +
+				", password='" + password + '\'' +
 				'}';
 	}
 }

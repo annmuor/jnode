@@ -1,6 +1,5 @@
 package org.jnode.rest.auth;
 
-import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import org.jnode.rest.db.RestUser;
@@ -14,18 +13,17 @@ public class PwdProviderImpl implements PwdProvider{
 
     private static final Logger LOGGER = Logger.getLogger(PwdProviderImpl.class);
 
-    public char[] getPwd(String submittedUsername) {
-
-
+    @Override
+    public boolean isAuth(String token) {
         RestUser user = ORMManager.get(RestUser.class)
-                .getFirstAnd("username", "=", submittedUsername);
+                .getFirstAnd("password", "=", token);
 
-        LOGGER.l5(String.format("for username %s get %s", submittedUsername, user));
+        LOGGER.l5(String.format("for token %s get %s", token, user));
 
         if (user == null) {
-            return null;
+            return false;
         }
 
-        return FtnTools.md5(user.getPassword()).toCharArray();
+        return true;
     }
 }
