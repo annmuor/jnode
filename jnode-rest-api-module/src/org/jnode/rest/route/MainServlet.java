@@ -8,6 +8,7 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import jnode.logger.Logger;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.IOUtils;
+import org.jnode.rest.core.RPCError;
 import org.jnode.rest.core.StringUtils;
 import org.jnode.rest.di.Injector;
 import org.jnode.rest.handler.EchomailGetHandler;
@@ -52,7 +53,18 @@ public class MainServlet extends HttpServlet {
         if(encodedHeader != null){
             encodedHeader = encodedHeader.trim();
         }
-        final String decodedHeader = decodeHeader(encodedHeader);
+
+        final String decodedHeader;
+        try{
+            decodedHeader = decodeHeader(encodedHeader);
+        } catch (IllegalArgumentException e){
+            response.setStatus(Http.BAD_REQUEST);
+            JSONRPC2Response respOut = new JSONRPC2Response(RPCError.BAD_AUTH_HEADER, null);
+            final String result = respOut.toString();
+            LOGGER.l5("bad auth response: " + result, e);
+            response.getWriter().print(result);
+            return;
+        }
 
         if (notAuthenticatedWith(credentialsFrom(decodedHeader)))
         {
