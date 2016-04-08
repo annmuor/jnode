@@ -25,14 +25,12 @@ import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
-import org.jnode.rest.auth.BasicAuthenticationFilter;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
-import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.di.Named;
-import org.jnode.rest.route.MainApiRoute;
-import spark.Spark;
+import org.jnode.rest.route.MainServlet;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,9 +39,6 @@ public class Main extends JnodeModule {
     private static final Logger LOGGER = Logger.getLogger(Main.class);
     private final int port;
 
-    @Inject
-    @Named("basicAuthenticationFilter")
-    private BasicAuthenticationFilter filter;
 
     public static void main(String[] args) throws JnodeModuleException {
         Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
@@ -106,18 +101,26 @@ public class Main extends JnodeModule {
     }
 
     private void initSpark() throws JnodeModuleException {
-        Spark.setPort(port);
-        Spark.before(filter);
-        Spark.post(new MainApiRoute("/api", new DispatcherFactory().create()));
+
+        Server server = new Server(port);
+        ServletHandler handler = new ServletHandler();
+        server.setHandler(handler);
+        handler.addServletWithMapping(MainServlet.class, "/api");
+        LOGGER.l5("ready");
+        try {
+            server.start();
+            server.join();
+        } catch (Exception e) {
+            throw new JnodeModuleException(e);
+        }
+
     }
+
+
 
     @Override
     public void handle(IEvent iEvent) {
 
-    }
-
-    public void setFilter(BasicAuthenticationFilter filter) {
-        this.filter = filter;
     }
 
     @Override
@@ -126,4 +129,5 @@ public class Main extends JnodeModule {
                 "port=" + port +
                 "} " + super.toString();
     }
+
 }

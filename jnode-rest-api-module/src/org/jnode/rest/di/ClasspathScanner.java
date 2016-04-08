@@ -1,7 +1,7 @@
 package org.jnode.rest.di;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import jnode.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.jar.JarFile;
  */
 public class ClasspathScanner {
 
-  protected Logger logger = LoggerFactory.getLogger(getClass());
+  private static final Logger LOGGER = Logger.getLogger(ClasspathScanner.class);
 
   public List<String> getClassNamesFromPackage(String packagePrefix) throws IOException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -35,7 +35,7 @@ public class ClasspathScanner {
 
     while(resources.hasMoreElements()) {
       URL url = resources.nextElement();
-      logger.debug("url:{}", url);
+      LOGGER.l4(String.format("url:%s", url));
 
       if(url.getProtocol().equals("jar")) {
         // extract from JAR
@@ -53,7 +53,7 @@ public class ClasspathScanner {
     // extract jar file name
     String jarFileName = packageUrl.getFile();
     jarFileName = jarFileName.substring(5,jarFileName.indexOf("!"));
-    logger.debug("JAR file name: {}", jarFileName);
+    LOGGER.l4(String.format("JAR file name: %s", jarFileName));
 
     JarFile jf = new JarFile(jarFileName);
     Enumeration<JarEntry> jarEntries = jf.entries();
@@ -68,7 +68,7 @@ public class ClasspathScanner {
         //entryName = entryName.substring(packagePrefix.length(),entryName.lastIndexOf('.'));
         entryName = entryName.substring(0,entryName.lastIndexOf('.')).replace("/", ".");
         classList.add(entryName);
-        logger.debug("jar entry: {} added to list", entryName);
+        LOGGER.l4(String.format("jar entry: %s added to list", entryName));
       }
     }
   }
@@ -86,14 +86,14 @@ public class ClasspathScanner {
       // is this a package directory?
       if (actual.isDirectory() && entryName.indexOf('.') == -1) {
         String childPackage = packageName + "." + entryName;
-        logger.debug("drilling down to childpackage: {}", childPackage);
+        LOGGER.l4(String.format("drilling down to childpackage: %s", childPackage));
 
         getClassNamesFromFileSystem(classLoader, actual, classList, childPackage);
 
       } else if (entryName.endsWith(".class")) {
         // add the simple class:
         entryName = packageName + "." + entryName.substring(0, entryName.lastIndexOf('.'));
-        logger.debug("adding class to list: {}", entryName);
+        LOGGER.l4(String.format("adding class to list: %s", entryName));
         classList.add(entryName);
       }
     }

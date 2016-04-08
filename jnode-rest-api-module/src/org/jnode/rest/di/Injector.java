@@ -1,7 +1,7 @@
 package org.jnode.rest.di;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import jnode.logger.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,9 +32,8 @@ import java.util.List;
  * @author Richard Pal
  */
 public class Injector {
+  private static final Logger LOGGER = Logger.getLogger(Injector.class);
 
-  protected static Logger logger = LoggerFactory.getLogger(Injector.class);
-  
   private static DependencyRepository repository = DependencyRepository.getInstance();
   
   /**
@@ -48,12 +47,12 @@ public class Injector {
   public static <T> T inject(T object) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException {
     long time = System.nanoTime();
     Class<? extends Object> clazz = object.getClass();
-    logger.debug(MessageFormat.format("starting dependency injection of class {0}", clazz.getCanonicalName()));
+    LOGGER.l4(MessageFormat.format("starting dependency injection of class {0}", clazz.getCanonicalName()));
     
     for (Field field : getInjectedFields(clazz)) {
 
       String fieldName = field.getName();
-      logger.debug(MessageFormat.format("{0}.{1} field is annotated with @Inject",
+      LOGGER.l4(MessageFormat.format("{0}.{1} field is annotated with @Inject",
           clazz.getCanonicalName(), fieldName));
       
       String setterMethodName = "set" + fieldName.substring(0,1).toUpperCase() + fieldName.substring(1);
@@ -80,11 +79,11 @@ public class Injector {
           object.getClass(),
           injectedValue.getClass(), e));
       }
-      logger.info(MessageFormat.format("Injected {0}.{1}() successfully",
+      LOGGER.l3(MessageFormat.format("Injected {0}.{1}() successfully",
           clazz.getCanonicalName(), setterMethodName));
     }
     time = System.nanoTime() - time;
-    logger.debug(MessageFormat.format("finished dependency injection of class {0}. Took {1} nanosec",
+    LOGGER.l4(MessageFormat.format("finished dependency injection of class {0}. Took {1} nanosec",
         clazz.getCanonicalName(), time));
     return object;
   }

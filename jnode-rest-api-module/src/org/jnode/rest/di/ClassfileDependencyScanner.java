@@ -1,7 +1,7 @@
 package org.jnode.rest.di;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import jnode.logger.Logger;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class ClassfileDependencyScanner {
 
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = Logger.getLogger(ClassfileDependencyScanner.class);
 
     private DependencyRepository repository = DependencyRepository.getInstance();
     private ClasspathScanner classpathScanner = new ClasspathScanner();
@@ -25,7 +25,7 @@ public class ClassfileDependencyScanner {
     @SuppressWarnings("unchecked")
     public void scan(String packageRoot, String prefix) {
         long time = System.currentTimeMillis();
-        logger.info(MessageFormat.format(
+        logger.l3(MessageFormat.format(
                 "TinyDi is going to be initialised ... parsing java package: {0}", packageRoot));
 
         try {
@@ -39,7 +39,7 @@ public class ClassfileDependencyScanner {
             throw new RuntimeException("failed to carry out DI", e);
         }
         time = System.currentTimeMillis() - time;
-        logger.info(MessageFormat.format("TinyDi finished java package parsing. Found {0} managed objects (of which {1} singletons). Took {2} ms.",
+        logger.l3(MessageFormat.format("TinyDi finished java package parsing. Found {0} managed objects (of which {1} singletons). Took {2} ms.",
                 repository.getNamedBeans().keySet().size(),
                 repository.getSingletons().keySet().size(),
                 time));
@@ -70,13 +70,13 @@ public class ClassfileDependencyScanner {
                                                     .getCanonicalName()));
                 }
                 namedEntities.put(name, clazz);
-                logger.info(MessageFormat.format(
+                logger.l3(MessageFormat.format(
                         "{0} class is registered with alias >{1}<", clazz.getCanonicalName(), name));
 
                 // register singletons:
                 if (clazz.isAnnotationPresent(Singleton.class)) {
                     singletons.put(clazz, null);
-                    logger.info(MessageFormat.format(
+                    logger.l3(MessageFormat.format(
                             "{0} class (alias >{1}<) is singleton", clazz.getCanonicalName(), name));
                 }
 
@@ -88,7 +88,7 @@ public class ClassfileDependencyScanner {
                     if (alreadyBound == null) {
                         interfaceMappings.put(iface, clazz);
                     } else {
-                        logger.debug(MessageFormat.format("Interface >{0}< is already bound to class >{1}<, so it won't be additionally bound to class >{2}<",
+                        logger.l4(MessageFormat.format("Interface >{0}< is already bound to class >{1}<, so it won't be additionally bound to class >{2}<",
                                 iface.getCanonicalName(), alreadyBound.getCanonicalName(), clazz.getCanonicalName()));
                     }
                 }

@@ -1,7 +1,7 @@
 package org.jnode.rest.di;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import jnode.logger.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
@@ -23,8 +23,8 @@ import java.util.Set;
  */
 public class DependencyRepository {
 
-  protected Logger logger = LoggerFactory.getLogger(getClass());
-  
+  private static final Logger LOGGER = Logger.getLogger(DependencyRepository.class);
+
   private static DependencyRepository repositoryInstace = new DependencyRepository();
   
   /** Binds the Bean name (either short class name or custom name defined with
@@ -88,7 +88,7 @@ public class DependencyRepository {
   @SuppressWarnings("unchecked")
   private <T> T instantiateManagedObject(Class<T> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     
-    logger.info(MessageFormat.format("Instantating class {0}", clazz.getCanonicalName()));
+    LOGGER.l3(MessageFormat.format("Instantating class {0}", clazz.getCanonicalName()));
     
     // check if the class is an interface (or abstract.)
     // look for an appropriate implementation class then
@@ -100,7 +100,7 @@ public class DependencyRepository {
         throw new InstantiationException(MessageFormat.format("No bean is known to implement the {0} interface",
             clazz.getCanonicalName()));
       }
-      logger.debug(MessageFormat.format("Injecting class {0} in place of the {1} interface",
+      LOGGER.l4(MessageFormat.format("Injecting class {0} in place of the {1} interface",
           clazzImpl.getCanonicalName(), clazz.getCanonicalName()));
       clazz = clazzImpl;
     } 
@@ -113,7 +113,7 @@ public class DependencyRepository {
     }
     try {
       objectsCurrentlyInitializing.add(clazz);
-      logger.debug("starting a recursive Dep.Injection");
+      LOGGER.l4("starting a recursive Dep.Injection");
       Injector.inject(newInstance);
     } finally {
       objectsCurrentlyInitializing.remove(clazz);
