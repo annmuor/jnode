@@ -20,6 +20,7 @@
 
 package org.jnode.rest;
 
+import jnode.dto.Robot;
 import jnode.event.IEvent;
 import jnode.logger.Logger;
 import jnode.module.JnodeModule;
@@ -38,7 +39,6 @@ public class Main extends JnodeModule {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class);
     private final int port;
-
 
     public static void main(String[] args) throws JnodeModuleException {
         Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
@@ -77,8 +77,16 @@ public class Main extends JnodeModule {
 
     private void startProd() throws JnodeModuleException {
         ORMManager.get(RestUser.class);
+
+        Robot restApiRobot = new Robot();
+        restApiRobot.setClassName(UserRobot.class.getCanonicalName());
+        restApiRobot.setRobot("rest-api-robot");
+        ORMManager.get(Robot.class).saveOrUpdate(restApiRobot);
+
+
         ClassfileDependencyScanner scanner = new ClassfileDependencyScanner();
         scanner.scan("org.jnode.rest", "prod-");
+
         try {
             Injector.inject(this);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
@@ -115,7 +123,6 @@ public class Main extends JnodeModule {
         }
 
     }
-
 
 
     @Override

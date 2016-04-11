@@ -21,7 +21,6 @@ import java.util.Base64;
 
 public class MainServlet extends HttpServlet {
 
-    private static final int NUMBER_OF_AUTHENTICATION_FIELDS = 2;
     private static final Logger LOGGER = Logger.getLogger(MainServlet.class);
     private static final String BASIC_AUTHENTICATION_TYPE = "Basic";
 

@@ -3,6 +3,7 @@ package org.jnode.rest.core;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 public final class CryptoUtils {
     private CryptoUtils() {
@@ -20,6 +21,10 @@ public final class CryptoUtils {
             return "PLAIN-" + protocolPassword;
         }
 
+    }
+
+    public static String randomToken(){
+        return UUID.randomUUID().toString();
     }
 
 

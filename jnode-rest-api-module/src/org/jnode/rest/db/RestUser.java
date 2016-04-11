@@ -22,46 +22,47 @@ package org.jnode.rest.db;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import jnode.dto.Link;
 
-@DatabaseTable(tableName="restapi_user")
+@DatabaseTable(tableName = "restapi_user")
 public class RestUser {
-	@DatabaseField(generatedId = true, columnName = "id")
-	private Long id;
-	@DatabaseField(columnName = "username", unique = true, canBeNull = false)
-	private String username;
-	@DatabaseField(columnName = "password", canBeNull = false)
-	private String password;
+    @DatabaseField(generatedId = true, columnName = "id")
+    private Long id;
+    @DatabaseField(columnName = "token", canBeNull = false)
+    private String token;
+    @DatabaseField(columnName = "link_id", foreign = true, foreignAutoRefresh = true)
+    private Link link;
 
-	public Long getId() {
-		return id;
-	}
+    public Link getLink() {
+        return link;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setLink(Link link) {
+        this.link = link;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getToken() {
+        return token;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setToken(String token) {
+        this.token = token;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	@Override
-	public String toString() {
-		return "RestUser{" +
-				"id=" + id +
-				", username='" + username + '\'' +
-				", password='" + password + '\'' +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return "RestUser{" +
+                "id=" + id +
+                ", token='" + token + '\'' +
+                ", link=" + link +
+                '}';
+    }
 }
