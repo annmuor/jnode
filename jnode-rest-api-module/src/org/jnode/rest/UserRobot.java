@@ -81,7 +81,7 @@ public class UserRobot extends AbstractRobot {
     }
     @Override
     protected String getRobotName() {
-        return "RestApiFix";
+        return "rest-api-robot";
     }
 
 
