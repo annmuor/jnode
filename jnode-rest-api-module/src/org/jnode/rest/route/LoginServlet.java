@@ -2,13 +2,12 @@ package org.jnode.rest.route;
 
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.EchomailGetHandler;
-import org.jnode.rest.handler.EchomailPostHandler;
+import org.jnode.rest.handler.UserLoginHandler;
 
 import javax.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
 
-public class MainServlet extends BaseServlet {
+public class LoginServlet extends BaseServlet {
 
     private final Dispatcher dispatcher = new Dispatcher();
 
@@ -17,8 +16,7 @@ public class MainServlet extends BaseServlet {
         super.init();
 
         try {
-            dispatcher.register(Injector.inject(new EchomailPostHandler()));
-            dispatcher.register(Injector.inject(new EchomailGetHandler()));
+            dispatcher.register(Injector.inject(new UserLoginHandler()));
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new ServletException(e);
         }

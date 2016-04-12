@@ -19,6 +19,7 @@ public class UserRobot extends AbstractRobot {
 
     private static final Pattern TOKEN = Pattern.compile("^%TOKEN$",
             Pattern.CASE_INSENSITIVE);
+    public static final String REST_API_ROBOT = "rest-api-robot";
 
     @Override
     public void execute(FtnMessage fmsg) throws Exception {
@@ -58,6 +59,7 @@ public class UserRobot extends AbstractRobot {
             RestUser restUser = new RestUser();
             restUser.setLink(link);
             restUser.setToken(CryptoUtils.sha256(pwd));
+            restUser.setType(RestUser.Type.USER);
             ORMManager.get(RestUser.class).save(restUser);
         }
 
@@ -81,7 +83,7 @@ public class UserRobot extends AbstractRobot {
     }
     @Override
     protected String getRobotName() {
-        return "rest-api-robot";
+        return REST_API_ROBOT;
     }
 
 

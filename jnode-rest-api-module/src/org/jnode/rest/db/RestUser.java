@@ -37,6 +37,16 @@ public class RestUser {
     private Link link;
     @DatabaseField(columnName = "lastLogin", dataType = DataType.DATE_LONG)
     private Date lastLogin;
+    @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "GUEST")
+    private Type type;
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 
     public Date getLastLogin() {
         return lastLogin;
@@ -79,4 +89,9 @@ public class RestUser {
                 ", lastLogin=" + lastLogin +
                 '}';
     }
+
+    public enum Type {
+        GUEST, USER, ADMIN
+    }
+
 }
