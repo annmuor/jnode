@@ -6,6 +6,8 @@ import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
 
+import java.util.Date;
+
 
 @Named("prod-pwdProvider")
 @Singleton
@@ -23,6 +25,9 @@ public class PwdProviderImpl implements PwdProvider{
         if (user == null) {
             return false;
         }
+
+        user.setLastLogin(new Date());
+        ORMManager.get(RestUser.class).update(user);
 
         return true;
     }
