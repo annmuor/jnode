@@ -31,9 +31,12 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
 import org.jnode.rest.di.Injector;
+import org.jnode.rest.route.AuthFilter;
 import org.jnode.rest.route.MainServlet;
 
+import javax.servlet.DispatcherType;
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumSet;
 
 public class Main extends JnodeModule {
 
@@ -93,7 +96,7 @@ public class Main extends JnodeModule {
             throw new JnodeModuleException(e);
         }
 
-        initSpark();
+        initJetty();
     }
 
     private void startTest() throws JnodeModuleException {
@@ -105,15 +108,16 @@ public class Main extends JnodeModule {
             throw new JnodeModuleException(e);
         }
 
-        initSpark();
+        initJetty();
     }
 
-    private void initSpark() throws JnodeModuleException {
+    private void initJetty() throws JnodeModuleException {
 
         Server server = new Server(port);
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
         handler.addServletWithMapping(MainServlet.class, "/api");
+        handler.addFilterWithMapping(AuthFilter.class, "/api", EnumSet.of(DispatcherType.REQUEST));
         LOGGER.l5("ready");
         try {
             server.start();

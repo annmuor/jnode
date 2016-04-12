@@ -20,9 +20,12 @@
 
 package org.jnode.rest.db;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jnode.dto.Link;
+
+import java.util.Date;
 
 @DatabaseTable(tableName = "restapi_user")
 public class RestUser {
@@ -32,6 +35,16 @@ public class RestUser {
     private String token;
     @DatabaseField(columnName = "link_id", foreign = true, foreignAutoRefresh = true)
     private Link link;
+    @DatabaseField(columnName = "lastLogin", dataType = DataType.DATE_LONG)
+    private Date lastLogin;
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
+    }
 
     public Link getLink() {
         return link;
@@ -63,6 +76,7 @@ public class RestUser {
                 "id=" + id +
                 ", token='" + token + '\'' +
                 ", link=" + link +
+                ", lastLogin=" + lastLogin +
                 '}';
     }
 }
