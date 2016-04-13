@@ -30,8 +30,9 @@ import jnode.logger.Logger;
 import jnode.module.JnodeModule;
 import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
-import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
@@ -49,13 +50,22 @@ public class Main extends JnodeModule {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class);
     private static final String REST_API_PORT = "rest-api-port";
+    private static final String REST_API_SSL_PORT = "rest-api-ssl-port";
     private static final String REST_API_ADMIN = "rest-api-admin";
+    private static final String REST_API_KEY_STORE_PATH = "rest-api-keyStorePath";
+    private static final String REST_API_KEY_STORE_PASSWORD = "rest-api-keyStorePassword";
     private final int port;
+    private final int sslPort;
+    private final String keyStorePath;
+    private final char[] keyStorePassword;
     private final String adminFtnAddress;
 
     public Main(String configFile) throws JnodeModuleException {
         super(configFile);
         port = getPort();
+        sslPort = getSSLPort();
+        keyStorePath = properties.getProperty(REST_API_KEY_STORE_PATH, "");
+        keyStorePassword = properties.getProperty(REST_API_KEY_STORE_PASSWORD, "").toCharArray();
 
         adminFtnAddress = getAdminFtnAddressStr();
     }
@@ -73,6 +83,14 @@ public class Main extends JnodeModule {
         }
     }
 
+    private int getSSLPort() throws JnodeModuleException {
+        try {
+            return Integer.parseInt(properties.getProperty(REST_API_SSL_PORT, "4568"));
+        } catch (NumberFormatException e) {
+            throw new JnodeModuleException("bad ssl port value", e);
+        }
+    }
+
     private String getAdminFtnAddressStr() throws JnodeModuleException {
         return properties.getProperty(REST_API_ADMIN, "");
     }
@@ -86,7 +104,7 @@ public class Main extends JnodeModule {
         }
     }
 
-    public void startForTest() {
+    private void startForTest() {
         try {
             startTest();
         } catch (Exception e) {
@@ -154,7 +172,29 @@ public class Main extends JnodeModule {
 
     private void initJetty() throws JnodeModuleException {
 
-        Server server = new Server(port);
+        boolean needSSL = keyStorePath != null && !keyStorePath.isEmpty();
+
+        Server server = new Server();
+
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(port);
+
+        if (needSSL){
+            HttpConfiguration https = new HttpConfiguration();
+            https.addCustomizer(new SecureRequestCustomizer());
+            SslContextFactory sslContextFactory = new SslContextFactory();
+            sslContextFactory.setKeyStorePath(keyStorePath);
+            sslContextFactory.setKeyStorePassword(new String(keyStorePassword));
+            sslContextFactory.setKeyManagerPassword(new String(keyStorePassword));
+            ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(https));
+            sslConnector.setPort(sslPort);
+            server.setConnectors(new Connector[]{connector, sslConnector});
+        } else {
+            server.setConnectors(new Connector[]{connector});
+
+        }
+
+
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
         handler.addServletWithMapping(MainServlet.class, "/api");
