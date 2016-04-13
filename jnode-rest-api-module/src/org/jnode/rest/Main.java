@@ -120,14 +120,14 @@ public class Main extends JnodeModule {
         if (!adminFtnAddress.isEmpty()) {
             Link adminLink = ORMManager.get(Link.class).getFirstAnd("linkAddress", "=", adminFtnAddress);
             if (adminLink != null) {
-                RestUser admin = dao.getFirstAnd("link_id", "=", adminLink.getId());
+                RestUser admin = dao.getFirstAnd(RestUser.LINK_ID_FIELD, "=", adminLink.getId());
                 if (admin == null) {
 
                     final String pwd = CryptoUtils.randomToken();
 
                     admin = new RestUser();
                     admin.setLink(adminLink);
-                    admin.setToken(CryptoUtils.sha256(pwd));
+                    admin.setToken(CryptoUtils.makeToken(pwd));
                     admin.setType(RestUser.Type.ADMIN);
 
                     dao.save(admin);

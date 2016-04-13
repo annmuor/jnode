@@ -18,7 +18,7 @@ public class PwdProviderImpl implements PwdProvider{
     @Override
     public boolean isAuth(String token) {
         RestUser user = ORMManager.get(RestUser.class)
-                .getFirstAnd("token", "=", token);
+                .getFirstAnd(RestUser.TOKEN_FIELD, "=", token);
 
         LOGGER.l5(String.format("for token %s get %s", token, user));
 

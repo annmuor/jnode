@@ -9,7 +9,11 @@ public final class CryptoUtils {
     private CryptoUtils() {
     }
 
-    public static String sha256(String protocolPassword) {
+    public static String makeToken(String pwd) {
+        return sha256(pwd + "lamerskayaSoll");
+    }
+
+    private static String sha256(String protocolPassword) {
         MessageDigest mdEnc;
         try {
             mdEnc = MessageDigest.getInstance("SHA-256");

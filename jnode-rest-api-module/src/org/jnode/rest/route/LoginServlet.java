@@ -2,7 +2,7 @@ package org.jnode.rest.route;
 
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.UserLoginHandler;
+import org.jnode.rest.handler.guest.GuestLoginHandler;
 
 import javax.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +16,7 @@ public class LoginServlet extends BaseServlet {
         super.init();
 
         try {
-            dispatcher.register(Injector.inject(new UserLoginHandler()));
+            dispatcher.register(Injector.inject(new GuestLoginHandler()));
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new ServletException(e);
         }

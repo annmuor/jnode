@@ -29,16 +29,30 @@ import java.util.Date;
 
 @DatabaseTable(tableName = "restapi_user")
 public class RestUser {
+    public static final String GUESTLOGIN_FIELD = "guestlogin";
+    public static final String LINK_ID_FIELD = "link_id";
+    public static final String TOKEN_FIELD = "token";
+
     @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
-    @DatabaseField(columnName = "token", canBeNull = false)
+    @DatabaseField(columnName = TOKEN_FIELD, canBeNull = false, uniqueIndexName = "lresttoken_idx", width = 300)
     private String token;
-    @DatabaseField(columnName = "link_id", foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(columnName = LINK_ID_FIELD, foreign = true, foreignAutoRefresh = true, uniqueIndexName = "lrestlink_idx")
     private Link link;
     @DatabaseField(columnName = "lastLogin", dataType = DataType.DATE_LONG)
     private Date lastLogin;
     @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "GUEST")
     private Type type;
+    @DatabaseField(columnName = GUESTLOGIN_FIELD, uniqueIndexName = "lrestglogin_idx", width = 300)
+    private String guestLogin;
+
+    public String getGuestLogin() {
+        return guestLogin;
+    }
+
+    public void setGuestLogin(String guestLogin) {
+        this.guestLogin = guestLogin;
+    }
 
     public Type getType() {
         return type;
@@ -87,6 +101,8 @@ public class RestUser {
                 ", token='" + token + '\'' +
                 ", link=" + link +
                 ", lastLogin=" + lastLogin +
+                ", type=" + type +
+                ", guestLogin='" + guestLogin + '\'' +
                 '}';
     }
 

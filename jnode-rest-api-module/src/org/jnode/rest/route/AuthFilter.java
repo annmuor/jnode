@@ -74,9 +74,9 @@ public class AuthFilter implements Filter {
         return !authenticatedWith(credentials);
     }
 
-    private boolean authenticatedWith(final String token) {
-        if (token != null) {
-            return beanHolder.getPwdProvider().isAuth(CryptoUtils.sha256(token));
+    private boolean authenticatedWith(final String pwd) {
+        if (pwd != null) {
+            return beanHolder.getPwdProvider().isAuth(CryptoUtils.makeToken(pwd));
         }
         return false;
     }

@@ -1,4 +1,4 @@
-package org.jnode.rest.handler;
+package org.jnode.rest.handler.user;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -7,6 +7,7 @@ import jnode.dto.Echomail;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.EchomailProxy;
+import org.jnode.rest.handler.AbstractHandler;
 import org.jnode.rest.mapper.EchomailMapper;
 
 public class EchomailGetHandler extends AbstractHandler {

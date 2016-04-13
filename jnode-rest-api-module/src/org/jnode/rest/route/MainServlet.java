@@ -2,8 +2,8 @@ package org.jnode.rest.route;
 
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.EchomailGetHandler;
-import org.jnode.rest.handler.EchomailPostHandler;
+import org.jnode.rest.handler.user.EchomailGetHandler;
+import org.jnode.rest.handler.user.EchomailPostHandler;
 
 import javax.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;

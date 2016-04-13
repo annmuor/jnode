@@ -51,14 +51,14 @@ public class UserRobot extends AbstractRobot {
         final String pwd = CryptoUtils.randomToken();
 
 
-        RestUser existed = ORMManager.get(RestUser.class).getFirstAnd("link_id", "=", link.getId());
+        RestUser existed = ORMManager.get(RestUser.class).getFirstAnd(RestUser.LINK_ID_FIELD, "=", link.getId());
         if (existed != null){
-            existed.setToken(CryptoUtils.sha256(pwd));
+            existed.setToken(CryptoUtils.makeToken(pwd));
             ORMManager.get(RestUser.class).update(existed);
         } else {
             RestUser restUser = new RestUser();
             restUser.setLink(link);
-            restUser.setToken(CryptoUtils.sha256(pwd));
+            restUser.setToken(CryptoUtils.makeToken(pwd));
             restUser.setType(RestUser.Type.USER);
             ORMManager.get(RestUser.class).save(restUser);
         }
