@@ -13,6 +13,11 @@ public class RestUserProxyMock implements  RestUserProxy{
     }
 
     @Override
+    public RestUser findByUserCredentials(String userLogin, String userPwd) {
+        return null;
+    }
+
+    @Override
     public void save(RestUser restUser) {
 
     }

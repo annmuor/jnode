@@ -2,13 +2,13 @@ package org.jnode.rest.route;
 
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.user.EchomailGetHandler;
-import org.jnode.rest.handler.user.EchomailPostHandler;
+import org.jnode.rest.handler.secure.EchomailGetHandler;
+import org.jnode.rest.handler.secure.EchomailPostHandler;
 
 import javax.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
 
-public class MainServlet extends BaseServlet {
+public class SecureServlet extends BaseServlet {
 
     private final Dispatcher dispatcher = new Dispatcher();
 

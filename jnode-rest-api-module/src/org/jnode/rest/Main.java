@@ -37,9 +37,9 @@ import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.route.AuthFilter;
-import org.jnode.rest.route.LoginServlet;
-import org.jnode.rest.route.MainServlet;
+import org.jnode.rest.route.SecureAuthFilter;
+import org.jnode.rest.route.SecureServlet;
+import org.jnode.rest.route.UnsecureServlet;
 
 import javax.servlet.DispatcherType;
 import java.lang.reflect.InvocationTargetException;
@@ -197,9 +197,9 @@ public class Main extends JnodeModule {
 
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
-        handler.addServletWithMapping(MainServlet.class, "/api");
-        handler.addFilterWithMapping(AuthFilter.class, "/api", EnumSet.of(DispatcherType.REQUEST));
-        handler.addServletWithMapping(LoginServlet.class, "/login");
+        handler.addServletWithMapping(SecureServlet.class, "/api/secure");
+        handler.addFilterWithMapping(SecureAuthFilter.class, "/api/secure", EnumSet.of(DispatcherType.REQUEST));
+        handler.addServletWithMapping(UnsecureServlet.class, "/api/unsecure");
         LOGGER.l5("ready");
         try {
             server.start();

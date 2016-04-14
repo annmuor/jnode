@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
 
-public class AuthFilter implements Filter {
+public class SecureAuthFilter implements Filter {
 
-    private static final Logger LOGGER = Logger.getLogger(AuthFilter.class);
+    private static final Logger LOGGER = Logger.getLogger(SecureAuthFilter.class);
     private static final String BASIC_AUTHENTICATION_TYPE = "Basic";
     private BeanHolder beanHolder;
 

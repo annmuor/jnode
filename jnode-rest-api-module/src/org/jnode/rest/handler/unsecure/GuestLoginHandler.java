@@ -1,4 +1,4 @@
-package org.jnode.rest.handler.guest;
+package org.jnode.rest.handler.unsecure;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
