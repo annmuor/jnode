@@ -25,10 +25,11 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jnode.dto.Link;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @DatabaseTable(tableName = "restapi_user")
-public class RestUser {
+public class RestUser implements Serializable{
     public static final String GUESTLOGIN_FIELD = "guestlogin";
     public static final String LINK_ID_FIELD = "link_id";
     public static final String TOKEN_FIELD = "token";

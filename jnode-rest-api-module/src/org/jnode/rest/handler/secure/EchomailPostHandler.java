@@ -5,6 +5,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Echoarea;
 import org.jnode.rest.core.RPCError;
+import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.FtnToolsProxy;
@@ -38,6 +39,11 @@ public class EchomailPostHandler  extends AbstractHandler {
         );
 
         return new JSONRPC2Response(id, reqID);
+    }
+
+    @Override
+    protected RestUser.Type[] secured() {
+        return new RestUser.Type[]{RestUser.Type.USER, RestUser.Type.ADMIN};
     }
 
     public void setFtnToolsProxy(FtnToolsProxy ftnToolsProxy) {

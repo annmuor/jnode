@@ -8,6 +8,8 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import jnode.logger.Logger;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.IOUtils;
+import org.jnode.rest.db.RestUser;
+import org.jnode.rest.handler.JnodeMessageContext;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +41,10 @@ public abstract class BaseServlet extends HttpServlet {
             return;
         }
 
-        JSONRPC2Response resp = getDispatcher().process(reqIn, null);
+        RestUser restUser = (RestUser) request.getAttribute("REST_USER");
+        request.removeAttribute("REST_USER");
+
+        JSONRPC2Response resp = getDispatcher().process(reqIn, new JnodeMessageContext(request, restUser));
         if (resp.getError() != null && resp.getError().getCode() == -32601) {
             response.setStatus(Http.NOT_FOUND);
         } else {

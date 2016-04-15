@@ -42,6 +42,11 @@ public class UserLoginHandler extends AbstractHandler {
     }
 
     @Override
+    protected RestUser.Type[] secured() {
+        return new RestUser.Type[]{RestUser.Type.USER, RestUser.Type.ADMIN};
+    }
+
+    @Override
     public String[] handledRequests() {
         return new String[]{"user.login"};
     }

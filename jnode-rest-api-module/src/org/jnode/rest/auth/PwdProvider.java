@@ -1,5 +1,7 @@
 package org.jnode.rest.auth;
 
+import org.jnode.rest.db.RestUser;
+
 public interface PwdProvider {
-    boolean isAuth(String token);
+    RestUser isAuth(String token);
 }

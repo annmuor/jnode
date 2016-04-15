@@ -23,13 +23,15 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
+
 /**
  * 
  * @author kreon
  * 
  */
 @DatabaseTable(tableName = "links")
-public class Link {
+public class Link implements Serializable{
 	@DatabaseField(columnName = "id", generatedId = true)
 	private Long id;
 	@DatabaseField(columnName = "station_name", canBeNull = false)

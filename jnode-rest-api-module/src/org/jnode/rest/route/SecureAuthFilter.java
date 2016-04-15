@@ -6,6 +6,7 @@ import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.RPCError;
 import org.jnode.rest.core.StringUtils;
+import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Injector;
 
 import javax.servlet.*;
@@ -54,11 +55,14 @@ public class SecureAuthFilter implements Filter {
             return;
         }
 
-        if (notAuthenticatedWith(credentialsFrom(decodedHeader))) {
+        final RestUser restUser = authenticatedWith(credentialsFrom(decodedHeader));
+        if (restUser == null) {
             response.setHeader("WWW-Authenticate", BASIC_AUTHENTICATION_TYPE);
             response.setStatus(Http.NOT_AUTH);
             return;
         }
+
+        request.setAttribute("REST_USER", restUser);
 
         filterChain.doFilter(request, response);
     }
@@ -70,15 +74,11 @@ public class SecureAuthFilter implements Filter {
         return new String(Base64.getDecoder().decode(encodedHeader));
     }
 
-    private boolean notAuthenticatedWith(final String credentials) {
-        return !authenticatedWith(credentials);
-    }
-
-    private boolean authenticatedWith(final String pwd) {
+    private RestUser authenticatedWith(final String pwd) {
         if (pwd != null) {
             return beanHolder.getPwdProvider().isAuth(CryptoUtils.makeToken(pwd));
         }
-        return false;
+        return null;
     }
 
     private String credentialsFrom(final String decoderHeader) {

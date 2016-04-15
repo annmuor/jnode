@@ -46,6 +46,11 @@ public class GuestLoginHandler extends AbstractHandler {
     }
 
     @Override
+    protected RestUser.Type[] secured() {
+        return null;
+    }
+
+    @Override
     public String[] handledRequests() {
         return new String[]{"guest.login"};
     }

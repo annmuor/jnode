@@ -4,6 +4,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Echomail;
+import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.fido.EchomailProxy;
@@ -29,6 +30,11 @@ public class EchomailGetHandler extends AbstractHandler {
     protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
         Echomail echomail = echomailProxy.get(np.getLong("id"));
         return new JSONRPC2Response(echomailMapper.toJsonType(echomail), reqID);
+    }
+
+    @Override
+    protected RestUser.Type[] secured() {
+        return new RestUser.Type[]{RestUser.Type.USER, RestUser.Type.ADMIN, RestUser.Type.GUEST};
     }
 
     public void setEchomailProxy(EchomailProxy echomailProxy) {
