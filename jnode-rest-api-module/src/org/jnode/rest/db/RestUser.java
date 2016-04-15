@@ -107,6 +107,7 @@ public class RestUser implements Serializable{
                 '}';
     }
 
+
     public enum Type {
         GUEST, USER, ADMIN
     }
