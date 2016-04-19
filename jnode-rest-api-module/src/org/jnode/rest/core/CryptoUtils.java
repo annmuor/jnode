@@ -3,9 +3,14 @@ package org.jnode.rest.core;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.UUID;
+import java.security.SecureRandom;
 
 public final class CryptoUtils {
+
+    public static void main(String[] args) {
+        System.out.println(randomToken());
+    }
+
     private CryptoUtils() {
     }
 
@@ -28,7 +33,7 @@ public final class CryptoUtils {
     }
 
     public static String randomToken(){
-        return UUID.randomUUID().toString();
+        return new BigInteger(160, new SecureRandom()).toString(Character.MAX_RADIX);
     }
 
 

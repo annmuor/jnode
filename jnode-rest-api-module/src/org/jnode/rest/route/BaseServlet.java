@@ -23,7 +23,7 @@ public abstract class BaseServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
+        response.setContentType("application/json;charset=UTF-8");
         JSONRPC2Request reqIn;
 
         try {
