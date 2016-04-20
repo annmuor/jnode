@@ -37,6 +37,7 @@ import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
 import org.jnode.rest.di.Injector;
+import org.jnode.rest.route.HealthCheckServlet;
 import org.jnode.rest.route.SecureAuthFilter;
 import org.jnode.rest.route.SecureServlet;
 import org.jnode.rest.route.UnsecureServlet;
@@ -207,6 +208,7 @@ public class Main extends JnodeModule {
         handler.addServletWithMapping(SecureServlet.class, "/api/secure");
         handler.addFilterWithMapping(SecureAuthFilter.class, "/api/secure", EnumSet.of(DispatcherType.REQUEST));
         handler.addServletWithMapping(UnsecureServlet.class, "/api/unsecure");
+        handler.addServletWithMapping(HealthCheckServlet.class, "/healthcheck");
         LOGGER.l5("ready");
         try {
             server.start();

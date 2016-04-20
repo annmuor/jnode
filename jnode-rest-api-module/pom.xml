@@ -99,7 +99,7 @@
                         </goals>
                         <configuration>
                             <workingDir>.</workingDir>
-                            <waitAfterLaunch>5</waitAfterLaunch>
+                            <healthcheckUrl>http://localhost:4567/healthcheck</healthcheckUrl>
                             <arguments>
                                 <argument>java</argument>
                                 <argument>-jar</argument>
