@@ -1,10 +1,12 @@
 package rest;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
+
 public class RestResult {
     private final int httpCode;
-    private final String payload;
+    private final JSONRPC2Response payload;
 
-    public RestResult(int httpCode, String payload) {
+    public RestResult(int httpCode, JSONRPC2Response payload) {
         this.httpCode = httpCode;
         this.payload = payload;
     }
@@ -17,7 +19,7 @@ public class RestResult {
         return httpCode;
     }
 
-    public String getPayload() {
+    public JSONRPC2Response getPayload() {
         return payload;
     }
 

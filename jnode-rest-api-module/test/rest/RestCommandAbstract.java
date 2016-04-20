@@ -1,5 +1,7 @@
 package rest;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import org.jnode.rest.core.IOUtils;
 
 import java.io.IOException;
@@ -9,10 +11,14 @@ import java.net.URL;
 
 public abstract class RestCommandAbstract implements RestCommand {
 
-    private static final int HTTP_OK = 200;
     private static final String MEDIA_TYPE = "application/json; charset=UTF-8";
 
+    protected RestCommandAbstract(String json) {
+        this.json = json;
+    }
+
     protected abstract String url();
+    private final String json;
 
     @Override
     public RestResult execute() {
@@ -30,26 +36,17 @@ public abstract class RestCommandAbstract implements RestCommand {
             conn.connect();
 
             OutputStream os = conn.getOutputStream();
-            String json = "{\n" +
-                    "    \"method\": \"guest.login\",\n" +
-                    "    \"params\": {\n" +
-                    "        \"login\": \"1\"\n" +
-                    "    },\n" +
-                    "    \"id\": 123,\n" +
-                    "    \"jsonrpc\": \"2.0\"\n" +
-                    "}";
             os.write(json.getBytes("UTF-8"));
             os.close();
 
-
-
             try {
                 final int responseCode = conn.getResponseCode();
-                if (responseCode != HTTP_OK) {
-                    return RestResult.fail(responseCode);
-                }
                 String payload = IOUtils.readFullyAsString(conn.getInputStream(), "UTF-8");
-                return new RestResult(responseCode, payload);
+                JSONRPC2Response resp = JSONRPC2Response.parse(payload);
+                return new RestResult(responseCode, resp);
+            } catch (JSONRPC2ParseException e) {
+                e.printStackTrace();
+                return RestResult.fail(-2);
             } finally {
                 conn.disconnect();
             }
