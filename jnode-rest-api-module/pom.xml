@@ -1,27 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>jnode</groupId>
-		<artifactId>jnode</artifactId>
-		<version>1.0</version>
-	</parent>
-	<artifactId>jnode-rest-api-module</artifactId>
-	<version>0.2-SNAPSHOT</version>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>jnode</groupId>
+        <artifactId>jnode</artifactId>
+        <version>1.0</version>
+    </parent>
+    <artifactId>jnode-rest-api-module</artifactId>
+    <version>0.2-SNAPSHOT</version>
     <name>jnode-rest-api-module</name>
-	<description>rest api</description>
+    <description>rest api</description>
 
-	<dependencies>
-		<dependency>
-			<groupId>jnode</groupId>
-			<artifactId>jnode-core</artifactId>
-			<version>1.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
-			<version>9.0.2.v20130417</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>jnode</groupId>
+            <artifactId>jnode-core</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.0.2.v20130417</version>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
@@ -39,8 +39,8 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-	<build>
-		<sourceDirectory>src</sourceDirectory>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
         <resources>
             <resource>
@@ -68,9 +68,59 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>org.jnode.rest.Main</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.bazaarvoice.maven.plugins</groupId>
+                <artifactId>process-exec-maven-plugin</artifactId>
+                <version>0.4</version>
+                <executions>
+                    <!--Start process-->
+                    <execution>
+                        <id>start-jar</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <workingDir>.</workingDir>
+                            <waitAfterLaunch>5</waitAfterLaunch>
+                            <arguments>
+                                <argument>java</argument>
+                                <argument>-jar</argument>
+                                <argument>jnode-rest-api-module-${project.version}.jar</argument>
+                                <argument>../config/config-rest.properties</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!--Stop Process-->
+                    <execution>
+                        <id>stop-jar-process</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop-all</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.18.1</version>
-
                 <executions>
                     <execution>
                         <id>integration-test</id>
@@ -80,7 +130,6 @@
                         </goals>
                     </execution>
                 </executions>
-
                 <configuration>
                     <excludes>
                         <exclude>none</exclude>
@@ -89,7 +138,6 @@
                         <include>**/*IT.java</include>
                     </includes>
                 </configuration>
-
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>

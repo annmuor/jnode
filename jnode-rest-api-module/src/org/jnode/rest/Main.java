@@ -74,7 +74,7 @@ public class Main extends JnodeModule {
     }
 
     public static void main(String[] args) throws JnodeModuleException {
-        Main mainModule = new Main(Main.class.getResource("config-rest.properties").getPath());
+        Main mainModule = new Main(args[0]);
         mainModule.startForTest();
     }
 
