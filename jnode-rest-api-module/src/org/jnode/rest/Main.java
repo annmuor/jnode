@@ -54,10 +54,12 @@ public class Main extends JnodeModule {
     private static final String REST_API_ADMIN = "rest-api-admin";
     private static final String REST_API_KEY_STORE_PATH = "rest-api-keyStorePath";
     private static final String REST_API_KEY_STORE_PASSWORD = "rest-api-keyStorePassword";
+    private static final String REST_API_KEY_MANAGER_PASSWORD = "rest-api-keyManagerPassword";
     private final int port;
     private final int sslPort;
     private final String keyStorePath;
     private final char[] keyStorePassword;
+    private final char[] keyManagerPassword;
     private final String adminFtnAddress;
 
     public Main(String configFile) throws JnodeModuleException {
@@ -66,6 +68,7 @@ public class Main extends JnodeModule {
         sslPort = getSSLPort();
         keyStorePath = properties.getProperty(REST_API_KEY_STORE_PATH, "");
         keyStorePassword = properties.getProperty(REST_API_KEY_STORE_PASSWORD, "").toCharArray();
+        keyManagerPassword = properties.getProperty(REST_API_KEY_MANAGER_PASSWORD, "").toCharArray();
 
         adminFtnAddress = getAdminFtnAddressStr();
     }
@@ -185,7 +188,7 @@ public class Main extends JnodeModule {
             SslContextFactory sslContextFactory = new SslContextFactory();
             sslContextFactory.setKeyStorePath(keyStorePath);
             sslContextFactory.setKeyStorePassword(new String(keyStorePassword));
-            sslContextFactory.setKeyManagerPassword(new String(keyStorePassword));
+            sslContextFactory.setKeyManagerPassword(new String(keyManagerPassword));
             ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(https));
             sslConnector.setPort(sslPort);
             server.setConnectors(new Connector[]{connector, sslConnector});
