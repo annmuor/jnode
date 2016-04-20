@@ -107,7 +107,7 @@ public class Main extends JnodeModule {
         }
     }
 
-    private void startForTest() {
+    public void startForTest() {
         try {
             startTest();
         } catch (Exception e) {
@@ -184,7 +184,7 @@ public class Main extends JnodeModule {
         connector.setIdleTimeout(30000L);
         connector.setAcceptQueueSize(8);
 
-        if (needSSL){
+        if (needSSL) {
             HttpConfiguration https = new HttpConfiguration();
             https.addCustomizer(new SecureRequestCustomizer());
             SslContextFactory sslContextFactory = new SslContextFactory();
@@ -211,6 +211,9 @@ public class Main extends JnodeModule {
         try {
             server.start();
             server.join();
+        } catch (InterruptedException e) {
+            LOGGER.l5("interrupted");
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             throw new JnodeModuleException(e);
         }
