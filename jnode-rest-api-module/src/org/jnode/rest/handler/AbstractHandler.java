@@ -16,7 +16,7 @@ public abstract class AbstractHandler implements RequestHandler {
     @Override
     public JSONRPC2Response process(JSONRPC2Request req, MessageContext ctx) {
 
-        if (!roleGuard(ctx)){
+        if (!roleGuard(ctx)) {
             return new JSONRPC2Response(RPCError.ACCESS_DENIED, req.getID());
         }
 
@@ -31,16 +31,18 @@ public abstract class AbstractHandler implements RequestHandler {
     }
 
     private boolean roleGuard(MessageContext ctx) {
-        if (ctx instanceof JnodeMessageContext){
+        if (ctx instanceof JnodeMessageContext) {
             JnodeMessageContext jnodeMessageContext = (JnodeMessageContext) ctx;
 
-            if (secured() == null){
+            if (secured() == null) {
                 return true;
             }
 
-            for(RestUser.Type type : secured()){
-                if (jnodeMessageContext.getRestUser().getType().equals(type)){
-                   return true;
+            for (RestUser.Type type : secured()) {
+                if (jnodeMessageContext.getRestUser() != null &&
+                        jnodeMessageContext.getRestUser().getType() != null &&
+                        jnodeMessageContext.getRestUser().getType().equals(type)) {
+                    return true;
                 }
             }
         }

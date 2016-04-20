@@ -14,10 +14,9 @@ public class RestUserProxyMock implements  RestUserProxy{
 
     private static final Logger LOGGER = Logger.getLogger(RestUserProxyMock.class);
 
-    private final List<RestUser> data = new ArrayList<>();
+    private long seq = 0L;
 
-    public RestUserProxyMock() {
-    }
+    private final List<RestUser> data = new ArrayList<>();
 
     @Override
     public RestUser findByGuestLogin(String guestLogin) {
@@ -28,10 +27,12 @@ public class RestUserProxyMock implements  RestUserProxy{
 
         for(RestUser restUser : data){
             if(guestLogin.equals(restUser.getGuestLogin())){
+                LOGGER.l5("find " + restUser);
                 return restUser;
             }
         }
 
+        LOGGER.l5("not found " + guestLogin);
         return null;
     }
 
@@ -41,12 +42,34 @@ public class RestUserProxyMock implements  RestUserProxy{
     }
 
     @Override
-    public void save(RestUser restUser) {
+    public RestUser findByTokenHash(String tokenHash) {
+        if (tokenHash == null){
+            return null;
+        }
 
+        for(RestUser restUser : data){
+            if (tokenHash.equals(restUser.getToken())){
+                return restUser;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void save(RestUser restUser) {
+        restUser.setId(++seq);
+        data.add(restUser);
+        LOGGER.l5("save " + restUser);
     }
 
     @Override
     public void update(RestUser restUser) {
-
+        int i = data.indexOf(restUser);
+        if (i < 0){
+            return;
+        }
+        data.set(i, restUser);
+        LOGGER.l5("update " + restUser);
     }
 }

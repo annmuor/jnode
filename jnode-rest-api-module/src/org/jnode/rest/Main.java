@@ -181,6 +181,8 @@ public class Main extends JnodeModule {
 
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(port);
+        connector.setIdleTimeout(30000L);
+        connector.setAcceptQueueSize(8);
 
         if (needSSL){
             HttpConfiguration https = new HttpConfiguration();
@@ -191,6 +193,8 @@ public class Main extends JnodeModule {
             sslContextFactory.setKeyManagerPassword(new String(keyManagerPassword));
             ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(https));
             sslConnector.setPort(sslPort);
+            sslConnector.setIdleTimeout(30000L);
+            sslConnector.setAcceptQueueSize(8);
             server.setConnectors(new Connector[]{connector, sslConnector});
         } else {
             server.setConnectors(new Connector[]{connector});

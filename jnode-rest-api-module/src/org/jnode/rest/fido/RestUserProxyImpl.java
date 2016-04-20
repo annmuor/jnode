@@ -8,7 +8,7 @@ import org.jnode.rest.di.Singleton;
 
 @Named("prod-restUserProxy")
 @Singleton
-public class RestUserProxyImpl implements  RestUserProxy{
+public class RestUserProxyImpl implements RestUserProxy{
     @Override
     public RestUser findByGuestLogin(String guestLogin) {
         return ORMManager.get(RestUser.class).getFirstAnd(RestUser.GUESTLOGIN_FIELD, "=", guestLogin);
@@ -28,6 +28,13 @@ public class RestUserProxyImpl implements  RestUserProxy{
         }
 
         return null;
+    }
+
+    @Override
+    public RestUser findByTokenHash(String tokenHash) {
+        RestUser user = ORMManager.get(RestUser.class)
+                .getFirstAnd(RestUser.TOKEN_FIELD, "=", tokenHash);
+        return user;
     }
 
     @Override
