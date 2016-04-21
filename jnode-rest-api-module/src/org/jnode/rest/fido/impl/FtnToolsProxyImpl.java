@@ -1,26 +1,15 @@
-package org.jnode.rest.fido;
+package org.jnode.rest.fido.impl;
 
-import jnode.dto.Echoarea;
-import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.main.MainHandler;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
+import org.jnode.rest.fido.FtnToolsProxy;
 
 
 @Named("prod-ftnToolsProxy")
 @Singleton
-public class FtnToolsProxyImpl implements FtnToolsProxy{
-    @Override
-    public Echoarea getAreaByName(String name, Link link) {
-        return FtnTools.getAreaByName(name, link);
-    }
-
-    @Override
-    public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName,
-                              String fromFTN, String tearline, String origin) {
-        return FtnTools.writeEchomail(area, subject, text, fromName, toName, fromFTN, tearline, origin);
-    }
+public class FtnToolsProxyImpl implements FtnToolsProxy {
 
     @Override
     public String defaultEchoFromName() {

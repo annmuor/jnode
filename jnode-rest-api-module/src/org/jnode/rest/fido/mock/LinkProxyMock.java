@@ -1,9 +1,10 @@
-package org.jnode.rest.fido;
+package org.jnode.rest.fido.mock;
 
 import jnode.dto.Link;
 import jnode.logger.Logger;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
+import org.jnode.rest.fido.LinkProxy;
 
 import java.util.ArrayList;
 import java.util.List;

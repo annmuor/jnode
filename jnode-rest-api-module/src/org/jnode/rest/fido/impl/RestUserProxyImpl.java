@@ -1,13 +1,14 @@
-package org.jnode.rest.fido;
+package org.jnode.rest.fido.impl;
 
 import jnode.orm.ORMManager;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
+import org.jnode.rest.fido.RestUserProxy;
 
 @Named("prod-restUserProxy")
 @Singleton
-public class RestUserProxyImpl implements RestUserProxy{
+public class RestUserProxyImpl implements RestUserProxy {
 
     @Override
     public RestUser findByGuestLogin(String guestLogin) {

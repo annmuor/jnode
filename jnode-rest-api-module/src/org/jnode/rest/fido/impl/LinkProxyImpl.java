@@ -1,9 +1,10 @@
-package org.jnode.rest.fido;
+package org.jnode.rest.fido.impl;
 
 import jnode.dto.Link;
 import jnode.orm.ORMManager;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
+import org.jnode.rest.fido.LinkProxy;
 
 @Named("prod-linkProxy")
 @Singleton

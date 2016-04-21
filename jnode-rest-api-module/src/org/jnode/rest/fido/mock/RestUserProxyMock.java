@@ -1,16 +1,17 @@
-package org.jnode.rest.fido;
+package org.jnode.rest.fido.mock;
 
 import jnode.logger.Logger;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
+import org.jnode.rest.fido.RestUserProxy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Named("mock-restUserProxy")
 @Singleton
-public class RestUserProxyMock implements RestUserProxy{
+public class RestUserProxyMock implements RestUserProxy {
 
     private static final Logger LOGGER = Logger.getLogger(RestUserProxyMock.class);
 

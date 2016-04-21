@@ -8,6 +8,8 @@ import org.jnode.rest.core.RPCError;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.fido.EchoareaProxy;
+import org.jnode.rest.fido.EchomailProxy;
 import org.jnode.rest.fido.FtnToolsProxy;
 import org.jnode.rest.handler.AbstractHandler;
 
@@ -17,6 +19,14 @@ public class EchomailPostHandler  extends AbstractHandler {
     @Named("ftnToolsProxy")
     private FtnToolsProxy ftnToolsProxy;
 
+    @Inject
+    @Named("echoareaProxy")
+    private EchoareaProxy echoareaProxy;
+
+    @Inject
+    @Named("echomailProxy")
+    private EchomailProxy echomailProxy;
+
     @Override
     public String[] handledRequests() {
         return new String[]{"echomail.post"};
@@ -24,12 +34,12 @@ public class EchomailPostHandler  extends AbstractHandler {
 
     @Override
     protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
-        Echoarea echoarea = ftnToolsProxy.getAreaByName(np.getString("echoarea"), null);
+        Echoarea echoarea = echoareaProxy.getAreaByName(np.getString("echoarea"));
         if (echoarea == null) {
             return new JSONRPC2Response(RPCError.ECHOAREA_NOT_FOUND, reqID);
         }
 
-        Long id = ftnToolsProxy.writeEchomail(echoarea, np.getString("subject"),
+        Long id = echomailProxy.writeEchomail(echoarea, np.getString("subject"),
                 np.getString("body"),
                 np.getOptString("fromName", ftnToolsProxy.defaultEchoFromName()),
                 np.getOptString("toName", ftnToolsProxy.defaultEchoToName()),
@@ -50,5 +60,14 @@ public class EchomailPostHandler  extends AbstractHandler {
         this.ftnToolsProxy = ftnToolsProxy;
     }
 
+
+    public void setEchoareaProxy(EchoareaProxy echoareaProxy) {
+        this.echoareaProxy = echoareaProxy;
+    }
+
+
+    public void setEchomailProxy(EchomailProxy echomailProxy) {
+        this.echomailProxy = echomailProxy;
+    }
 
 }

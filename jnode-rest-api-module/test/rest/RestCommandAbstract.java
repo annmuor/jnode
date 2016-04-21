@@ -20,6 +20,9 @@ public abstract class RestCommandAbstract implements RestCommand {
     protected abstract String url();
     private final String json;
 
+    protected void beforeConnect(HttpURLConnection conn){
+    }
+
     @Override
     public RestResult execute() {
 
@@ -28,6 +31,7 @@ public abstract class RestCommandAbstract implements RestCommand {
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("Content-Type", MEDIA_TYPE);
+            beforeConnect(conn);
             conn.setConnectTimeout(5000);
             conn.setDoOutput(true);
             conn.setDoInput(true);
