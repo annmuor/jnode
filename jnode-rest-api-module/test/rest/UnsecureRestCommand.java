@@ -1,7 +1,7 @@
 package rest;
 
-public class GuestLoginRestCommand extends RestCommandAbstract {
-    public GuestLoginRestCommand(String json) {
+public class UnsecureRestCommand extends RestCommandAbstract {
+    public UnsecureRestCommand(String json) {
         super(json);
     }
 

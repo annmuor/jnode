@@ -10,7 +10,7 @@ import java.util.List;
 
 @Named("mock-restUserProxy")
 @Singleton
-public class RestUserProxyMock implements  RestUserProxy{
+public class RestUserProxyMock implements RestUserProxy{
 
     private static final Logger LOGGER = Logger.getLogger(RestUserProxyMock.class);
 
@@ -19,7 +19,7 @@ public class RestUserProxyMock implements  RestUserProxy{
     private final List<RestUser> data = new ArrayList<>();
 
     @Override
-    public RestUser findByGuestLogin(String guestLogin) {
+    public synchronized RestUser findByGuestLogin(String guestLogin) {
 
         if(guestLogin == null){
             return null;
@@ -37,12 +37,7 @@ public class RestUserProxyMock implements  RestUserProxy{
     }
 
     @Override
-    public RestUser findByUserCredentials(String userLogin, String userPwd) {
-        return null;
-    }
-
-    @Override
-    public RestUser findByTokenHash(String tokenHash) {
+    public synchronized RestUser findByTokenHash(String tokenHash) {
         if (tokenHash == null){
             return null;
         }
@@ -57,14 +52,29 @@ public class RestUserProxyMock implements  RestUserProxy{
     }
 
     @Override
-    public void save(RestUser restUser) {
+    public synchronized RestUser findByLinkId(Long linkId) {
+        if (linkId == null){
+            return null;
+        }
+
+        for(RestUser restUser : data){
+            if (restUser.getLink() != null && linkId.equals(restUser.getLink().getId())){
+                return restUser;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public synchronized void save(RestUser restUser) {
         restUser.setId(++seq);
         data.add(restUser);
         LOGGER.l5("save " + restUser);
     }
 
     @Override
-    public void update(RestUser restUser) {
+    public synchronized void update(RestUser restUser) {
         int i = data.indexOf(restUser);
         if (i < 0){
             return;

@@ -4,8 +4,8 @@ import org.jnode.rest.db.RestUser;
 
 public interface RestUserProxy {
     RestUser findByGuestLogin(String guestLogin);
-    RestUser findByUserCredentials(String userLogin, String userPwd);
     RestUser findByTokenHash(String tokenHash);
+    RestUser findByLinkId(Long linkId);
     void save(RestUser restUser);
     void update(RestUser restUser);
 }
