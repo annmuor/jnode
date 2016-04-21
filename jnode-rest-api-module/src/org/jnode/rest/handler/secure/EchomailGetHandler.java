@@ -27,7 +27,7 @@ public class EchomailGetHandler extends AbstractHandler {
     }
 
     @Override
-    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
+    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np, RestUser restUser) throws JSONRPC2Error {
         Echomail echomail = echomailProxy.get(np.getLong("id"));
         return new JSONRPC2Response(echomailMapper.toJsonType(echomail), reqID);
     }

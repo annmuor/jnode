@@ -29,7 +29,7 @@ public class UserLoginHandler extends AbstractHandler {
     private AdminResolver adminResolver;
 
     @Override
-    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
+    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np, RestUser restUserNull) throws JSONRPC2Error {
 
         final String login = np.getString("login", false);
 

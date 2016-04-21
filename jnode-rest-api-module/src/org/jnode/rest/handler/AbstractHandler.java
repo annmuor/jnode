@@ -23,33 +23,47 @@ public abstract class AbstractHandler implements RequestHandler {
         Map<String, Object> params = req.getNamedParams();
         NamedParamsRetriever np = new NamedParamsRetriever(params);
 
-        try {
-            return createJsonrpc2Response(req.getID(), np);
+        RestUser restUser = getRestUserFromCtx(ctx);
+
+            try {
+            return createJsonrpc2Response(req.getID(), np, restUser);
         } catch (JSONRPC2Error jsonrpc2Error) {
             return new JSONRPC2Response(jsonrpc2Error, req.getID());
         }
     }
 
-    private boolean roleGuard(MessageContext ctx) {
-        if (ctx instanceof JnodeMessageContext) {
+    private RestUser getRestUserFromCtx(MessageContext ctx) {
+        RestUser restUser = null;
+        if (ctx instanceof JnodeMessageContext){
             JnodeMessageContext jnodeMessageContext = (JnodeMessageContext) ctx;
+            restUser = jnodeMessageContext.getRestUser();
+        }
+        return restUser;
+    }
 
-            if (secured() == null) {
+    private boolean roleGuard(MessageContext ctx) {
+
+        if (secured() == null) {
+            return true;
+        }
+
+
+        RestUser restUser = getRestUserFromCtx(ctx);
+
+        if (restUser == null || restUser.getType() == null){
+            return false;
+        }
+
+        for (RestUser.Type type : secured()) {
+            if (restUser.getType().equals(type)) {
                 return true;
             }
-
-            for (RestUser.Type type : secured()) {
-                if (jnodeMessageContext.getRestUser() != null &&
-                        jnodeMessageContext.getRestUser().getType() != null &&
-                        jnodeMessageContext.getRestUser().getType().equals(type)) {
-                    return true;
-                }
-            }
         }
+
         return false;
     }
 
-    protected abstract JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error;
+    protected abstract JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np, RestUser restUser) throws JSONRPC2Error;
 
     protected abstract RestUser.Type[] secured();
 }

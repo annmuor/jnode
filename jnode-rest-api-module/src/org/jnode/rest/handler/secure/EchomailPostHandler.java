@@ -33,7 +33,7 @@ public class EchomailPostHandler  extends AbstractHandler {
     }
 
     @Override
-    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
+    protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np, RestUser restUser) throws JSONRPC2Error {
         Echoarea echoarea = echoareaProxy.getAreaByName(np.getString("echoarea"));
         if (echoarea == null) {
             return new JSONRPC2Response(RPCError.ECHOAREA_NOT_FOUND, reqID);
