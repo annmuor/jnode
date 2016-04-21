@@ -18,7 +18,7 @@ public class UserPostIT {
         String token = (String) loginResult.getPayload().getResult();
 
         RestResult postResult = Echomail.post(token, "828.local", "субж", "бодя",
-               "Kirill Temnenkov", "All++", "2:5020/828.17", "fff", "origggin");
+               "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
 
         assertThat(postResult, is(notNullValue()));
         assertThat(postResult.getHttpCode(), is(Http.OK));
@@ -41,13 +41,10 @@ public class UserPostIT {
         assertThat(msg.get("toName"), is(equalTo("All++")));
         assertThat(msg.get("subject"), is(equalTo("субж")));
         assertThat(msg.get("fromName"), is(equalTo("Kirill Temnenkov")));
+        assertThat(msg.get("fromFTN"), is(equalTo("2:5020/828.17")));
         assertThat((String)msg.get("text"), is(containsString("бодя")));
         assertThat((String)msg.get("text"), is(containsString("fff")));
         assertThat((String)msg.get("text"), is(containsString("origggin")));
-
-
-
-
 
     }
 }

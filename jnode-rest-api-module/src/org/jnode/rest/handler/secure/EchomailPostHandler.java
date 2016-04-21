@@ -43,7 +43,7 @@ public class EchomailPostHandler  extends AbstractHandler {
                 np.getString("body"),
                 np.getOptString("fromName", ftnToolsProxy.defaultEchoFromName()),
                 np.getOptString("toName", ftnToolsProxy.defaultEchoToName()),
-                np.getOptString("fromFTN", ftnToolsProxy.defaultFromFtn()),
+                restUser.getLink().getLinkAddress(),
                 np.getOptString("tearline", ftnToolsProxy.defaultTearline()),
                 np.getOptString("origin", ftnToolsProxy.defaultOrigin())
         );
