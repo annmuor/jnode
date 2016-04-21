@@ -10,8 +10,9 @@ public final class User {
     private User() {
     }
 
-    public static RestResult login(String login, String password){
-        String json = String.format("{\n" +
+    public static RestResult login(String login, String password) {
+
+        RestCommand userLoginCmd = new UnsecureRestCommand(String.format("{\n" +
                 "    \"method\": \"user.login\",\n" +
                 "    \"params\": {\n" +
                 "        \"login\": \"%s\",\n" +
@@ -19,9 +20,7 @@ public final class User {
                 "    },\n" +
                 "    \"id\": %d,\n" +
                 "    \"jsonrpc\": \"2.0\"\n" +
-                "}",login, password, next());
-
-        RestCommand userLoginCmd = new UnsecureRestCommand(json);
+                "}", login, password, next()));
         return userLoginCmd.execute();
 
     }
