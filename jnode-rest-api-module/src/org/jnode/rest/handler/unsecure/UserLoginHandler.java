@@ -4,6 +4,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Link;
+import org.jnode.rest.auth.AdminResolver;
 import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.core.RPCError;
 import org.jnode.rest.db.RestUser;
@@ -22,6 +23,10 @@ public class UserLoginHandler extends AbstractHandler {
     @Inject
     @Named("linkProxy")
     private LinkProxy linkProxy;
+
+    @Inject
+    @Named("adminResolver")
+    private AdminResolver adminResolver;
 
     @Override
     protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np) throws JSONRPC2Error {
@@ -54,7 +59,7 @@ public class UserLoginHandler extends AbstractHandler {
             restUser = new RestUser();
             restUser.setLink(link);
             restUser.setToken(CryptoUtils.makeToken(pwd));
-            restUser.setType(RestUser.Type.USER);
+            restUser.setType(adminResolver.isAdmin(login) ? RestUser.Type.ADMIN : RestUser.Type.USER);
             restUserProxy.save(restUser);
         }
 
@@ -80,5 +85,8 @@ public class UserLoginHandler extends AbstractHandler {
         this.linkProxy = linkProxy;
     }
 
+    public void setAdminResolver(AdminResolver adminResolver) {
+        this.adminResolver = adminResolver;
+    }
 
 }

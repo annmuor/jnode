@@ -33,10 +33,13 @@ import jnode.orm.ORMManager;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.jnode.rest.auth.AdminResolver;
 import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.ClassfileDependencyScanner;
+import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Injector;
+import org.jnode.rest.di.Named;
 import org.jnode.rest.route.HealthCheckServlet;
 import org.jnode.rest.route.SecureAuthFilter;
 import org.jnode.rest.route.SecureServlet;
@@ -63,6 +66,9 @@ public class Main extends JnodeModule {
     private final char[] keyManagerPassword;
     private final String adminFtnAddress;
 
+    public void setAdminResolver(AdminResolver adminResolver) {
+        this.adminResolver = adminResolver;
+    }
     public Main(String configFile) throws JnodeModuleException {
         super(configFile);
         port = getPort();
@@ -159,7 +165,7 @@ public class Main extends JnodeModule {
             throw new JnodeModuleException(e);
         }
 
-        initJetty();
+        initAfterInjection();
     }
 
     private void startTest() throws JnodeModuleException {
@@ -170,6 +176,13 @@ public class Main extends JnodeModule {
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new JnodeModuleException(e);
         }
+
+        initAfterInjection();
+    }
+
+    private void initAfterInjection() throws JnodeModuleException {
+
+        adminResolver.setAdminAddress(adminFtnAddress);
 
         initJetty();
     }
@@ -222,6 +235,10 @@ public class Main extends JnodeModule {
 
     }
 
+
+    @Inject
+    @Named("adminResolver")
+    private AdminResolver adminResolver;
 
     @Override
     public void handle(IEvent iEvent) {
