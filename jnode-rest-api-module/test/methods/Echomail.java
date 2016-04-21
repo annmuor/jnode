@@ -35,4 +35,20 @@ public final class Echomail {
         return cmd.execute();
 
     }
+
+    public static RestResult get(String token, Long id){
+
+        String json = String.format("{\n" +
+                "    \"method\": \"echomail.get\",\n" +
+                "    \"params\": {\n" +
+                "        \"id\": %d\n" +
+                "    },\n" +
+                "    \"id\": %d,\n" +
+                "    \"jsonrpc\": \"2.0\"\n" +
+                "}", id, next());
+
+        RestCommand cmd = new SecureRestCommand(token, json);
+        return cmd.execute();
+    }
+
 }
