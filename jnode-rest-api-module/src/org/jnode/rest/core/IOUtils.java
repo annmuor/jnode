@@ -10,6 +10,11 @@ public final class IOUtils {
 
     public static String readFullyAsString(InputStream inputStream, String encoding)
             throws IOException {
+
+        if (inputStream == null){
+            return null;
+        }
+
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
             byte[] buffer = new byte[1024];
             int length;

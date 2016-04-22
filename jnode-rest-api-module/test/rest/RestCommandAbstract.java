@@ -2,6 +2,7 @@ package rest;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
+import org.jnode.rest.core.Http;
 import org.jnode.rest.core.IOUtils;
 
 import java.io.IOException;
@@ -45,6 +46,15 @@ public abstract class RestCommandAbstract implements RestCommand {
 
             try {
                 final int responseCode = conn.getResponseCode();
+                if (responseCode != Http.OK){
+                    String errPayload = IOUtils.readFullyAsString(conn.getErrorStream(), "UTF-8");
+                    if (errPayload != null){
+                        JSONRPC2Response resp = JSONRPC2Response.parse(errPayload);
+                        return new RestResult(responseCode, resp);
+                    } else {
+                        return new RestResult(responseCode, null);
+                    }
+                }
                 String payload = IOUtils.readFullyAsString(conn.getInputStream(), "UTF-8");
                 JSONRPC2Response resp = JSONRPC2Response.parse(payload);
                 return new RestResult(responseCode, resp);

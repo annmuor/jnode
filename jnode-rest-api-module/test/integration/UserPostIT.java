@@ -47,4 +47,18 @@ public class UserPostIT {
         assertThat((String)msg.get("text"), is(containsString("origggin")));
 
     }
+
+    @Test
+    public void unauthUserPost() throws Exception {
+        RestResult postResult = Echomail.post("badToken", "828.local", "субж", "бодя",
+                "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
+        assertThat(postResult, is(notNullValue()));
+        assertThat(postResult.getHttpCode(), is(Http.NOT_AUTH));
+    }
+
+    @Test
+    public void nopointPost() throws Exception {
+
+
+    }
 }
