@@ -4,6 +4,7 @@ import methods.Echomail;
 import methods.User;
 import net.minidev.json.JSONObject;
 import org.jnode.rest.core.Http;
+import org.jnode.rest.core.RPCError;
 import org.junit.Test;
 import rest.RestResult;
 
@@ -54,6 +55,23 @@ public class UserPostIT {
                 "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
         assertThat(postResult, is(notNullValue()));
         assertThat(postResult.getHttpCode(), is(Http.NOT_AUTH));
+    }
+
+    @Test
+    public void badEchoPost() throws Exception {
+
+        RestResult loginResult = User.login("2:5020/828.17", "111111");
+        String token = (String) loginResult.getPayload().getResult();
+
+        RestResult postResult = Echomail.post(token, "828.nolocal", "субж", "бодя",
+                "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
+        System.out.println(postResult);
+
+        assertThat(postResult, is(notNullValue()));
+        assertThat(postResult.getHttpCode(), is(Http.OK));
+        assertThat(postResult.getPayload(), is(notNullValue()));
+
+        assertThat(postResult.getPayload().getError().getCode(), is(RPCError.CODE_ECHOAREA_NOT_FOUND));
     }
 
     @Test

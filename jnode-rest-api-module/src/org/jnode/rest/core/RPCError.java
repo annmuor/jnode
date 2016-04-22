@@ -4,7 +4,8 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 
 public final class RPCError {
 
-    public static final JSONRPC2Error ECHOAREA_NOT_FOUND = new JSONRPC2Error(-10000, "Echoarea not found");
+    public static final int CODE_ECHOAREA_NOT_FOUND = -10000;
+    public static final JSONRPC2Error ECHOAREA_NOT_FOUND = new JSONRPC2Error(CODE_ECHOAREA_NOT_FOUND, "Echoarea not found");
     public static final JSONRPC2Error BAD_AUTH_HEADER = new JSONRPC2Error(-10001, "Bad auth header");
     public static final JSONRPC2Error EMPTY_LOGIN = new JSONRPC2Error(-10002, "Empty login");
     public static final JSONRPC2Error BAD_CREDENTIALS = new JSONRPC2Error(-10003, "Bad credentials");
