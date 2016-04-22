@@ -6,6 +6,8 @@ import net.minidev.json.JSONObject;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.RPCError;
 import org.junit.Test;
+import rest.BrokenSecureRestCommand;
+import rest.RestCommand;
 import rest.RestResult;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -65,13 +67,27 @@ public class UserPostIT {
 
         RestResult postResult = Echomail.post(token, "828.nolocal", "субж", "бодя",
                 "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
-        System.out.println(postResult);
 
         assertThat(postResult, is(notNullValue()));
         assertThat(postResult.getHttpCode(), is(Http.OK));
         assertThat(postResult.getPayload(), is(notNullValue()));
+        assertThat(postResult.getPayload().getError(), is(notNullValue()));
 
         assertThat(postResult.getPayload().getError().getCode(), is(RPCError.CODE_ECHOAREA_NOT_FOUND));
+    }
+
+    @Test
+    public void badAuth() throws Exception {
+
+        RestCommand cmd = new BrokenSecureRestCommand("dummy", "dummy2");
+
+        RestResult postResult = cmd.execute();
+
+        assertThat(postResult, is(notNullValue()));
+        assertThat(postResult.getHttpCode(), is(Http.BAD_REQUEST));
+        assertThat(postResult.getPayload(), is(notNullValue()));
+        assertThat(postResult.getPayload().getError(), is(notNullValue()));
+        assertThat(postResult.getPayload().getError().getCode(), is(RPCError.CODE_BAD_AUTH_HEADER));
     }
 
     @Test
