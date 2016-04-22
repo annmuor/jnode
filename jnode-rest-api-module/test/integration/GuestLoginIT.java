@@ -25,7 +25,7 @@ public class GuestLoginIT {
     }
 
     @Test
-    public void userEmptyLogin() throws Exception {
+    public void guestEmptyLogin() throws Exception {
         RestResult restResult = login("");
 
         System.out.println(restResult);
@@ -37,7 +37,7 @@ public class GuestLoginIT {
     }
 
     @Test
-    public void userNullLogin() throws Exception {
+    public void guestNullLogin() throws Exception {
 
         RestCommand guestLoginCmd = new UnsecureRestCommand(String.format("{\n" +
                 "    \"method\": \"guest.login\",\n" +
