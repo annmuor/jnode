@@ -27,12 +27,35 @@ public class UserLoginIT {
     public void userEmptyLogin() throws Exception {
         RestResult restResult = login("", "111111");
 
-        System.out.println(restResult);
         assertThat(restResult, is(notNullValue()));
         assertThat(restResult.getHttpCode(), is(Http.OK));
         assertThat(restResult.getPayload(), is(notNullValue()));
         assertThat(restResult.getPayload().getError(), is(notNullValue()));
         assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_EMPTY_LOGIN));
+    }
+
+    @Test
+    public void userBadPassword() throws Exception {
+        RestResult restResult = login("2:5020/828.17", "111112");
+        System.out.println(restResult);
+
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_BAD_CREDENTIALS));
+    }
+
+    @Test
+    public void userBadLink() throws Exception {
+        RestResult restResult = login("2:5020/828.1117", "111111");
+        System.out.println(restResult);
+
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_BAD_CREDENTIALS));
     }
 
     @Test
