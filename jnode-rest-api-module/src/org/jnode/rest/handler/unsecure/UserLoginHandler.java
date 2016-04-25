@@ -4,12 +4,14 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.util.NamedParamsRetriever;
 import jnode.dto.Link;
+import jnode.ftn.types.FtnAddress;
 import org.jnode.rest.auth.AdminResolver;
 import org.jnode.rest.core.CryptoUtils;
 import org.jnode.rest.core.RPCError;
 import org.jnode.rest.db.RestUser;
 import org.jnode.rest.di.Inject;
 import org.jnode.rest.di.Named;
+import org.jnode.rest.fido.FtnToolsProxy;
 import org.jnode.rest.fido.LinkProxy;
 import org.jnode.rest.fido.RestUserProxy;
 import org.jnode.rest.handler.AbstractHandler;
@@ -28,6 +30,10 @@ public class UserLoginHandler extends AbstractHandler {
     @Named("adminResolver")
     private AdminResolver adminResolver;
 
+    @Inject
+    @Named("ftnToolsProxy")
+    private FtnToolsProxy ftnToolsProxy;
+
     @Override
     protected JSONRPC2Response createJsonrpc2Response(Object reqID, NamedParamsRetriever np, RestUser restUserNull) throws JSONRPC2Error {
 
@@ -41,6 +47,10 @@ public class UserLoginHandler extends AbstractHandler {
 
         if (link == null){
             return new JSONRPC2Response(RPCError.BAD_CREDENTIALS, reqID);
+        }
+
+        if (link.getLinkAddress() != null && !ftnToolsProxy.isOurPoint(new FtnAddress(link.getLinkAddress()))){
+            return new JSONRPC2Response(RPCError.NOT_OUR_POINT, reqID);
         }
 
         if (link.getPaketPassword() == null || !link.getPaketPassword().equals(np.getString("password", false))){
@@ -89,4 +99,7 @@ public class UserLoginHandler extends AbstractHandler {
         this.adminResolver = adminResolver;
     }
 
+    public void setFtnToolsProxy(FtnToolsProxy ftnToolsProxy) {
+        this.ftnToolsProxy = ftnToolsProxy;
+    }
 }

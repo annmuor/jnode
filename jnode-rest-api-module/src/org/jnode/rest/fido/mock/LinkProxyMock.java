@@ -24,6 +24,13 @@ public class LinkProxyMock implements LinkProxy {
         root.setLinkAddress("2:5020/828.17");
         root.setPaketPassword("111111");
         data.add(root);
+
+        Link nopoint = new Link();
+        nopoint.setId(++seq);
+        nopoint.setLinkAddress("2:5020/2150");
+        nopoint.setPaketPassword("222222");
+        data.add(nopoint);
+
     }
 
     @Override

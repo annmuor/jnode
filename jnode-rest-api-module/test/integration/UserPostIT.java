@@ -100,7 +100,6 @@ public class UserPostIT {
         RestResult restResult = Echomail.post(token, "828.nolocal", "субж", "бодя",
                 "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
 
-        System.out.println(restResult);
         assertThat(restResult, is(notNullValue()));
         assertThat(restResult.getHttpCode(), is(Http.OK));
         assertThat(restResult.getPayload(), is(notNullValue()));
@@ -108,9 +107,4 @@ public class UserPostIT {
         assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_ACCESS_DENIED));
     }
 
-    @Test
-    public void nopointPost() throws Exception {
-
-
-    }
 }

@@ -1,5 +1,6 @@
 package org.jnode.rest.fido.mock;
 
+import jnode.ftn.types.FtnAddress;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
 import org.jnode.rest.fido.FtnToolsProxy;
@@ -19,11 +20,6 @@ public class FtnToolsProxyMock implements FtnToolsProxy {
     }
 
     @Override
-    public String defaultFromFtn() {
-        return "2:5020/828";
-    }
-
-    @Override
     public String defaultTearline() {
         return "blabla";
     }
@@ -31,5 +27,10 @@ public class FtnToolsProxyMock implements FtnToolsProxy {
     @Override
     public String defaultOrigin() {
         return "no origin";
+    }
+
+    @Override
+    public boolean isOurPoint(FtnAddress routeTo) {
+        return routeTo != null && routeTo.isPointOf(new FtnAddress("2:5020/828"));
     }
 }

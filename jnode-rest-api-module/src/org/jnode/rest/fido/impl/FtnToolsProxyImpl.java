@@ -1,6 +1,7 @@
 package org.jnode.rest.fido.impl;
 
 import jnode.ftn.FtnTools;
+import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
 import org.jnode.rest.di.Named;
 import org.jnode.rest.di.Singleton;
@@ -23,11 +24,6 @@ public class FtnToolsProxyImpl implements FtnToolsProxy {
     }
 
     @Override
-    public String defaultFromFtn() {
-        return FtnTools.getPrimaryFtnAddress().toString();
-    }
-
-    @Override
     public String defaultTearline() {
         return MainHandler.getCurrentInstance().getInfo().getStationName();
     }
@@ -35,5 +31,10 @@ public class FtnToolsProxyImpl implements FtnToolsProxy {
     @Override
     public String defaultOrigin() {
         return MainHandler.getVersion() + " ("+ FtnTools.getPrimaryFtnAddress().toString() + ")";
+    }
+
+    @Override
+    public boolean isOurPoint(FtnAddress routeTo) {
+        return FtnTools.isOurPoint(routeTo);
     }
 }

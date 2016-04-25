@@ -82,4 +82,16 @@ public class UserLoginIT {
         assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_INVALID_PARAMS));
     }
 
+    @Test
+    public void nopoint() throws Exception {
+        RestResult restResult = login("2:5020/2150", "222222");
+
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_NOT_OUR_POINT));
+
+    }
+
 }
