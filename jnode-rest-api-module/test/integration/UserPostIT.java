@@ -10,6 +10,7 @@ import rest.BrokenSecureRestCommand;
 import rest.RestCommand;
 import rest.RestResult;
 
+import static methods.Guest.login;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -88,6 +89,23 @@ public class UserPostIT {
         assertThat(postResult.getPayload(), is(notNullValue()));
         assertThat(postResult.getPayload().getError(), is(notNullValue()));
         assertThat(postResult.getPayload().getError().getCode(), is(RPCError.CODE_BAD_AUTH_HEADER));
+    }
+
+    @Test
+    public void accessDenied() throws Exception {
+
+        RestResult loginResult = login("guest2");
+        String token = (String) loginResult.getPayload().getResult();
+
+        RestResult restResult = Echomail.post(token, "828.nolocal", "субж", "бодя",
+                "Kirill Temnenkov", "All++", "2:5020/828.117", "fff", "origggin");
+
+        System.out.println(restResult);
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_ACCESS_DENIED));
     }
 
     @Test
