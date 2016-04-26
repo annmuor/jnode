@@ -128,7 +128,7 @@ public class Main extends JnodeModule {
         final GenericDAO<RestUser> dao = ORMManager.get(RestUser.class);
 
         if (!adminFtnAddress.isEmpty()) {
-            Link adminLink = ORMManager.get(Link.class).getFirstAnd("linkAddress", "=", adminFtnAddress);
+            Link adminLink = ORMManager.get(Link.class).getFirstAnd("ftn_address", "=", adminFtnAddress);
             if (adminLink != null) {
                 RestUser admin = dao.getFirstAnd(RestUser.LINK_ID_FIELD, "=", adminLink.getId());
                 if (admin == null) {
