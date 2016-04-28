@@ -13,7 +13,7 @@ import org.jnode.rest.fido.EchomailProxy;
 import org.jnode.rest.fido.FtnToolsProxy;
 import org.jnode.rest.handler.AbstractHandler;
 
-public class EchomailPostHandler  extends AbstractHandler {
+public class EchomailPostHandler extends AbstractHandler {
 
     @Inject
     @Named("ftnToolsProxy")

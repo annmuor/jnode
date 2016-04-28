@@ -31,6 +31,11 @@ public class LinkProxyMock implements LinkProxy {
         nopoint.setPaketPassword("222222");
         data.add(nopoint);
 
+        Link noroot = new Link();
+        noroot.setId(++seq);
+        noroot.setLinkAddress("2:5020/828.18");
+        noroot.setPaketPassword("111111");
+        data.add(noroot);
     }
 
     @Override
@@ -45,5 +50,10 @@ public class LinkProxyMock implements LinkProxy {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<Link> getAll() {
+        return data;
     }
 }

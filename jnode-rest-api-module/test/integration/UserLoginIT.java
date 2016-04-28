@@ -1,5 +1,6 @@
 package integration;
 
+import methods.Admin;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.RPCError;
 import org.junit.Test;
@@ -91,6 +92,21 @@ public class UserLoginIT {
         assertThat(restResult.getPayload(), is(notNullValue()));
         assertThat(restResult.getPayload().getError(), is(notNullValue()));
         assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_NOT_OUR_POINT));
+
+    }
+
+    @Test
+    public void linksList() throws Exception {
+
+        final RestResult loginResult = login("2:5020/828.18", "111111");
+        final String token = (String) loginResult.getPayload().getResult();
+        RestResult restResult = Admin.list(token);
+
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_ACCESS_DENIED));
 
     }
 

@@ -1,5 +1,6 @@
 package integration;
 
+import methods.Admin;
 import org.jnode.rest.core.Http;
 import org.jnode.rest.core.RPCError;
 import org.junit.Test;
@@ -57,4 +58,20 @@ public class GuestLoginIT {
         assertThat(restResult.getPayload().getError(), is(notNullValue()));
         assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_INVALID_PARAMS));
     }
+
+    @Test
+    public void linksList() throws Exception {
+
+        final RestResult loginResult = login("guest4");
+        final String token = (String) loginResult.getPayload().getResult();
+        RestResult restResult = Admin.list(token);
+
+        assertThat(restResult, is(notNullValue()));
+        assertThat(restResult.getHttpCode(), is(Http.OK));
+        assertThat(restResult.getPayload(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError(), is(notNullValue()));
+        assertThat(restResult.getPayload().getError().getCode(), is(RPCError.CODE_ACCESS_DENIED));
+
+    }
+
 }

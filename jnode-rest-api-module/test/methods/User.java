@@ -24,4 +24,5 @@ public final class User {
         return userLoginCmd.execute();
 
     }
+
 }
