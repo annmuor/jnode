@@ -20,4 +20,24 @@ public final class Admin {
                 "}", next()));
         return cmd.execute();
     }
+
+    public static RestResult create(String token, String linkName, String linkAddress, String paketPassword, String protocolPassword,
+                                    String protocolAddress, int protocolPort){
+        RestCommand cmd = new SecureRestCommand(token, String.format("{\n" +
+                "    \"method\": \"link.create\",\n" +
+                "    \"params\": {\n" +
+                "        \"linkName\": \"%s\",\n" +
+                "        \"linkAddress\": \"%s\",\n" +
+                "        \"paketPassword\": \"%s\",\n" +
+                "        \"protocolPassword\": \"%s\",\n" +
+                "        \"protocolAddress\": \"%s\",\n" +
+                "        \"protocolPort\": %d\n" +
+                "\n" +
+                "    },\n" +
+                "    \"id\": %d,\n" +
+                "    \"jsonrpc\": \"2.0\"\n" +
+                "}", linkName, linkAddress, paketPassword, protocolPassword, protocolAddress, protocolPort, next()));
+        return cmd.execute();
+    }
+
 }

@@ -32,7 +32,7 @@ public class LinkCreateHandler extends AbstractHandler {
             return new JSONRPC2Response(RPCError.LINK_ALREADY_EXIST, reqID);
         }
 
-        return new JSONRPC2Response(null, reqID);
+        return new JSONRPC2Response("Okay", reqID);
     }
 
     @Override
