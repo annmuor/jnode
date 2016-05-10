@@ -56,4 +56,25 @@ public class LinkProxyMock implements LinkProxy {
     public List<Link> getAll() {
         return data;
     }
+
+    @Override
+    public void create(String linkName, String linkAddress, String paketPassword, String protocolPassword,
+                       String protocolAddress, int protocolPort) throws AlreadyExist {
+
+        Link test = getByFtnAddress(linkAddress);
+        if (test != null){
+            throw new AlreadyExist(linkAddress);
+        }
+
+        Link e = new Link();
+        e.setId(++seq);
+        e.setLinkAddress(linkAddress);
+        e.setLinkName(linkName);
+        e.setPaketPassword(paketPassword);
+        e.setProtocolAddress(protocolAddress);
+        e.setProtocolHost(protocolAddress);
+        e.setProtocolPort(protocolPort);
+
+        data.add(e);
+    }
 }

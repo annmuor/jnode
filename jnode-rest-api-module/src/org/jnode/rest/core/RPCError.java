@@ -18,6 +18,7 @@ public final class RPCError {
     public static final JSONRPC2Error BAD_CREDENTIALS = new JSONRPC2Error(CODE_BAD_CREDENTIALS,  "Bad credentials");
     public static final JSONRPC2Error ACCESS_DENIED = new JSONRPC2Error(CODE_ACCESS_DENIED, "Access denied");
     public static final JSONRPC2Error NOT_OUR_POINT = new JSONRPC2Error(CODE_NOT_OUR_POINT, "Not our point");
+    public static final JSONRPC2Error LINK_ALREADY_EXIST = new JSONRPC2Error(-100006, "link already exist");
 
     private RPCError() {
     }
