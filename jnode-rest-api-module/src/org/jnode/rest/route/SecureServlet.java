@@ -2,10 +2,7 @@ package org.jnode.rest.route;
 
 import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 import org.jnode.rest.di.Injector;
-import org.jnode.rest.handler.secure.EchomailGetHandler;
-import org.jnode.rest.handler.secure.EchomailPostHandler;
-import org.jnode.rest.handler.secure.LinkCreateHandler;
-import org.jnode.rest.handler.secure.LinkListHandler;
+import org.jnode.rest.handler.secure.*;
 
 import javax.servlet.ServletException;
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +20,7 @@ public class SecureServlet extends BaseServlet {
             dispatcher.register(Injector.inject(new EchomailGetHandler()));
             dispatcher.register(Injector.inject(new LinkListHandler()));
             dispatcher.register(Injector.inject(new LinkCreateHandler()));
+            dispatcher.register(Injector.inject(new LinkGetHandler()));
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new ServletException(e);
         }

@@ -8,6 +8,7 @@ import org.jnode.rest.fido.LinkProxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Named("mock-linkProxy")
 @Singleton
@@ -40,16 +41,11 @@ public class LinkProxyMock implements LinkProxy {
 
     @Override
     public Link getByFtnAddress(String ftnAddress) {
-        if (ftnAddress == null) {
+        if (ftnAddress == null){
             return null;
         }
-        for (Link link : data) {
-            if (ftnAddress.equals(link.getLinkAddress())) {
-                LOGGER.l5("found " + link + " by ftn " + ftnAddress);
-                return link;
-            }
-        }
-        return null;
+        final Optional<Link> linkOptional = data.stream().filter(link -> ftnAddress.equals(link.getLinkAddress())).findAny();
+        return linkOptional.isPresent() ? linkOptional.get() : null;
     }
 
     @Override

@@ -24,7 +24,7 @@ public class LinkProxyImpl implements LinkProxy {
     @Override
     public void create(String linkName, String linkAddress, String paketPassword, String protocolPassword, String protocolAddress, int protocolPort) throws AlreadyExist {
         Link test = getByFtnAddress(linkAddress);
-        if (test != null){
+        if (test != null) {
             throw new AlreadyExist(linkAddress);
         }
 

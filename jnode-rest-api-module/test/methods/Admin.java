@@ -40,4 +40,17 @@ public final class Admin {
         return cmd.execute();
     }
 
+    public static RestResult get(String token, String address){
+        RestCommand cmd = new SecureRestCommand(token, String.format("{\n" +
+                "    \"method\": \"link.get\",\n" +
+                "    \"params\": {\n" +
+                "        \"address\": \"%s\"\n" +
+                "\n" +
+                "    },\n" +
+                "    \"id\": %d,\n" +
+                "    \"jsonrpc\": \"2.0\"\n" +
+                "}", address, next()));
+        return cmd.execute();
+    }
+
 }

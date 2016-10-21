@@ -39,16 +39,23 @@ public class AdminLinksIT {
     public void linkCreate() throws Exception {
         final String token = getToken();
 
-        RestResult restResult = Admin.create(token, "toster", "2:5020/828.971", "pwd", "pwd2", "example.net", 24554);
+        RestResult restResult = Admin.create(token, "toster", "2:5020/828.975", "pwd", "pwd2", "example.net", 24554);
 
         assertThat(restResult, is(notNullValue()));
         assertThat(restResult.getHttpCode(), is(Http.OK));
         assertThat(restResult.getPayload(), is(notNullValue()));
-        assertThat(restResult.getPayload(), is(equalTo("Okay")));
+        assertThat(restResult.getPayload().getResult(), is(instanceOf(String.class)));
+
+        String okay = (String) restResult.getPayload().getResult();
+        assertThat(okay, is(equalTo("Okay")));
 
         System.out.println(restResult);
 
+        RestResult getResult = Admin.get(token, "2:5020/828.975");
+        System.out.println(getResult);
+
     }
+
 
     private String getToken() {
         return (String) login("2:5020/828.17", "111111").getPayload().getResult();

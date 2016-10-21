@@ -6,7 +6,14 @@ import java.util.List;
 
 public interface LinkProxy {
 
-    class AlreadyExist extends Exception{
+    Link getByFtnAddress(String ftnAddress);
+
+    List<Link> getAll();
+
+    void create(String linkName, String linkAddress, String paketPassword, String protocolPassword,
+                String protocolAddress, int protocolPort) throws AlreadyExist;
+
+    class AlreadyExist extends Exception {
         public AlreadyExist() {
             super();
         }
@@ -15,9 +22,4 @@ public interface LinkProxy {
             super(message);
         }
     }
-
-    Link getByFtnAddress(String ftnAddress);
-    List<Link> getAll();
-    void create(String linkName, String linkAddress, String paketPassword, String protocolPassword,
-                String protocolAddress, int protocolPort) throws AlreadyExist;
 }
