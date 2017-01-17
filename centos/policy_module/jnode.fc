@@ -1,0 +1,9 @@
+/opt/jnode(/.*)?			gen_context(system_u:object_r:jnode_conf_t)
+/opt/jnode/jar(/.*)    		gen_context(system_u:object_r:jnode_conf_t)
+/opt/jnode/fileechoes(/.*)?  		gen_context(system_u:object_r:jnode_cache_t)
+/opt/jnode/point(/.*)?  		gen_context(system_u:object_r:jnode_cache_t)
+/opt/jnode/point/.*\.cfg  		gen_context(system_u:object_r:jnode_conf_t)
+/opt/jnode/(inbound|temp)(/.*)? 	gen_context(system_u:object_r:jnode_tmp_t)
+/opt/jnode/jnode.run		--	gen_context(system_u:object_r:jnode_exec_t)
+/var/log/jnode(/.*)? 				gen_context(system_u:object_r:jnode_log_t)
+

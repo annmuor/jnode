@@ -1,0 +1,12 @@
+[Unit]
+Description=JNode Fidonet Server
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=jnode
+Group=jnode
+ExecStart=/opt/jnode/jnode.run
+
