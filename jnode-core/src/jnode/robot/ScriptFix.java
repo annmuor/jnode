@@ -44,7 +44,8 @@ import java.util.regex.Pattern;
  */
 public class ScriptFix extends AbstractRobot {
 
-    private final Logger logger = Logger
+	private static final int WIDTH = 48;
+	private final Logger logger = Logger
             .getLogger(getClass());
 
 	private static final Pattern LIST = Pattern.compile("^%LIST$",
@@ -91,7 +92,7 @@ public class ScriptFix extends AbstractRobot {
         bindings.put("console", jScriptConsole);
         String result = JscriptExecutor.executeScript(scriptContent, bindings, force);
         if (result != null){
-            jScriptConsole.log(String.format("\n%s", result));
+            jScriptConsole.log(String.format("%n%s", result));
         }
         return jScriptConsole.out();
     }
@@ -178,25 +179,25 @@ public class ScriptFix extends AbstractRobot {
 	private String list() throws SQLException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("==============  List of all jscripts ===============\n");
-		sb.append("| id  |                   content                  |\n");
-		sb.append("|-----|--------------------------------------------|\n");
+		sb.append("=================  List of all jscripts ==================\n");
+		sb.append("| id  |                      content                     |\n");
+		sb.append("|-----|--------------------------------------------------|\n");
 		for (Jscript js : ORMManager.get(Jscript.class).getOrderAnd("id", true)) {
 			String code = js.getContent();
 			boolean first = true;
-			for (int i = 0; i < code.length(); i += 42) {
-				int endIndex = (code.length() > i + 42) ? i + 42 : code
+			for (int i = 0; i < code.length(); i += WIDTH) {
+				int endIndex = (code.length() > i + WIDTH) ? i + WIDTH : code
 						.length();
 				String sub = code.substring(i, endIndex);
 				String id = (first) ? String.format("%05d", js.getId())
 						: "     ";
-				for (int j = 42; j > sub.length(); j--) {
+				for (int j = WIDTH; j > sub.length(); j--) {
 					sub += " ";
 				}
 				sb.append("|" + id + "| " + sub + " |\n");
 				first = false;
 			}
-			sb.append("|-----|--------------scheduled-at------------------|\n");
+			sb.append("|-----|-----------------scheduled-at---------------------|\n");
 			for (Schedule s : ORMManager.get(Schedule.class).getAnd(
 					"jscript_id", "=", js)) {
 				String fmt = String.format(
@@ -207,7 +208,7 @@ public class ScriptFix extends AbstractRobot {
 								.getLastRunDate()) : "NEVER",
 						(s.getNextRunDate() != null) ? format.format(s
 								.getNextRunDate()) : "NEVER");
-				for (int j = 53; j > fmt.length(); j--) {
+				for (int j = 59; j > fmt.length(); j--) {
 					fmt += " ";
 				}
 				fmt += "|\n";
