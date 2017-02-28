@@ -93,10 +93,12 @@ public class Main {
 		// installer
 
 		new InstallUtil();
+		logger.l4("Created InstallUtil");
 
 		int nThreads = 2 + MainHandler.getCurrentInstance().getIntegerProperty(
 				BINKD_THREADS, 10);
 		new ThreadPool(nThreads);
+		logger.l4("Created ThreadPool");
 
 		// the  existence check
         ORMManager.get(Echoarea.class);
@@ -119,12 +121,17 @@ public class Main {
         ORMManager.get(Subscription.class);
         ORMManager.get(Version.class);
 
+		logger.l4("existence check done");
+
         // eof
 		ThreadPool.execute(new BinkpAsyncServer());
+		logger.l4("BinkpAsyncServer started");
 
 		ThreadPool.execute(new BinkpAsyncClientPool());
+		logger.l4("BinkpAsyncClientPool started");
 
 		Timer mainTimer = new Timer();
+		logger.l4("mainTimer created");
 		mainTimer
 				.schedule(new TimerPoll(), MainHandler.getCurrentInstance()
 						.getIntegerProperty(POLL_DELAY, 0) * 1000, MainHandler

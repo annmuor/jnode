@@ -20,30 +20,11 @@
 
 package jnode.install;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.j256.ormlite.table.TableUtils;
-
 import jnode.core.FileUtils;
 import jnode.dao.GenericDAO;
-import jnode.dto.Echoarea;
-import jnode.dto.Echomail;
-import jnode.dto.Link;
-import jnode.dto.LinkOption;
-import jnode.dto.Rewrite;
-import jnode.dto.Route;
-import jnode.dto.Subscription;
+import jnode.dto.*;
 import jnode.dto.Rewrite.Type;
-import jnode.dto.Robot;
-import jnode.dto.Version;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.install.support.Dupe_1_4;
@@ -58,14 +39,27 @@ import jnode.robot.AreaFix;
 import jnode.robot.FileFix;
 import jnode.robot.ScriptFix;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class InstallUtil {
 	private static final Logger logger = Logger.getLogger(InstallUtil.class);
     private static final String MIGRATION_CUSTOMINITSCRIPT = "migration.custominitscript";
 
 	public InstallUtil() {
+		logger.l4("Initializing InstallUtil");
         GenericDAO<Version> versionDao = ORMManager.get(Version.class);
+		logger.l4("get versionDao");
 		List<Version> versions = versionDao
 				.getOrderLimitAnd(1, "int_at", false);
+		logger.l4("get versions " + versions);
 		if (versions.size() == 0) {
 			doInstall();
 		} else {
