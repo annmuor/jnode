@@ -18,6 +18,6 @@ public class EchomailProxyImpl implements EchomailProxy {
 
     @Override
     public Long writeEchomail(Echoarea area, String subject, String text, String fromName, String toName, String fromFTN, String tearline, String origin) {
-        return FtnTools.writeEchomail(area, subject, text, fromName, toName, fromFTN, tearline, origin);
+        return FtnTools.writeEchomailReturningId(area, subject, text, fromName, toName, fromFTN, tearline, origin);
     }
 }

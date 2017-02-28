@@ -1505,8 +1505,8 @@ public final class FtnTools {
 		return !(validFrom && validTo);
 	}
 
-	public static Long writeEchomail(Echoarea area, String subject, String text) {
-		return writeEchomail(area, subject, text, MainHandler.getCurrentInstance()
+	public static void writeEchomail(Echoarea area, String subject, String text) {
+		writeEchomail(area, subject, text, MainHandler.getCurrentInstance()
 				.getInfo().getStationName(), "All");
 	}
 
@@ -1519,9 +1519,9 @@ public final class FtnTools {
 	 * @param fromName
 	 * @param toName
 	 */
-	public static Long writeEchomail(Echoarea area, String subject,
+	public static void writeEchomail(Echoarea area, String subject,
 			String text, String fromName, String toName) {
-		return writeEchomail(area, subject, text, fromName, toName,
+		writeEchomail(area, subject, text, fromName, toName,
                 getPrimaryFtnAddress().toString(),
                 MainHandler.getCurrentInstance().getInfo().getStationName(),
                 MainHandler.getVersion() + " ("+ getPrimaryFtnAddress().toString() + ")");
@@ -1539,9 +1539,27 @@ public final class FtnTools {
 	 * @param tearline
 	 * @param origin
 	 */
-	public static Long writeEchomail(Echoarea area, String subject,
+	public static void writeEchomail(Echoarea area, String subject,
 									 String text, String fromName, String toName,
                                      String fromFTN, String tearline, String origin) {
+		writeEchomailReturningId(area, subject, text, fromName, toName, fromFTN, tearline, origin);
+	}
+
+	/**
+	 * Эхомейл
+	 *
+	 * @param area
+	 * @param subject
+	 * @param text
+	 * @param fromName
+	 * @param toName
+	 * @param fromFTN
+	 * @param tearline
+	 * @param origin
+	 */
+	public static Long writeEchomailReturningId(Echoarea area, String subject,
+									 String text, String fromName, String toName,
+									 String fromFTN, String tearline, String origin) {
 		Echomail mail = new Echomail();
 		mail.setFromFTN(fromFTN);
 		mail.setFromName(fromName);
