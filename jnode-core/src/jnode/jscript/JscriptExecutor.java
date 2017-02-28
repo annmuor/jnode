@@ -20,19 +20,18 @@
 
 package jnode.jscript;
 
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.script.*;
-
 import jnode.dto.Jscript;
 import jnode.dto.Schedule;
 import jnode.dto.ScriptHelper;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
+
+import javax.script.*;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Запускатель пользовательских скриптов по расписанию
@@ -48,26 +47,14 @@ public class JscriptExecutor implements Runnable {
 			.getLogger(JscriptExecutor.class);
 
 	public JscriptExecutor() {
-		Date showDate = getNextLaunchDate();
 		Date now = new Date();
-		long initialDelay = showDate.getTime() - now.getTime();
-		if (initialDelay < 0) {
-			initialDelay = 0;
-		}
+		long initialDelay = 60000L;
+        Date showDate = new Date(now.getTime() + initialDelay);
 
 		logger.l3("First jscriptExecutor will run at " + showDate
 				+ " and every 1h after");
 		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(this,
 				initialDelay, MILLISEC_IN_HOUR, TimeUnit.MILLISECONDS);
-	}
-
-	private static Date getNextLaunchDate() {
-		Calendar calendar = Calendar.getInstance(Locale.US);
-		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR));
-		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-		calendar.set(Calendar.MINUTE, 1);
-		calendar.set(Calendar.SECOND, 0);
-		return new Date(calendar.getTime().getTime() + MILLISEC_IN_HOUR);
 	}
 
 	public static Bindings createBindings() {
@@ -91,16 +78,13 @@ public class JscriptExecutor implements Runnable {
 			logger.l4("ScriptHelper " + object.toString() + " ("
 					+ scriptHelper.getId() + ") loaded");
 		} catch (ClassNotFoundException e) {
-			logger.l2("Helper " + scriptHelperClassName + " not found");
-		} catch (InstantiationException e) {
+			logger.l2("Helper " + scriptHelperClassName + " not found", e);
+		} catch (InstantiationException | IllegalAccessException e) {
 			logger.l2("Helper " + scriptHelperClassName
-					+ " can't been initialized");
-		} catch (IllegalAccessException e) {
-			logger.l2("Helper " + scriptHelperClassName
-					+ " can't been initialized (2)");
+					+ " can't been initialized", e);
 		} catch (ClassCastException e) {
 			logger.l2("Helper " + scriptHelperClassName
-					+ " is not IJscriptHelper");
+					+ " is not IJscriptHelper", e);
 		}
 	}
 
@@ -113,32 +97,49 @@ public class JscriptExecutor implements Runnable {
 
 		Calendar now = Calendar.getInstance(Locale.US);
 		List<Schedule> items = ORMManager.get(Schedule.class).getAll();
-		logger.l5(MessageFormat.format("{0} items in queue", items.size()));
-		if (items.size() == 0) {
+		logger.l5(MessageFormat.format("{0} pretenders", items.size()));
+		if (items.isEmpty()) {
 			return;
 		}
-		tryRunItemsByDate(now, items);
+
+        List<Schedule> needExec = queryNeedExec(now, items);
+        logger.l5(MessageFormat.format("{0} items in queue", needExec.size()));
+
+        if (!needExec.isEmpty()) {
+            tryRunItems(needExec);
+        }
 
 	}
 
-	private static void tryRunItemsByDate(Calendar now, List<Schedule> items) {
+    private List<Schedule> queryNeedExec(Calendar now, List<Schedule> items) {
+        List<Schedule> needExec = new ArrayList<>();
+        for (Schedule item : items) {
+            if (item.isNeedExec(now)){
+                needExec.add(item);
+            }
+        }
+        return needExec;
+    }
+
+    private static void tryRunItems(List<Schedule> items) {
 		final ScriptEngine engine = createScriptEngine();
 		final Bindings bindings = createBindings();
 		for (Schedule item : items) {
-			if (item.isNeedExec(now)) {
+                logger.l5(MessageFormat.format("need process {0}", item));
 				try {
 					executeScript(engine, item, bindings);
 				} catch (ScriptException e) {
 					logger.l2(MessageFormat.format("fail script {0} execution",
 							item.getJscript().getId()), e);
+					continue;
 				} catch (Exception e) {
 					logger.l2(MessageFormat.format(
 							"unexpected fail script {0} execution", item
 									.getJscript().getId()), e);
+                    continue;
 				}
 				logger.l5(MessageFormat.format("executed script {0}", item
 						.getJscript().getId()));
-			}
 		}
 	}
 
@@ -154,7 +155,11 @@ public class JscriptExecutor implements Runnable {
 				// выполнились? и иксипшена не произошло? ну вот это счастье!
 				Schedule modItem = ORMManager.get(Schedule.class).getById(
 						item.getId());
-				modItem.setLastRunDate(new Date());
+                final Date lastRunDate = new Date();
+                modItem.setLastRunDate(lastRunDate);
+                final Date nextRunDate = modItem.queryNextRunDate();
+                modItem.setNextRunDate(nextRunDate);
+                logger.l5(MessageFormat.format("script {0} executed SUCCESS, last run date {1}, next run date {2}", content, lastRunDate, nextRunDate));
 				ORMManager.get(Schedule.class).update(modItem);
 			}
 

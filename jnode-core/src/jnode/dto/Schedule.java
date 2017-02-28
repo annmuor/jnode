@@ -27,6 +27,7 @@ import jnode.core.ConcurrentDateFormatAccess;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Планировщик (жалкая замена cron :-) )
@@ -37,16 +38,17 @@ import java.util.Date;
 public class Schedule {
     private static final ConcurrentDateFormatAccess DATE_DAY_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy");
     private static final ConcurrentDateFormatAccess DATE_HOUR_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy HH");
+    private static final long DAYMSEC = 86400000L;
     @DatabaseField(columnName = "id", generatedId = true)
     private Long id;
     @DatabaseField(dataType = DataType.ENUM_STRING, canBeNull = false, columnName = "type", defaultValue = "DAILY")
     private Type type;
-    @DatabaseField(columnName = "details", defaultValue = "0")
-    private Integer details;
     @DatabaseField(columnName = "jscript_id", foreign = true, canBeNull = false, uniqueIndexName = "lsched_idx")
     private Jscript jscript;
     @DatabaseField(columnName = "lastRunDate", canBeNull = true, dataType = DataType.DATE)
     private Date lastRunDate;
+    @DatabaseField(columnName = "nextRunDate", canBeNull = true, dataType = DataType.DATE)
+    private Date nextRunDate;
 
     private static boolean isSameDay(Date date1, Date date2) {
         return !(date1 == null || date2 == null) && DATE_DAY_FORMAT.format(date1).equals(DATE_DAY_FORMAT.format(date2));
@@ -72,44 +74,49 @@ public class Schedule {
         this.lastRunDate = lastRunDate;
     }
 
+    public Date queryNextRunDate() {
+        return queryNextRunDate(getLastRunDate(), getType());
+    }
+
+     static Date queryNextRunDate(Date lastRunDate, Schedule.Type type) {
+
+        Objects.requireNonNull(lastRunDate);
+        Objects.requireNonNull(type);
+
+        switch (type) {
+            case HOURLY:
+                return new Date(lastRunDate.getTime() + 1000L * 60 * 60);
+            case DAILY:
+                return new Date(lastRunDate.getTime() + DAYMSEC);
+            case ANNUALLY:
+                return new Date(lastRunDate.getTime() + DAYMSEC * 366);
+            case MONTHLY:
+                return new Date(lastRunDate.getTime() + DAYMSEC * 30);
+            case WEEKLY:
+                return new Date(lastRunDate.getTime() + DAYMSEC * 7);
+            default:
+                return null;
+        }
+
+    }
+
     public boolean isNeedExec(Calendar calendar) {
 
-        if (calendar == null || getType() == null || getDetails() == null) {
+        if (calendar == null || getType() == null) {
             return false;
         }
 
-        switch (getType()) {
-            case HOURLY:
-                if (isSameHour(getLastRunDate(), new Date())) {
-                    return false;
-                }
-                break;
-            default:
-                if (isSameDay(getLastRunDate(), new Date())) {
-                    return false;
-                }
-                break;
+        Date actualLastRunDate = getLastRunDate() != null ? getLastRunDate() : new Date(new Date().getTime() - DAYMSEC * 365 * 10);
+
+        Date actualNextRunDate = getNextRunDate() != null ? getNextRunDate() : queryNextRunDate(actualLastRunDate, getType());
+
+        if (actualNextRunDate == null) {
+            return false;
         }
 
-        switch (getType()) {
-            case HOURLY:
-                return true;
-            case DAILY:
-                return checkDetails(calendar.get(Calendar.HOUR_OF_DAY));
-            case ANNUALLY:
-                return checkDetails(calendar.get(Calendar.DAY_OF_YEAR));
-            case MONTHLY:
-                return checkDetails(calendar.get(Calendar.DAY_OF_MONTH));
-            case WEEKLY:
-                return checkDetails(calendar.get(Calendar.DAY_OF_WEEK));
+        Date now = calendar.getTime();
 
-            default:
-                return false;
-        }
-    }
-
-    private boolean checkDetails(int fromCalendar) {
-        return getDetails() != null && getDetails().equals(fromCalendar);
+        return now.compareTo(actualNextRunDate) > 0;
     }
 
     public Type getType() {
@@ -120,14 +127,6 @@ public class Schedule {
         this.type = type;
     }
 
-    public Integer getDetails() {
-        return details;
-    }
-
-    public void setDetails(Integer details) {
-        this.details = details;
-    }
-
     public Jscript getJscript() {
         return jscript;
     }
@@ -136,19 +135,26 @@ public class Schedule {
         this.jscript = jscript;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Schedule{");
-        sb.append("id=").append(id);
-        sb.append(", type=").append(type);
-        sb.append(", details=").append(details);
-        sb.append(", jscript=").append(jscript);
-        sb.append(", lastRunDate=").append(lastRunDate);
-        sb.append('}');
-        return sb.toString();
+    public Date getNextRunDate() {
+        return nextRunDate;
     }
 
-    public static enum Type {
+    public void setNextRunDate(Date nextRunDate) {
+        this.nextRunDate = nextRunDate;
+    }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "id=" + id +
+                ", type=" + type +
+                ", jscript=" + jscript +
+                ", lastRunDate=" + lastRunDate +
+                ", nextRunDate=" + nextRunDate +
+                '}';
+    }
+
+    public enum Type {
         HOURLY, DAILY, WEEKLY, MONTHLY, ANNUALLY
     }
 }

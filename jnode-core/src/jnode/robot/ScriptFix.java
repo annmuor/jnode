@@ -200,12 +200,13 @@ public class ScriptFix extends AbstractRobot {
 			for (Schedule s : ORMManager.get(Schedule.class).getAnd(
 					"jscript_id", "=", js)) {
 				String fmt = String.format(
-						"|%05d|      %s AT %02d LAST %s",
+						"|%05d|%s LAST %s NEXT %s",
 						s.getId(),
 						s.getType().name(),
-						s.getDetails(),
 						(s.getLastRunDate() != null) ? format.format(s
-								.getLastRunDate()) : "NEVER");
+								.getLastRunDate()) : "NEVER",
+						(s.getNextRunDate() != null) ? format.format(s
+								.getNextRunDate()) : "NEVER");
 				for (int j = 53; j > fmt.length(); j--) {
 					fmt += " ";
 				}
