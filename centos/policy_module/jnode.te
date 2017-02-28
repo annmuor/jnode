@@ -1,0 +1,56 @@
+# (C) Ivan Agarkov, 2017
+policy_module(jnode, 1.0.3)
+gen_require(`
+  type http_port_t;
+')
+# domain file type
+type jnode_t;
+type jnode_exec_t;
+init_daemon_domain(jnode_t, jnode_exec_t)
+application_domain(jnode_t, jnode_exec_t)
+corecmd_exec_bin(jnode_t)
+libs_use_ld_so(jnode_t)
+kernel_read_system_state(jnode_t)
+allow jnode_t self:process { execmem };
+files_rw_generic_tmp_dir(jnode_t)
+sysnet_read_config(jnode_t)
+dev_read_rand(jnode_t)
+fs_getattr_xattr_fs(jnode_t)
+sysnet_dns_name_resolve(jnode_t)
+# network type
+type binkp_port_t;
+corenet_port(binkp_port_t)
+# config type
+type jnode_conf_t;
+files_config_file(jnode_conf_t)
+allow jnode_t jnode_conf_t:dir list_dir_perms;
+allow jnode_t jnode_conf_t:file read_file_perms;
+# cache type
+type jnode_cache_t;
+files_type(jnode_cache_t)
+allow jnode_t jnode_cache_t:dir { add_entry_dir_perms create_dir_perms list_dir_perms };
+allow jnode_t jnode_cache_t:file { append_file_perms create_file_perms rw_file_perms };
+# log type
+type jnode_log_t;
+logging_log_file(jnode_log_t)
+logging_search_logs(jnode_t)
+logging_log_filetrans(jnode_t, jnode_log_t, file)
+allow jnode_t jnode_log_t:file { write append_file_perms create_file_perms };
+allow jnode_t jnode_log_t:dir { add_entry_dir_perms };
+# tmp
+type jnode_tmp_t;
+files_tmp_file(jnode_tmp_t)
+allow jnode_t jnode_tmp_t:dir manage_dir_perms;
+allow jnode_t jnode_tmp_t:file manage_file_perms;
+allow jnode_t tmp_t:dir { add_entry_dir_perms create };
+files_poly_member_tmp(jnode_t, jnode_tmp_t)
+type_member jnode_t tmp_t:file jnode_tmp_t;
+# allow networking
+allow jnode_t self:tcp_socket create_stream_socket_perms;
+allow jnode_t self:udp_socket create_socket_perms;
+allow jnode_t binkp_port_t:tcp_socket { name_bind name_connect };
+allow jnode_t http_port_t:tcp_socket name_bind;
+corenet_tcp_bind_generic_node(jnode_t)
+# allow connect to postgresql
+postgresql_stream_connect(jnode_t)
+corenet_tcp_connect_postgresql_port(jnode_t)
